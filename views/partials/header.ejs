@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="milym — créateur de projets web, applications et expériences numériques.">
+  <title><%= pageTitle %> — <%= site.name %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="icon" href="<%= site.logo %>">
+</head>
+<body class="bg-background font-sans text-primary antialiased min-h-screen flex flex-col overflow-x-hidden">
+
+  <!-- Décor d'arrière-plan partagé : grille futuriste + halos violets -->
+  <div class="pointer-events-none fixed inset-0 -z-10" aria-hidden="true">
+    <div class="absolute inset-0 bg-grid"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-purple-650/[0.07] via-transparent to-purple-700/[0.05]"></div>
+    <div class="halo animate-pulse-halo -top-40 -left-40 h-[34rem] w-[34rem]"></div>
+    <div class="halo animate-pulse-halo bottom-[-12rem] right-[-10rem] h-[40rem] w-[40rem]" style="animation-delay: -4s;"></div>
+  </div>
+
+  <% if (!locals.hideNav) { %>
+  <!-- Navigation -->
+  <header>
+    <nav id="navbar" class="fixed inset-x-0 top-0 z-50 transition-all duration-500" aria-label="Navigation principale">
+      <div class="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
+        <a href="/" class="flex items-center gap-2.5 focus-ring rounded-lg" aria-label="Retour à l'accueil">
+          <img src="<%= site.logo %>" alt="" class="h-8 w-8 object-contain" aria-hidden="true">
+          <span class="text-lg font-semibold tracking-wide text-purple-300"><%= site.name %></span>
+        </a>
+
+        <!-- Liens desktop -->
+        <ul class="hidden items-center gap-1 md:flex">
+          <li><a href="/" class="nav-link <%= currentPath === '/' ? 'nav-link-active' : '' %>">Accueil</a></li>
+          <li><a href="/projets" class="nav-link <%= currentPath === '/projets' ? 'nav-link-active' : '' %>">Projets</a></li>
+          <li><a href="/contact" class="nav-link <%= currentPath === '/contact' ? 'nav-link-active' : '' %>">Contact</a></li>
+        </ul>
+
+        <!-- Bouton burger mobile -->
+        <button id="burger" type="button" class="focus-ring relative z-50 flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-lg md:hidden"
+                aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="mobile-menu">
+          <span class="burger-line"></span>
+          <span class="burger-line"></span>
+          <span class="burger-line"></span>
+        </button>
+      </div>
+
+      <!-- Menu mobile -->
+      <div id="mobile-menu" class="mobile-menu md:hidden" hidden>
+        <ul class="flex flex-col gap-2 px-6 pb-6 pt-2">
+          <li><a href="/" class="nav-link block text-base <%= currentPath === '/' ? 'nav-link-active' : '' %>">Accueil</a></li>
+          <li><a href="/projets" class="nav-link block text-base <%= currentPath === '/projets' ? 'nav-link-active' : '' %>">Projets</a></li>
+          <li><a href="/contact" class="nav-link block text-base <%= currentPath === '/contact' ? 'nav-link-active' : '' %>">Contact</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <% } %>
+
+  <main class="flex-1">

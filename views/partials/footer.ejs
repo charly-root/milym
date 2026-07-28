@@ -1,0 +1,54 @@
+  </main>
+
+  <footer class="relative z-10 border-t border-purple-650/15 bg-surface/40 backdrop-blur-sm">
+    <div class="mx-auto flex max-w-6xl flex-col items-center gap-8 px-5 py-12 sm:px-8 md:flex-row md:justify-between">
+      <div class="flex flex-col items-center gap-3 md:items-start">
+        <a href="/" class="flex items-center gap-2.5 focus-ring rounded-lg" aria-label="Retour à l'accueil">
+          <img src="<%= site.logo %>" alt="" class="h-7 w-7 object-contain" aria-hidden="true">
+          <span class="font-semibold text-purple-300"><%= site.name %></span>
+        </a>
+        <p class="text-center text-sm text-secondary md:text-left">
+          Des idées transformées en expériences numériques.
+        </p>
+      </div>
+
+      <nav aria-label="Navigation du pied de page">
+        <ul class="flex items-center gap-6 text-sm">
+          <li><a href="/" class="footer-link">Accueil</a></li>
+          <li><a href="/projets" class="footer-link">Projets</a></li>
+          <li><a href="/contact" class="footer-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <% contacts.filter(c => ['github', 'linkedin', 'lien'].includes(c.kind)).forEach(contact => { %>
+          <a href="<%= contact.value %>" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="<%= contact.label %>">
+            <% if (contact.kind === 'github') { %>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5" aria-hidden="true">
+                <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.17c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.34.95.1-.74.4-1.25.72-1.53-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.27 5.68.41.35.77 1.05.77 2.12v3.14c0 .3.21.67.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/>
+              </svg>
+            <% } else if (contact.kind === 'linkedin') { %>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5" aria-hidden="true">
+                <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45Z"/>
+              </svg>
+            <% } else { %>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"/>
+              </svg>
+            <% } %>
+          </a>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="border-t border-purple-650/10 py-5">
+      <p class="text-center text-xs text-secondary">© <%= currentYear %> — Tous droits réservés</p>
+    </div>
+  </footer>
+
+  <!-- Notification (copie e-mail, envoi formulaire) -->
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="/js/main.js" defer></script>
+</body>
+</html>

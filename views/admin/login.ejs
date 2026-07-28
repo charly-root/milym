@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Connexion — <%= site.name %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="icon" href="<%= site.logo %>">
+</head>
+<body class="bg-background font-sans text-primary antialiased min-h-screen overflow-x-hidden">
+
+  <div class="pointer-events-none fixed inset-0 -z-10" aria-hidden="true">
+    <div class="absolute inset-0 bg-grid"></div>
+    <div class="halo animate-pulse-halo left-1/2 top-1/2 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2"></div>
+  </div>
+
+  <main class="flex min-h-screen items-center justify-center px-5">
+    <div class="glass-panel relative w-full max-w-sm p-8 sm:p-10">
+      <div class="glass-edge-top" aria-hidden="true"></div>
+
+      <div class="relative z-10 flex flex-col gap-6">
+        <div class="flex flex-col items-center gap-3 text-center">
+          <img src="<%= site.logo %>" alt="Logo <%= site.name %>" class="h-12 w-12 object-contain drop-shadow-[0_0_14px_rgba(168,85,247,0.5)]">
+          <h1 class="text-xl font-semibold">Centre de contrôle</h1>
+          <p class="text-sm text-secondary">Connectez-vous pour gérer le site.</p>
+        </div>
+
+        <% if (error) { %>
+          <p class="field-error text-center" role="alert"><%= error %></p>
+        <% } %>
+
+        <form method="POST" action="/admin/login" class="flex flex-col gap-4">
+          <div class="flex flex-col gap-2">
+            <label for="password" class="field-label">Mot de passe</label>
+            <input type="password" id="password" name="password" class="field" required autocomplete="current-password" autofocus>
+          </div>
+          <button type="submit" class="btn-primary w-full">Se connecter</button>
+        </form>
+
+        <a href="/" class="text-center text-sm text-secondary transition-colors hover:text-purple-300 focus-ring rounded">← Retour au site</a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

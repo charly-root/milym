@@ -1,0 +1,83 @@
+<%- include('../partials/admin-header') %>
+
+<div class="mx-auto max-w-2xl">
+  <h1 class="text-2xl font-bold">Accueil & logo</h1>
+  <p class="mt-1 text-sm text-secondary">Personnalisez le logo et le contenu de la page d'accueil.</p>
+
+  <% if (saved) { %>
+    <div class="mt-6 rounded-xl border border-purple-500/40 bg-purple-650/10 p-4 text-sm text-purple-300" role="status">
+      Modifications enregistrées.
+    </div>
+  <% } %>
+
+  <% if (errors.length > 0) { %>
+    <div class="mt-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4" role="alert">
+      <ul class="list-inside list-disc text-sm text-red-400">
+        <% errors.forEach(error => { %><li><%= error %></li><% }) %>
+      </ul>
+    </div>
+  <% } %>
+
+  <form method="POST" action="/admin/accueil" enctype="multipart/form-data" class="glass-card mt-6 flex flex-col gap-6 p-6 sm:p-8">
+    <!-- Logo -->
+    <fieldset class="flex flex-col gap-3">
+      <legend class="field-label mb-2">Logo</legend>
+      <div class="flex items-center gap-5">
+        <img src="<%= current.logoPath %>" alt="Logo actuel" class="h-16 w-16 rounded-xl border border-purple-650/25 bg-background/60 object-contain p-2">
+        <div class="flex flex-1 flex-col gap-2">
+          <label for="logo" class="text-sm text-secondary">Remplacer le logo <span class="text-secondary/70">(SVG, PNG, JPG ou WebP — 2 Mo max)</span></label>
+          <input type="file" id="logo" name="logo" accept=".svg,.png,.jpg,.jpeg,.webp,image/svg+xml,image/png,image/jpeg,image/webp"
+                 class="field cursor-pointer file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-purple-650/20 file:px-4 file:py-1.5 file:text-sm file:font-medium file:text-purple-300">
+          <p class="text-xs text-secondary/70">Laissez vide pour conserver le logo actuel.</p>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="flex flex-col gap-2">
+      <label for="siteName" class="field-label">Nom du site <span class="text-secondary">(navigation et footer)</span></label>
+      <input type="text" id="siteName" name="siteName" class="field" required maxlength="40" value="<%= current.siteName %>">
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="heroTitle" class="field-label">Titre principal du panneau</label>
+      <input type="text" id="heroTitle" name="heroTitle" class="field" required maxlength="80" value="<%= current.heroTitle %>">
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="heroSubtitle" class="field-label">Phrase secondaire</label>
+      <textarea id="heroSubtitle" name="heroSubtitle" rows="2" class="field resize-y" required maxlength="300"><%= current.heroSubtitle %></textarea>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="aboutText" class="field-label">Texte de la section À propos</label>
+      <textarea id="aboutText" name="aboutText" rows="4" class="field resize-y" required maxlength="1000"><%= current.aboutText %></textarea>
+    </div>
+
+    <fieldset class="flex flex-col gap-4">
+      <legend class="field-label mb-2">Statistiques</legend>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <% [1, 2, 3].forEach(i => { %>
+          <div class="flex flex-col gap-3 rounded-xl border border-purple-650/20 p-4">
+            <div class="flex flex-col gap-2">
+              <label for="stat<%= i %>Value" class="text-xs uppercase tracking-widest text-secondary">Valeur</label>
+              <input type="text" id="stat<%= i %>Value" name="stat<%= i %>Value" class="field" required maxlength="20"
+                     value="<%= current['stat' + i + 'Value'] %>">
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="stat<%= i %>Label" class="text-xs uppercase tracking-widest text-secondary">Libellé</label>
+              <input type="text" id="stat<%= i %>Label" name="stat<%= i %>Label" class="field" required maxlength="60"
+                     value="<%= current['stat' + i + 'Label'] %>">
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </fieldset>
+
+    <div class="flex flex-wrap gap-3">
+      <button type="submit" class="btn-primary">Enregistrer</button>
+      <a href="/" target="_blank" rel="noopener" class="btn-ghost">Voir la page d'accueil</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/admin-footer') %>

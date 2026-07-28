@@ -1,0 +1,75 @@
+<%- include('../partials/admin-header') %>
+
+<% const isEdit = Boolean(project && project.id); %>
+
+<div class="mx-auto max-w-2xl">
+  <a href="/admin/projets" class="text-sm text-secondary transition-colors hover:text-purple-300 focus-ring rounded">← Retour aux projets</a>
+  <h1 class="mt-4 text-2xl font-bold"><%= isEdit ? 'Modifier le projet' : 'Nouveau projet' %></h1>
+
+  <% if (errors.length > 0) { %>
+    <div class="mt-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4" role="alert">
+      <ul class="list-inside list-disc text-sm text-red-400">
+        <% errors.forEach(error => { %><li><%= error %></li><% }) %>
+      </ul>
+    </div>
+  <% } %>
+
+  <form method="POST" action="<%= isEdit ? '/admin/projets/' + project.id : '/admin/projets' %>" class="glass-card mt-6 grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
+    <div class="flex flex-col gap-2 sm:col-span-2">
+      <label for="title" class="field-label">Titre</label>
+      <input type="text" id="title" name="title" class="field" required minlength="2" maxlength="100"
+             value="<%= project ? project.title : '' %>">
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="slug" class="field-label">Slug <span class="text-secondary">(optionnel, généré depuis le titre)</span></label>
+      <input type="text" id="slug" name="slug" class="field" maxlength="80"
+             value="<%= project ? project.slug : '' %>" placeholder="mon-projet">
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="category" class="field-label">Catégorie</label>
+      <select id="category" name="category" class="field" required>
+        <% categories.forEach(category => { %>
+          <option value="<%= category %>" <%= project && project.category === category ? 'selected' : '' %>><%= category %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="flex flex-col gap-2 sm:col-span-2">
+      <label for="description" class="field-label">Description</label>
+      <textarea id="description" name="description" rows="3" class="field resize-y" required minlength="10" maxlength="500"><%= project ? project.description : '' %></textarea>
+    </div>
+
+    <div class="flex flex-col gap-2 sm:col-span-2">
+      <label for="technologies" class="field-label">Technologies <span class="text-secondary">(séparées par des virgules)</span></label>
+      <input type="text" id="technologies" name="technologies" class="field" required
+             value="<%= project ? project.technologies.join(', ') : '' %>" placeholder="Node.js, Express, Tailwind CSS">
+    </div>
+
+    <div class="flex flex-col gap-2 sm:col-span-2">
+      <label for="image" class="field-label">Image <span class="text-secondary">(chemin dans /public, ex. /images/projet.svg)</span></label>
+      <input type="text" id="image" name="image" class="field" maxlength="300"
+             value="<%= project ? project.image : '' %>" placeholder="/images/mon-projet.svg">
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="projectUrl" class="field-label">Lien du projet</label>
+      <input type="url" id="projectUrl" name="projectUrl" class="field" maxlength="300"
+             value="<%= project ? project.projectUrl : '' %>" placeholder="https://exemple.com">
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="githubUrl" class="field-label">Code source <span class="text-secondary">(optionnel)</span></label>
+      <input type="url" id="githubUrl" name="githubUrl" class="field" maxlength="300"
+             value="<%= project && project.githubUrl ? project.githubUrl : '' %>" placeholder="https://github.com/exemple">
+    </div>
+
+    <div class="flex flex-wrap gap-3 sm:col-span-2">
+      <button type="submit" class="btn-primary"><%= isEdit ? 'Enregistrer' : 'Créer le projet' %></button>
+      <a href="/admin/projets" class="btn-ghost">Annuler</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/admin-footer') %>

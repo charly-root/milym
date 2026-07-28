@@ -1,0 +1,49 @@
+<%- include('../partials/admin-header') %>
+
+<% const isEdit = Boolean(contact && contact.id); %>
+
+<div class="mx-auto max-w-xl">
+  <a href="/admin/contacts" class="text-sm text-secondary transition-colors hover:text-purple-300 focus-ring rounded">← Retour aux contacts</a>
+  <h1 class="mt-4 text-2xl font-bold"><%= isEdit ? 'Modifier le contact' : 'Nouveau contact' %></h1>
+
+  <% if (errors.length > 0) { %>
+    <div class="mt-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4" role="alert">
+      <ul class="list-inside list-disc text-sm text-red-400">
+        <% errors.forEach(error => { %><li><%= error %></li><% }) %>
+      </ul>
+    </div>
+  <% } %>
+
+  <form method="POST" action="<%= isEdit ? '/admin/contacts/' + contact.id : '/admin/contacts' %>" class="glass-card mt-6 flex flex-col gap-5 p-6 sm:p-8">
+    <div class="flex flex-col gap-2">
+      <label for="kind" class="field-label">Type</label>
+      <select id="kind" name="kind" class="field" required>
+        <% kinds.forEach(kind => { %>
+          <option value="<%= kind %>" <%= contact && contact.kind === kind ? 'selected' : '' %>><%= kind %></option>
+        <% }) %>
+      </select>
+      <p class="text-xs text-secondary">
+        phone : lien d'appel · email : lien mailto + bouton copier · github / linkedin / lien : lien externe
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="label" class="field-label">Libellé</label>
+      <input type="text" id="label" name="label" class="field" required minlength="2" maxlength="60"
+             value="<%= contact ? contact.label : '' %>" placeholder="Téléphone, E-mail, GitHub...">
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="value" class="field-label">Valeur</label>
+      <input type="text" id="value" name="value" class="field" required minlength="3" maxlength="254"
+             value="<%= contact ? contact.value : '' %>" placeholder="+33 6 00 00 00 00, contact@exemple.com ou https://...">
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+      <button type="submit" class="btn-primary"><%= isEdit ? 'Enregistrer' : 'Créer le contact' %></button>
+      <a href="/admin/contacts" class="btn-ghost">Annuler</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/admin-footer') %>

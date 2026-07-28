@@ -1,0 +1,516 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Propriétés animables du panneau 3D : permet des transitions fluides
+   sur l'arête lumineuse et le reflet quand la souris bouge ou quitte la vitre */
+@property --edge {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: true;
+}
+
+@property --mx {
+  syntax: "<percentage>";
+  initial-value: 50%;
+  inherits: true;
+}
+
+@property --my {
+  syntax: "<percentage>";
+  initial-value: 35%;
+  inherits: true;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────── */
+@layer base {
+  ::selection {
+    @apply bg-purple-650/40 text-primary;
+  }
+
+  body {
+    background-color: #050507;
+  }
+
+  /* Respect de prefers-reduced-motion : on neutralise les animations */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ── Composants réutilisables ─────────────────────────────────────────── */
+@layer components {
+  /* Focus visible commun pour la navigation au clavier */
+  .focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Boutons */
+  .btn-primary {
+    @apply focus-ring relative inline-flex items-center justify-center overflow-hidden rounded-xl
+      bg-gradient-to-b from-purple-600 to-purple-650 px-7 py-3 text-sm font-semibold text-primary
+      shadow-glow-sm transition-all duration-300
+      hover:-translate-y-0.5 hover:shadow-glow;
+  }
+
+  .btn-ghost {
+    @apply focus-ring inline-flex items-center justify-center rounded-xl border border-purple-650/40
+      bg-purple-650/5 px-7 py-3 text-sm font-semibold text-purple-300 transition-all duration-300
+      hover:-translate-y-0.5 hover:border-purple-500/80 hover:bg-purple-650/15 hover:shadow-glow-sm;
+  }
+
+  .btn-sm {
+    @apply px-5 py-2 text-xs;
+  }
+
+  .btn-danger {
+    @apply focus-ring inline-flex items-center justify-center rounded-xl border border-red-500/40
+      bg-red-500/5 px-7 py-3 text-sm font-semibold text-red-400 transition-all duration-300
+      hover:border-red-500/80 hover:bg-red-500/15;
+  }
+
+  /* Liens de navigation */
+  .nav-link {
+    @apply focus-ring rounded-lg px-4 py-2 text-sm text-secondary transition-colors duration-300 hover:text-primary;
+  }
+
+  .nav-link-active {
+    @apply text-purple-300;
+  }
+
+  .footer-link {
+    @apply focus-ring rounded text-secondary transition-colors duration-300 hover:text-purple-300;
+  }
+
+  .social-icon {
+    @apply focus-ring flex h-10 w-10 items-center justify-center rounded-full border border-purple-650/25
+      text-secondary transition-all duration-300 hover:border-purple-500/60 hover:text-purple-400 hover:shadow-glow-sm;
+  }
+
+  /* Barre de navigation : quasi invisible puis opaque au scroll (voir main.js) */
+  .nav-scrolled {
+    @apply border-b border-purple-650/15 bg-background/75 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.8)] backdrop-blur-xl;
+  }
+
+  /* Bouton burger */
+  .burger-line {
+    @apply block h-0.5 w-6 rounded-full bg-purple-300 transition-all duration-300;
+  }
+
+  .burger-open .burger-line:nth-child(1) {
+    @apply translate-y-2 rotate-45;
+  }
+
+  .burger-open .burger-line:nth-child(2) {
+    @apply opacity-0;
+  }
+
+  .burger-open .burger-line:nth-child(3) {
+    @apply -translate-y-2 -rotate-45;
+  }
+
+  .mobile-menu {
+    @apply border-t border-purple-650/15 bg-background/95 backdrop-blur-xl;
+  }
+
+  /* ── Système de verre ─────────────────────────────────────────────────
+     .glass-panel   : panneau statique (contact, 404, login)
+     .glass-panel-3d: panneau incliné par la souris (accueil), qui contient
+                      une .glass-surface pour la matière du verre           */
+
+  /* Matière du verre : teinte sombre, flou saturé et grain de verre dépoli */
+  .glass-panel,
+  .glass-surface {
+    @apply overflow-hidden rounded-3xl;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E"),
+      linear-gradient(
+        135deg,
+        rgba(124, 58, 237, 0.11) 0%,
+        rgba(12, 12, 18, 0.5) 30%,
+        rgba(8, 8, 13, 0.72) 62%,
+        rgba(124, 58, 237, 0.09) 100%
+      );
+    backdrop-filter: blur(22px) saturate(160%) brightness(1.06);
+    -webkit-backdrop-filter: blur(22px) saturate(160%) brightness(1.06);
+  }
+
+  /* Arête lumineuse sur le pourtour : la lumière tourne vers la souris */
+  .glass-panel::before,
+  .glass-surface::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from var(--edge, 0deg),
+      rgba(216, 180, 254, 0.7),
+      rgba(124, 58, 237, 0.18) 16%,
+      rgba(216, 180, 254, 0.05) 42%,
+      rgba(168, 85, 247, 0.22) 58%,
+      rgba(216, 180, 254, 0.05) 80%,
+      rgba(216, 180, 254, 0.7)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Épaisseur du verre : biseau clair en haut, tranche sombre en bas,
+     léger assombrissement vers les bords comme une vraie plaque */
+  .glass-panel::after,
+  .glass-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow:
+      inset 0 1.5px 0 rgba(216, 180, 254, 0.22),
+      inset 0 -1.5px 1px rgba(0, 0, 0, 0.55),
+      inset 0 0 34px rgba(5, 5, 7, 0.5),
+      inset 0 0 3px rgba(216, 180, 254, 0.1);
+    pointer-events: none;
+  }
+
+  .glass-panel {
+    @apply relative shadow-panel;
+  }
+
+  .glass-surface {
+    @apply absolute inset-0;
+  }
+
+  /* Panneau incliné : les rotations et l'ombre suivent la souris (voir main.js) */
+  .glass-panel-3d {
+    @apply relative rounded-3xl;
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: --edge 0.5s ease-out, --mx 0.15s linear, --my 0.15s linear;
+    box-shadow:
+      calc(var(--sx, 0px) * -1) calc(34px + var(--sy, 0px) * -1) 70px -18px rgba(0, 0, 0, 0.85),
+      0 0 70px rgba(124, 58, 237, 0.18);
+  }
+
+  /* Le contenu flotte au-dessus de la plaque (parallaxe), uniquement à la souris */
+  @media (hover: hover) and (pointer: fine) {
+    .glass-depth {
+      transform: translateZ(46px);
+    }
+  }
+
+  /* Reflet spéculaire : tache de lumière qui suit le curseur sur la vitre */
+  .glass-glare {
+    @apply pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500;
+    background: radial-gradient(
+      460px circle at var(--mx, 50%) var(--my, 35%),
+      rgba(216, 180, 254, 0.17),
+      rgba(168, 85, 247, 0.06) 38%,
+      transparent 68%
+    );
+  }
+
+  .glass-panel-3d:hover .glass-glare {
+    @apply opacity-100;
+  }
+
+  /* ── Bris de la vitre (easter egg : 10 clics, voir main.js) ─────────── */
+
+  /* Les éclats sont des clones du panneau découpés en triangles :
+     on allège leur rendu (pas de flou ni de reflets animés) */
+  .glass-shard {
+    box-shadow: none !important;
+    transition: none !important;
+  }
+
+  .glass-shard .glass-surface {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(
+      135deg,
+      rgba(60, 34, 108, 0.9) 0%,
+      rgba(16, 14, 26, 0.92) 40%,
+      rgba(12, 10, 20, 0.95) 65%,
+      rgba(52, 28, 96, 0.9) 100%
+    );
+  }
+
+  .glass-shard .glass-shine,
+  .glass-shard .glass-glare {
+    display: none;
+  }
+
+  /* Éclair lumineux au moment de l'impact */
+  .shatter-flash {
+    @apply pointer-events-none absolute inset-0 rounded-3xl;
+    background: radial-gradient(
+      circle,
+      rgba(216, 180, 254, 0.9) 0%,
+      rgba(124, 58, 237, 0.35) 40%,
+      transparent 72%
+    );
+    animation: shatter-flash 0.5s ease-out both;
+  }
+
+  @keyframes shatter-flash {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.15);
+    }
+  }
+
+  /* ── Rematérialisation numérique de la vitre ──────────────────────────
+     La vitre se reconstruit de haut en bas derrière une ligne de scan,
+     sur fond de grille holographique, puis scintille en se stabilisant  */
+  .glass-materializing {
+    animation: glass-materialize 1.5s linear both;
+  }
+
+  @keyframes glass-materialize {
+    0% {
+      clip-path: inset(0 0 100% 0);
+      filter: brightness(2) saturate(1.6);
+    }
+    55% {
+      clip-path: inset(0);
+      filter: brightness(1.55) saturate(1.3);
+    }
+    /* L'hologramme se stabilise : brefs décrochages d'opacité */
+    60% {
+      opacity: 0.45;
+    }
+    64% {
+      opacity: 1;
+    }
+    70% {
+      opacity: 0.6;
+    }
+    76% {
+      opacity: 1;
+      filter: brightness(1.25) saturate(1.15);
+    }
+    100% {
+      clip-path: inset(0);
+      opacity: 1;
+      filter: brightness(1) saturate(1);
+    }
+  }
+
+  /* Ligne de scan : le bord de reconstruction qui balaie la vitre */
+  .glass-materializing::after {
+    content: "";
+    position: absolute;
+    left: -5%;
+    right: -5%;
+    top: 0;
+    height: 3px;
+    z-index: 30;
+    border-radius: 9999px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(216, 180, 254, 0.9) 18%,
+      rgba(245, 243, 255, 1) 50%,
+      rgba(216, 180, 254, 0.9) 82%,
+      transparent
+    );
+    box-shadow:
+      0 0 18px 4px rgba(168, 85, 247, 0.8),
+      0 0 70px 14px rgba(124, 58, 237, 0.45);
+    /* 0.825s = les 55% de glass-materialize pendant lesquels la vitre se révèle */
+    animation: scan-line 0.825s linear both;
+    pointer-events: none;
+  }
+
+  @keyframes scan-line {
+    0% {
+      top: 0;
+      opacity: 1;
+    }
+    85% {
+      opacity: 1;
+    }
+    100% {
+      top: 100%;
+      opacity: 0;
+    }
+  }
+
+  /* Grille holographique visible pendant la construction */
+  .holo-grid {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, rgba(168, 85, 247, 0.18) 0 1px, transparent 1px 14px),
+      repeating-linear-gradient(90deg, rgba(168, 85, 247, 0.18) 0 1px, transparent 1px 14px);
+    animation: holo-grid 1.5s linear both;
+  }
+
+  @keyframes holo-grid {
+    0% {
+      opacity: 0;
+    }
+    12% {
+      opacity: 1;
+    }
+    60% {
+      opacity: 0.55;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* Reflet mobile qui balaie la vitre */
+  .glass-shine {
+    @apply pointer-events-none absolute inset-y-0 left-0 w-1/3 animate-shine;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(216, 180, 254, 0.06) 45%,
+      rgba(245, 243, 255, 0.1) 50%,
+      rgba(216, 180, 254, 0.06) 55%,
+      transparent 100%
+    );
+  }
+
+  /* Reflets fixes sur les bords de la vitre */
+  .glass-edge-top {
+    @apply pointer-events-none absolute inset-x-6 top-0 h-px;
+    background: linear-gradient(90deg, transparent, rgba(216, 180, 254, 0.5), transparent);
+  }
+
+  .glass-edge-left {
+    @apply pointer-events-none absolute bottom-6 left-0 top-6 w-px;
+    background: linear-gradient(180deg, transparent, rgba(216, 180, 254, 0.3), transparent);
+  }
+
+  /* Cartes en verre simples (statistiques, blocs de contenu) */
+  .glass-card {
+    @apply rounded-2xl border border-purple-650/20 bg-surface/50 backdrop-blur-md
+      transition-all duration-300 hover:border-purple-500/40 hover:shadow-glow-sm;
+  }
+
+  /* Cartes projets */
+  .project-card {
+    @apply flex flex-col overflow-hidden rounded-2xl border border-purple-650/20 bg-surface/60
+      backdrop-blur-md transition-all duration-300
+      hover:-translate-y-1.5 hover:border-purple-500/50 hover:shadow-glow;
+  }
+
+  .project-image {
+    @apply aspect-[8/5] w-full object-cover transition-transform duration-500;
+  }
+
+  .project-card:hover .project-image {
+    @apply scale-105;
+  }
+
+  /* Badges technologies */
+  .badge {
+    @apply rounded-full border border-purple-650/35 bg-background/80 px-3 py-1 text-xs text-secondary;
+  }
+
+  /* Filtres de la page projets */
+  .filter-btn {
+    @apply focus-ring rounded-full border border-purple-650/25 bg-surface/50 px-5 py-2 text-sm
+      text-secondary transition-all duration-300 hover:border-purple-500/60 hover:text-primary;
+  }
+
+  .filter-btn-active {
+    @apply border-purple-500/70 bg-purple-650/20 text-purple-300 shadow-glow-sm;
+  }
+
+  /* Titres de sections */
+  .section-title {
+    @apply text-3xl font-bold tracking-tight sm:text-4xl;
+    background: linear-gradient(90deg, #f5f3ff 0%, #c084fc 60%, #a855f7 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Champs de formulaire */
+  .field-label {
+    @apply text-sm font-medium text-primary;
+  }
+
+  .field {
+    @apply focus-ring w-full rounded-xl border border-purple-650/30 bg-background/70 px-4 py-3
+      text-sm text-primary placeholder:text-secondary/50 transition-all duration-300
+      focus:border-purple-500/70 focus:shadow-glow-sm;
+  }
+
+  .field-invalid {
+    @apply border-red-500/60;
+  }
+
+  .field-error {
+    @apply text-xs text-red-400;
+  }
+
+  /* Blocs cliquables de la page contact */
+  .contact-block {
+    @apply focus-ring flex items-center gap-4 rounded-2xl border border-purple-650/20 bg-background/50
+      p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-purple-500/50 hover:shadow-glow-sm;
+  }
+
+  .contact-icon {
+    @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-xl
+      border border-purple-650/30 bg-purple-650/10 text-purple-400;
+  }
+
+  /* Halos lumineux diffus */
+  .halo {
+    @apply pointer-events-none absolute rounded-full;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.22) 0%, rgba(124, 58, 237, 0.07) 45%, transparent 70%);
+    filter: blur(40px);
+  }
+
+  /* Grille futuriste presque invisible */
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(168, 85, 247, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(168, 85, 247, 0.04) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 40%, black 40%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 40%, black 40%, transparent 100%);
+  }
+
+  /* Animation d'apparition au scroll (activée par IntersectionObserver) */
+  .reveal {
+    @apply translate-y-6 opacity-0 transition-all duration-700 ease-out;
+  }
+
+  .reveal-visible {
+    @apply translate-y-0 opacity-100;
+  }
+
+  /* Notification élégante */
+  .toast {
+    @apply fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-xl border border-purple-500/40
+      bg-surface/95 px-6 py-3.5 text-sm font-medium text-primary shadow-glow backdrop-blur-xl
+      transition-all duration-300;
+  }
+
+  .toast-hidden {
+    @apply pointer-events-none translate-y-4 opacity-0;
+  }
+}

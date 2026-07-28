@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title><%= pageTitle %> — <%= site.name %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="icon" href="<%= site.logo %>">
+</head>
+<body class="bg-background font-sans text-primary antialiased min-h-screen flex flex-col overflow-x-hidden">
+
+  <div class="pointer-events-none fixed inset-0 -z-10" aria-hidden="true">
+    <div class="absolute inset-0 bg-grid"></div>
+    <div class="halo animate-pulse-halo -top-40 right-[-10rem] h-[30rem] w-[30rem]"></div>
+  </div>
+
+  <header class="border-b border-purple-650/15 bg-surface/60 backdrop-blur-xl">
+    <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8" aria-label="Navigation du centre de contrôle">
+      <a href="/admin" class="flex items-center gap-2.5 focus-ring rounded-lg" aria-label="Tableau de bord">
+        <img src="<%= site.logo %>" alt="" class="h-7 w-7 object-contain" aria-hidden="true">
+        <span class="font-semibold text-purple-300"><%= site.name %></span>
+        <span class="rounded-full border border-purple-650/40 px-2.5 py-0.5 text-[10px] uppercase tracking-widest text-secondary">admin</span>
+      </a>
+
+      <ul class="flex flex-wrap items-center gap-1">
+        <li><a href="/admin/accueil" class="nav-link <%= currentPath.startsWith('/admin/accueil') ? 'nav-link-active' : '' %>">Accueil</a></li>
+        <li><a href="/admin/projets" class="nav-link <%= currentPath.startsWith('/admin/projets') ? 'nav-link-active' : '' %>">Projets</a></li>
+        <li><a href="/admin/contacts" class="nav-link <%= currentPath.startsWith('/admin/contacts') ? 'nav-link-active' : '' %>">Contacts</a></li>
+        <li><a href="/admin/messages" class="nav-link <%= currentPath.startsWith('/admin/messages') ? 'nav-link-active' : '' %>">Messages</a></li>
+      </ul>
+
+      <div class="flex items-center gap-3">
+        <a href="/" class="btn-ghost btn-sm">Voir le site</a>
+        <form method="POST" action="/admin/logout">
+          <button type="submit" class="focus-ring rounded-lg px-3 py-2 text-sm text-secondary transition-colors hover:text-primary">
+            Déconnexion
+          </button>
+        </form>
+      </div>
+    </nav>
+  </header>
+
+  <main class="mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:px-8">

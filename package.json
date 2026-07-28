@@ -1,0 +1,28 @@
+{
+  "name": "milym",
+  "version": "1.0.0",
+  "description": "milym — portfolio sombre, futuriste et minimaliste avec centre de contrôle.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "build:css": "tailwindcss -i ./src/input.css -o ./public/css/output.css --minify",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./public/css/output.css --watch"
+  },
+  "author": "Charly",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^13.0.1",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "express-session": "^1.19.0",
+    "helmet": "^8.0.0",
+    "multer": "^2.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "tailwindcss": "^3.4.17"
+  }
+}

@@ -1,0 +1,21 @@
+<%- include('partials/header') %>
+
+<section class="relative flex min-h-screen items-center justify-center px-5 py-28 sm:px-8">
+  <div class="halo animate-pulse-halo left-1/2 top-1/2 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2" aria-hidden="true"></div>
+
+  <div class="glass-panel animate-float relative max-w-lg px-8 py-14 text-center sm:px-14">
+    <div class="glass-shine" aria-hidden="true"></div>
+    <div class="glass-edge-top" aria-hidden="true"></div>
+
+    <div class="relative z-10 flex flex-col items-center gap-6">
+      <p class="bg-gradient-to-r from-purple-300 via-purple-400 to-purple-500 bg-clip-text text-7xl font-extrabold text-transparent sm:text-8xl">404</p>
+      <h1 class="text-xl font-semibold text-primary">Page introuvable</h1>
+      <p class="text-sm leading-relaxed text-secondary">
+        La page que vous cherchez semble s'être perdue dans le vide numérique.
+      </p>
+      <a href="/" class="btn-primary mt-2">Retour à l'accueil</a>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

@@ -3,7 +3,7 @@
 <!-- Particules discrètes (dessinées en JS, désactivées si prefers-reduced-motion) -->
 <canvas id="particles" class="pointer-events-none fixed inset-0 -z-10" aria-hidden="true"></canvas>
 
-<section class="relative flex min-h-screen items-center justify-center px-5 py-28 sm:px-8">
+<section class="relative flex min-h-[100svh] items-center justify-center px-5 py-24 sm:px-8 sm:py-28">
   <!-- Halo principal derrière le panneau -->
   <div class="halo animate-pulse-halo left-1/2 top-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2" aria-hidden="true"></div>
 
@@ -11,7 +11,7 @@
   <div class="w-full max-w-2xl" style="perspective: 1100px;" data-tilt-scene>
     <!-- Le flottement est porté par ce conteneur pour se combiner à l'inclinaison -->
     <div class="animate-float" style="transform-style: preserve-3d;">
-      <div id="glass-panel" class="glass-panel-3d px-6 py-14 text-center sm:px-14 sm:py-16">
+      <div id="glass-panel" class="glass-panel-3d px-6 py-10 text-center sm:px-14 sm:py-16">
         <!-- Matière du verre : fond, grain, arête lumineuse et reflets -->
         <div class="glass-surface" aria-hidden="true">
           <div class="glass-glare"></div>
@@ -19,7 +19,7 @@
         </div>
 
         <div class="glass-depth relative z-10 flex flex-col items-center gap-6">
-        <img src="<%= site.logo %>" alt="Logo de <%= site.name %>" class="h-64 w-64 object-contain drop-shadow-[0_0_18px_rgba(168,85,247,0.6)] sm:h-80 sm:w-80">
+        <img src="<%= site.logo %>" alt="Logo de <%= site.name %>" class="h-40 w-40 object-contain drop-shadow-[0_0_18px_rgba(168,85,247,0.6)] sm:h-80 sm:w-80">
 
         <h1 class="text-3xl font-bold tracking-tight sm:text-5xl">
           <span class="bg-gradient-to-r from-purple-300 via-purple-400 to-purple-500 bg-clip-text text-transparent">
@@ -41,8 +41,8 @@
     </div>
   </div>
 
-  <!-- Indicateur de défilement -->
-  <a href="#a-propos" class="focus-ring absolute bottom-8 left-1/2 -translate-x-1/2 rounded-full p-2 text-secondary transition-colors hover:text-purple-400" aria-label="Faire défiler vers la section À propos">
+  <!-- Indicateur de défilement (masqué sur mobile où il chevauche le panneau) -->
+  <a href="#a-propos" class="focus-ring absolute bottom-8 left-1/2 hidden -translate-x-1/2 rounded-full p-2 text-secondary transition-colors hover:text-purple-400 md:block" aria-label="Faire défiler vers la section À propos">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 animate-bounce" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
     </svg>

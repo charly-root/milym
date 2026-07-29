@@ -334,6 +334,34 @@
     draw();
   }
 
+  /* ── Transitions entre les pages ─────────────────────────────────────── */
+  // À l'arrivée, la page se matérialise (rideau + scan, en CSS via body.page-fx).
+  // Au départ, le contenu se dématérialise brièvement avant la navigation.
+  if (!prefersReducedMotion) {
+    document.addEventListener("click", (e) => {
+      const link = e.target.closest("a[href]");
+      if (!link || e.defaultPrevented || e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (link.target && link.target !== "_self") return;
+
+      const url = new URL(link.href, window.location.href);
+      if (url.origin !== window.location.origin) return;
+      // Les ancres de la page courante défilent normalement
+      if (url.pathname === window.location.pathname && url.hash) return;
+
+      e.preventDefault();
+      document.body.classList.add("page-leaving");
+      setTimeout(() => {
+        window.location.href = url.href;
+      }, 200);
+    });
+
+    // Retour via le cache du navigateur : réafficher la page normalement
+    window.addEventListener("pageshow", () => {
+      document.body.classList.remove("page-leaving");
+    });
+  }
+
   /* ── Apparition des sections au scroll ───────────────────────────────── */
   const revealElements = document.querySelectorAll(".reveal");
   if (revealElements.length > 0) {

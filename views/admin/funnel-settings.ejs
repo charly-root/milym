@@ -1,0 +1,72 @@
+<%- include('../partials/admin-header') %>
+
+<div class="mx-auto max-w-2xl">
+  <h1 class="text-2xl font-bold">Textes & tarifs du tunnel</h1>
+  <p class="mt-1 text-sm text-secondary">
+    Les mots du parcours et la façon dont les prix se transforment en fourchette.
+  </p>
+
+  <% if (saved) { %>
+    <div class="mt-6 rounded-xl border border-purple-500/40 bg-purple-650/10 p-4 text-sm text-purple-300" role="status">
+      Modifications enregistrées.
+    </div>
+  <% } %>
+
+  <% if (errors.length > 0) { %>
+    <div class="mt-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4" role="alert">
+      <ul class="list-inside list-disc text-sm text-red-400">
+        <% errors.forEach(error => { %><li><%= error %></li><% }) %>
+      </ul>
+    </div>
+  <% } %>
+
+  <form method="POST" action="/admin/tunnel/reglages" class="mt-6 flex flex-col gap-6">
+    <%- include('../partials/csrf') %>
+    <fieldset class="glass-card flex flex-col gap-6 p-6 sm:p-8">
+      <legend class="field-label mb-1">Textes affichés</legend>
+
+      <% textFields.forEach(([key, label, maxLength, rows]) => { %>
+        <div class="flex flex-col gap-2">
+          <label for="<%= key %>" class="field-label"><%= label %></label>
+          <% if (rows > 1) { %>
+            <textarea id="<%= key %>" name="<%= key %>" rows="<%= rows %>" class="field resize-y"
+                      required maxlength="<%= maxLength %>"><%= current[key] %></textarea>
+          <% } else { %>
+            <input type="text" id="<%= key %>" name="<%= key %>" class="field"
+                   required maxlength="<%= maxLength %>" value="<%= current[key] %>">
+          <% } %>
+        </div>
+      <% }) %>
+    </fieldset>
+
+    <fieldset class="glass-card flex flex-col gap-6 p-6 sm:p-8">
+      <legend class="field-label mb-1">Calcul de l'estimation</legend>
+
+      <p class="rounded-xl border border-purple-650/20 bg-background/40 p-4 text-xs leading-relaxed text-secondary">
+        Chaque prix saisi dans le tunnel est une référence. La fourchette affichée au visiteur
+        l'encadre : avec les valeurs actuelles, un prix de <strong class="text-primary">1 000 €</strong>
+        devient <strong class="text-purple-300"><%= euro(1000 * preview.funnelSpreadLow) %>
+        à <%= euro(1000 * preview.funnelSpreadHigh) %></strong>.
+      </p>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <% numberFields.forEach(([key, label, hint]) => { %>
+          <div class="flex flex-col gap-2">
+            <label for="<%= key %>" class="field-label"><%= label %></label>
+            <input type="number" id="<%= key %>" name="<%= key %>" class="field"
+                   required min="0.01" step="0.01" value="<%= current[key] %>">
+            <p class="text-xs leading-relaxed text-secondary/70"><%= hint %></p>
+          </div>
+        <% }) %>
+      </div>
+    </fieldset>
+
+    <div class="flex flex-wrap gap-3">
+      <button type="submit" class="btn-primary">Enregistrer</button>
+      <a href="/admin/tunnel" class="btn-ghost">Retour au tunnel</a>
+      <a href="/creer-mon-projet" target="_blank" rel="noopener" class="btn-ghost">Voir le tunnel</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/admin-footer') %>

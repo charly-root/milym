@@ -34,6 +34,7 @@
         <% } %>
 
         <form method="POST" action="/admin/login" class="flex flex-col gap-4">
+          <%- include('../partials/csrf') %>
           <div class="flex flex-col gap-2">
             <label for="password" class="field-label">Mot de passe</label>
             <input type="password" id="password" name="password" class="field" required autocomplete="current-password" autofocus>

@@ -1,0 +1,179 @@
+<%- include('../partials/admin-header') %>
+
+<%
+  const isNew = !question.id;
+  const action = isNew ? "/admin/tunnel/questions" : `/admin/tunnel/questions/${question.id}`;
+  const cfg = question.config || {};
+%>
+
+<div class="mx-auto max-w-3xl">
+  <h1 class="text-2xl font-bold"><%= isNew ? "Nouvelle question" : "Modifier la question" %></h1>
+  <p class="mt-1 text-sm text-secondary">
+    Le type de champ commande les réglages affichés plus bas.
+  </p>
+
+  <% if (errors.length > 0) { %>
+    <div class="mt-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4" role="alert">
+      <ul class="list-inside list-disc text-sm text-red-400">
+        <% errors.forEach(error => { %><li><%= error %></li><% }) %>
+      </ul>
+    </div>
+  <% } %>
+
+  <form method="POST" action="<%= action %>" class="mt-6 flex flex-col gap-6" data-question-form>
+    <%- include('../partials/csrf') %>
+    <!-- ── Énoncé ─────────────────────────────────────────────────────── -->
+    <div class="glass-card flex flex-col gap-6 p-6 sm:p-8">
+      <div class="flex flex-col gap-2">
+        <label for="label" class="field-label">Question posée</label>
+        <input type="text" id="label" name="label" class="field" required maxlength="200" value="<%= question.label %>"
+               placeholder="Combien de produits à vendre ?">
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="help" class="field-label">Précision <span class="text-secondary">(facultatif)</span></label>
+        <textarea id="help" name="help" rows="2" class="field resize-y" maxlength="300"
+                  placeholder="Affichée en petit sous la question."><%= question.help %></textarea>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div class="flex flex-col gap-2">
+          <label for="stepId" class="field-label">Étape</label>
+          <select id="stepId" name="stepId" class="field">
+            <% steps.forEach((step, index) => { %>
+              <option value="<%= step.id %>" <%= question.stepId === step.id ? "selected" : "" %>>
+                <%= index + 1 %>. <%= step.title %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label for="type" class="field-label">Type de champ</label>
+          <select id="type" name="type" class="field" data-question-type>
+            <% questionTypes.forEach(([id, typeLabel]) => { %>
+              <option value="<%= id %>" <%= question.type === id ? "selected" : "" %>><%= typeLabel %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label for="position" class="field-label">Ordre dans l'étape</label>
+          <input type="number" id="position" name="position" class="field" min="0" max="999" step="1"
+                 value="<%= question.position %>">
+        </div>
+      </div>
+
+      <label class="flex items-center gap-3 text-sm text-primary">
+        <input type="checkbox" name="required" value="1" class="h-4 w-4" style="accent-color:#a855f7"
+               <%= question.required ? "checked" : "" %>>
+        Réponse obligatoire pour continuer
+      </label>
+
+      <div class="flex flex-col gap-2">
+        <label for="qkey" class="field-label">
+          Identifiant technique <span class="text-secondary">(facultatif)</span>
+        </label>
+        <input type="text" id="qkey" name="qkey" class="field" maxlength="80" value="<%= question.qkey %>"
+               placeholder="Généré depuis la question">
+        <p class="text-xs text-secondary/70">
+          Le changer rend illisibles les réponses des demandes déjà reçues pour cette question.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── À qui la question est posée ─────────────────────────────────── -->
+    <fieldset class="glass-card flex flex-col gap-3 p-6 sm:p-8">
+      <legend class="field-label mb-1">Types de projet concernés</legend>
+      <p class="text-xs text-secondary/70">
+        Aucune case cochée : la question est posée à tout le monde.
+      </p>
+      <div class="mt-2 grid gap-2 sm:grid-cols-2">
+        <% types.forEach(type => { %>
+          <label class="flex items-center gap-3 rounded-xl border border-purple-650/20 bg-background/40 p-3 text-sm text-primary">
+            <input type="checkbox" name="showFor" value="<%= type.slug %>" class="h-4 w-4" style="accent-color:#a855f7"
+                   <%= question.showFor.includes(type.slug) ? "checked" : "" %>>
+            <%- include('../partials/icon', { name: type.icon, classes: 'h-4 w-4 text-purple-400' }) %>
+            <%= type.label %>
+          </label>
+        <% }) %>
+      </div>
+    </fieldset>
+
+    <!-- ── Réglages du champ nombre ───────────────────────────────────── -->
+    <fieldset class="glass-card flex flex-col gap-4 p-6 sm:p-8" data-for-type="number" hidden>
+      <legend class="field-label mb-1">Réglages du compteur</legend>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div class="flex flex-col gap-2">
+          <label for="numberMin" class="field-label">Minimum</label>
+          <input type="number" id="numberMin" name="numberMin" class="field" min="0" max="9999" step="1"
+                 value="<%= cfg.min === undefined ? 1 : cfg.min %>">
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="numberMax" class="field-label">Maximum</label>
+          <input type="number" id="numberMax" name="numberMax" class="field" min="1" max="9999" step="1"
+                 value="<%= cfg.max === undefined ? 60 : cfg.max %>">
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="numberDefault" class="field-label">Valeur de départ</label>
+          <input type="number" id="numberDefault" name="numberDefault" class="field" min="0" max="9999" step="1"
+                 value="<%= cfg.default === undefined ? 1 : cfg.default %>">
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="numberIncluded" class="field-label">Unités comprises</label>
+          <input type="number" id="numberIncluded" name="numberIncluded" class="field" min="0" max="9999" step="1"
+                 value="<%= cfg.included === undefined ? 0 : cfg.included %>">
+          <p class="text-xs text-secondary/70">Non facturées.</p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="numberPerUnit" class="field-label">Prix par unité au-delà (€)</label>
+          <input type="number" id="numberPerUnit" name="numberPerUnit" class="field" min="0" max="100000" step="10"
+                 value="<%= cfg.perUnit === undefined ? 100 : cfg.perUnit %>">
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ── Réglages des champs texte ──────────────────────────────────── -->
+    <fieldset class="glass-card flex flex-col gap-4 p-6 sm:p-8" data-for-type="text email tel textarea" hidden>
+      <legend class="field-label mb-1">Réglages du champ texte</legend>
+      <div class="flex max-w-xs flex-col gap-2">
+        <label for="maxLength" class="field-label">Longueur maximale</label>
+        <input type="number" id="maxLength" name="maxLength" class="field" min="10" max="5000" step="10"
+               value="<%= cfg.maxLength === undefined ? 200 : cfg.maxLength %>">
+      </div>
+    </fieldset>
+
+    <!-- ── Réponses proposées ─────────────────────────────────────────── -->
+    <fieldset class="glass-card flex flex-col gap-4 p-6 sm:p-8" data-for-type="radio checkbox" hidden>
+      <legend class="field-label mb-1">Réponses proposées</legend>
+      <p class="text-xs leading-relaxed text-secondary/70">
+        Le prix s'ajoute au total quand la réponse est retenue. Le coefficient multiplie
+        l'ensemble du budget — laissez 1 pour ne rien changer. La maintenance mensuelle est
+        facturée à part et remplace celle des autres réponses.
+      </p>
+
+      <div class="flex flex-col gap-3" data-options>
+        <% options.forEach(option => { %>
+          <%- include('../partials/funnel-option-row', { option }) %>
+        <% }) %>
+      </div>
+
+      <button type="button" class="btn-ghost btn-sm self-start" data-add-option>+ Ajouter une réponse</button>
+    </fieldset>
+
+    <div class="flex flex-wrap gap-3">
+      <button type="submit" class="btn-primary"><%= isNew ? "Créer la question" : "Enregistrer" %></button>
+      <a href="/admin/tunnel" class="btn-ghost">Annuler</a>
+    </div>
+  </form>
+</div>
+
+<!-- Modèle d'une ligne de réponse, cloné par public/js/admin.js. Les champs
+     d'un <template> ne sont pas envoyés tant qu'il n'est pas cloné. -->
+<template data-option-template>
+  <%- include('../partials/funnel-option-row', { option: { value: "", label: "", help: "", icon: "etincelles", price: 0, factor: 1, monthlyMin: 0, monthlyMax: 0 } }) %>
+</template>
+
+<script src="/js/admin-funnel.js" defer></script>
+
+<%- include('../partials/admin-footer') %>

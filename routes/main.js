@@ -1,8 +1,9 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 
-const { projectQueries, messageQueries } = require("../data/db");
+const { projectQueries, messageQueries, leadQueries } = require("../data/db");
 const { categories } = require("../data/seed");
+const funnel = require("../lib/funnel");
 
 const router = express.Router();
 
@@ -34,6 +35,63 @@ router.get("/projets", (req, res) => {
 
 router.get("/contact", (req, res) => {
   res.render("contact", { pageTitle: "Contact" });
+});
+
+// ── Tunnel « Créer mon projet » ─────────────────────────────────────────────
+// Le questionnaire est rechargé depuis la base à chaque requête : une
+// modification faite dans /admin/tunnel est visible sans redémarrage.
+function renderFunnel(res, definition, { errors = {}, values = {}, status = 200 } = {}) {
+  res.status(status).render("funnel", {
+    pageTitle: res.locals.settings.funnelTitle,
+    steps: definition.steps,
+    errors,
+    values
+  });
+}
+
+router.get("/creer-mon-projet", (req, res) => renderFunnel(res, funnel.load()));
+
+// Le parcours guidé envoie du JSON ; sans JavaScript, le formulaire part en
+// POST classique et reçoit une page en retour.
+router.post("/creer-mon-projet", contactLimiter, (req, res) => {
+  const wantsJson = Boolean(req.is("application/json"));
+  const definition = funnel.load();
+  const { errors, data } = funnel.parseAnswers(req.body, definition);
+
+  if (Object.keys(errors).length > 0) {
+    if (wantsJson) return res.status(400).json({ ok: false, errors });
+    return renderFunnel(res, definition, { errors, values: req.body, status: 400 });
+  }
+
+  // L'estimation est toujours recalculée ici : celle affichée pendant le
+  // parcours n'est qu'un aperçu et ne peut pas être considérée comme fiable
+  const quote = funnel.estimate(data, definition);
+  if (!quote) {
+    const typeError = { type: "Choisissez un type de projet." };
+    if (wantsJson) return res.status(400).json({ ok: false, errors: typeError });
+    return renderFunnel(res, definition, { errors: typeError, values: req.body, status: 400 });
+  }
+
+  leadQueries.create({
+    type: data.type,
+    name: data.name,
+    email: data.email,
+    company: data.company || null,
+    phone: data.phone || null,
+    details: data.details || null,
+    answers: data,
+    estimateMin: quote.min,
+    estimateMax: quote.max,
+    monthlyMin: quote.monthly[0],
+    monthlyMax: quote.monthly[1]
+  });
+
+  console.log(
+    `Nouvelle demande ${data.type} de ${data.name} <${data.email}> : ${quote.min}–${quote.max} €`
+  );
+
+  if (wantsJson) return res.json({ ok: true, quote });
+  res.render("quote", { pageTitle: "Votre estimation", quote });
 });
 
 // ── Formulaire de contact ───────────────────────────────────────────────────

@@ -1,0 +1,51 @@
+<%
+  // Une ligne de réponse dans le formulaire de question. Les champs sont
+  // répétés sans indice : l'ordre du DOM devient l'ordre d'affichage.
+%>
+<div class="option-row" data-option-row>
+  <input type="hidden" name="optValue" value="<%= option.value %>">
+
+  <div class="flex flex-wrap items-end gap-3">
+    <div class="option-cell min-w-[12rem] flex-1">
+      <label>Réponse</label>
+      <input type="text" name="optLabel" class="field" maxlength="160" value="<%= option.label %>"
+             placeholder="Blog ou fil d'actualités">
+    </div>
+
+    <div class="option-cell w-40">
+      <label>Icône</label>
+      <select name="optIcon" class="field">
+        <% iconChoices.forEach(([key, iconLabel]) => { %>
+          <option value="<%= key %>" <%= option.icon === key ? "selected" : "" %>><%= iconLabel %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <button type="button" class="btn-danger btn-sm shrink-0" data-remove-option>Retirer</button>
+  </div>
+
+  <div class="option-cell">
+    <label>Précision <span class="normal-case tracking-normal">(facultatif)</span></label>
+    <input type="text" name="optHelp" class="field" maxlength="200" value="<%= option.help %>"
+           placeholder="Publier des actualités régulièrement">
+  </div>
+
+  <div class="grid gap-3 sm:grid-cols-4">
+    <div class="option-cell">
+      <label>Prix (€)</label>
+      <input type="number" name="optPrice" class="field" min="0" max="500000" step="10" value="<%= option.price %>">
+    </div>
+    <div class="option-cell">
+      <label>Coefficient</label>
+      <input type="number" name="optFactor" class="field" min="0.1" max="10" step="0.05" value="<%= option.factor %>">
+    </div>
+    <div class="option-cell">
+      <label>Maintenance min. (€/mois)</label>
+      <input type="number" name="optMonthlyMin" class="field" min="0" max="100000" step="10" value="<%= option.monthlyMin %>">
+    </div>
+    <div class="option-cell">
+      <label>Maintenance max. (€/mois)</label>
+      <input type="number" name="optMonthlyMax" class="field" min="0" max="100000" step="10" value="<%= option.monthlyMax %>">
+    </div>
+  </div>
+</div>

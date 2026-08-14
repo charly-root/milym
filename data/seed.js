@@ -127,7 +127,26 @@ const settings = {
   stat2Value: "10+",
   stat2Label: "Technologies maîtrisées",
   stat3Value: "100%",
-  stat3Label: "Curiosité et passion"
+  stat3Label: "Curiosité et passion",
+
+  // Tunnel « Créer mon projet » : textes et réglages de calcul, modifiables
+  // depuis /admin/tunnel/reglages. Le questionnaire lui-même vit dans ses
+  // propres tables (voir lib/funnel-seed.js).
+  funnelCtaLabel: "Créer mon projet",
+  funnelTitle: "Créer mon projet",
+  funnelIntro:
+    "Quelques questions pour cerner votre besoin, et vous repartez avec une estimation de budget et de délai. Comptez trois minutes, sans engagement.",
+  funnelResultLabel: "Estimation",
+  funnelResultTitle: "Votre estimation",
+  funnelResultIntro: "Demande reçue, merci. Voici la fourchette calculée à partir de vos réponses.",
+  funnelDisclaimer:
+    "Cette estimation est indicative et ne vaut pas devis. Je reviens vers vous sous 48 heures avec une proposition chiffrée précise après un échange.",
+  // Coefficients encadrant chaque prix de référence pour former la fourchette
+  funnelSpreadLow: "0.85",
+  funnelSpreadHigh: "1.35",
+  // Le délai indicatif se déduit du budget médian divisé par ces montants
+  funnelWeeksLowDivisor: "3000",
+  funnelWeeksHighDivisor: "1600"
 };
 
 module.exports = { projects, contacts, categories, contactKinds, settings };

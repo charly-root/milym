@@ -1,7 +1,7 @@
 <%- include('partials/header') %>
 
 <section class="mx-auto max-w-6xl px-5 pb-32 pt-36 sm:px-8">
-  <div class="reveal text-center">
+  <div class="materialize text-center">
     <h1 class="section-title">Mes projets</h1>
     <p class="mx-auto mt-5 max-w-2xl leading-relaxed text-secondary">
       Découvrez une sélection de projets que j'ai imaginés, développés et améliorés au fil du temps.
@@ -9,7 +9,7 @@
   </div>
 
   <!-- Filtres par catégorie -->
-  <div class="reveal mt-12 flex flex-wrap items-center justify-center gap-3" role="group" aria-label="Filtrer les projets par catégorie">
+  <div class="materialize mt-12 flex flex-wrap items-center justify-center gap-3" role="group" aria-label="Filtrer les projets par catégorie">
     <% categories.forEach((category, i) => { %>
       <button type="button"
               class="filter-btn <%= i === 0 ? 'filter-btn-active' : '' %>"
@@ -23,7 +23,7 @@
   <!-- Grille de projets -->
   <div id="projects-grid" class="mt-14 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
     <% projects.forEach(project => { %>
-      <article class="project-card reveal" data-category="<%= project.category %>">
+      <article class="project-card materialize" data-category="<%= project.category %>">
         <div class="overflow-hidden rounded-t-2xl">
           <img src="<%= project.image %>"
                alt="Aperçu du projet <%= project.title %>"

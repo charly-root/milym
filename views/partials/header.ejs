@@ -10,8 +10,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/output.css">
   <link rel="icon" href="<%= site.logo %>">
+  <noscript>
+    <style>
+      /* Personne ne matérialise les blocs : ils restent visibles */
+      .materialize { visibility: visible; }
+      /* Tunnel de vente : le questionnaire s'affiche d'un seul tenant et la
+         barre de pilotage, sans effet, disparaît (voir views/funnel.ejs) */
+      .funnel-step { display: block; }
+      .funnel-chrome { display: none; }
+    </style>
+  </noscript>
 </head>
-<body class="page-fx bg-background font-sans text-primary antialiased min-h-screen flex flex-col overflow-x-hidden">
+<body class="bg-background font-sans text-primary antialiased min-h-screen flex flex-col overflow-x-hidden">
 
   <!-- Décor d'arrière-plan partagé : grille futuriste + halos violets -->
   <div class="pointer-events-none fixed inset-0 -z-10" aria-hidden="true">
@@ -25,7 +35,7 @@
   <!-- Navigation -->
   <header>
     <nav id="navbar" class="fixed inset-x-0 top-0 z-50 transition-all duration-500" aria-label="Navigation principale">
-      <div class="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
+      <div class="materialize mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
         <a href="/" class="flex items-center gap-2.5 focus-ring rounded-lg" aria-label="Retour à l'accueil">
           <img src="<%= site.logo %>" alt="" class="h-8 w-8 object-contain" aria-hidden="true">
           <span class="text-lg font-semibold tracking-wide text-purple-300"><%= site.name %></span>
@@ -36,6 +46,7 @@
           <li><a href="/" class="nav-link <%= currentPath === '/' ? 'nav-link-active' : '' %>">Accueil</a></li>
           <li><a href="/projets" class="nav-link <%= currentPath === '/projets' ? 'nav-link-active' : '' %>">Projets</a></li>
           <li><a href="/contact" class="nav-link <%= currentPath === '/contact' ? 'nav-link-active' : '' %>">Contact</a></li>
+          <li class="ml-2"><a href="/creer-mon-projet" class="btn-primary btn-sm"><%= settings.funnelCtaLabel %></a></li>
         </ul>
 
         <!-- Bouton burger mobile -->
@@ -53,6 +64,7 @@
           <li><a href="/" class="nav-link block text-base <%= currentPath === '/' ? 'nav-link-active' : '' %>">Accueil</a></li>
           <li><a href="/projets" class="nav-link block text-base <%= currentPath === '/projets' ? 'nav-link-active' : '' %>">Projets</a></li>
           <li><a href="/contact" class="nav-link block text-base <%= currentPath === '/contact' ? 'nav-link-active' : '' %>">Contact</a></li>
+          <li class="mt-2"><a href="/creer-mon-projet" class="btn-primary w-full"><%= settings.funnelCtaLabel %></a></li>
         </ul>
       </div>
     </nav>

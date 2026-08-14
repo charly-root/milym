@@ -31,11 +31,14 @@
         <li><a href="/admin/projets" class="nav-link <%= currentPath.startsWith('/admin/projets') ? 'nav-link-active' : '' %>">Projets</a></li>
         <li><a href="/admin/contacts" class="nav-link <%= currentPath.startsWith('/admin/contacts') ? 'nav-link-active' : '' %>">Contacts</a></li>
         <li><a href="/admin/messages" class="nav-link <%= currentPath.startsWith('/admin/messages') ? 'nav-link-active' : '' %>">Messages</a></li>
+        <li><a href="/admin/tunnel" class="nav-link <%= currentPath.startsWith('/admin/tunnel') ? 'nav-link-active' : '' %>">Tunnel</a></li>
+        <li><a href="/admin/demandes" class="nav-link <%= currentPath.startsWith('/admin/demandes') ? 'nav-link-active' : '' %>">Demandes</a></li>
       </ul>
 
       <div class="flex items-center gap-3">
         <a href="/" class="btn-ghost btn-sm">Voir le site</a>
         <form method="POST" action="/admin/logout">
+          <%- include('csrf') %>
           <button type="submit" class="focus-ring rounded-lg px-3 py-2 text-sm text-secondary transition-colors hover:text-primary">
             Déconnexion
           </button>

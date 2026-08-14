@@ -1,0 +1,162 @@
+<%- include('partials/header') %>
+
+<%
+  // La frise compte une pastille par étape, plus celle de l'estimation finale
+  const milestones = [...steps.map(s => s.shortLabel), settings.funnelResultLabel];
+%>
+
+<section class="relative mx-auto max-w-4xl px-5 pb-40 pt-36 sm:px-8">
+  <div class="halo animate-pulse-halo left-1/2 top-52 h-[32rem] w-[32rem] -translate-x-1/2" aria-hidden="true"></div>
+
+  <div class="materialize text-center">
+    <h1 class="section-title"><%= settings.funnelTitle %></h1>
+    <p class="mx-auto mt-5 max-w-2xl leading-relaxed text-secondary"><%= settings.funnelIntro %></p>
+  </div>
+
+  <noscript>
+    <p class="mt-10 rounded-xl border border-purple-500/40 bg-purple-650/10 p-5 text-sm text-secondary">
+      Le parcours guidé et l'estimation en direct ont besoin de JavaScript. Le questionnaire
+      reste utilisable d'un seul tenant ci-dessous : répondez à ce qui vous concerne, puis
+      envoyez. Vous pouvez aussi m'écrire depuis la
+      <a href="/contact" class="text-purple-300 underline decoration-purple-650/50 underline-offset-2">page contact</a>.
+    </p>
+  </noscript>
+
+  <% if (Object.keys(errors).length > 0) { %>
+    <div class="mt-10 rounded-xl border border-red-500/40 bg-red-500/5 p-5">
+      <p class="text-sm font-semibold text-red-400">Le formulaire n'a pas pu être envoyé :</p>
+      <ul class="mt-2 list-inside list-disc text-sm text-red-400/90">
+        <% Object.values(errors).forEach(message => { %><li><%= message %></li><% }) %>
+      </ul>
+    </div>
+  <% } %>
+
+  <form id="funnel" class="materialize mt-12" method="POST" action="/creer-mon-projet" novalidate>
+    <!-- Frise de progression : masquée sans JavaScript, où toutes les étapes s'affichent -->
+    <div class="funnel-chrome">
+      <ol class="funnel-dots" id="funnel-dots">
+        <% milestones.forEach((label, index) => { %>
+          <li class="funnel-dot" data-state="<%= index === 0 ? 'current' : 'todo' %>">
+            <span class="funnel-dot-mark"><%= index + 1 %></span>
+            <span class="funnel-dot-label"><%= label %></span>
+          </li>
+        <% }) %>
+      </ol>
+    </div>
+
+    <% steps.forEach((step, index) => { %>
+      <section class="funnel-step" data-step="<%= index %>" <%= index === 0 ? 'data-active' : '' %>>
+        <p class="text-xs uppercase tracking-widest text-purple-300/70">
+          Étape <%= index + 1 %> sur <%= milestones.length %>
+        </p>
+        <h2 class="mt-2 text-xl font-semibold text-primary sm:text-2xl"><%= step.title %></h2>
+        <p class="mt-2 text-sm text-secondary"><%= step.description %></p>
+
+        <div class="mt-10 flex flex-col gap-10">
+          <% step.questions.forEach(q => { %>
+            <%- include('partials/funnel-question', { q }) %>
+          <% }) %>
+        </div>
+
+        <!-- Rappel des réponses déjà données, rempli par public/js/funnel.js -->
+        <div class="funnel-chrome mt-12 border-t border-purple-650/15 pt-6" data-recap hidden>
+          <p class="text-xs uppercase tracking-widest text-secondary">Vos choix</p>
+          <div class="mt-3 flex flex-wrap gap-2" data-recap-chips></div>
+        </div>
+      </section>
+    <% }) %>
+
+    <!-- Estimation : remplie par public/js/funnel.js avec les chiffres du serveur -->
+    <section class="funnel-step" data-step="<%= steps.length %>" id="funnel-result" aria-live="polite">
+      <p class="text-xs uppercase tracking-widest text-purple-300/70">
+        Étape <%= milestones.length %> sur <%= milestones.length %>
+      </p>
+      <h2 class="mt-2 text-xl font-semibold text-primary sm:text-2xl"><%= settings.funnelResultTitle %></h2>
+      <p class="mt-2 text-sm text-secondary"><%= settings.funnelResultIntro %></p>
+
+      <div class="glass-panel relative mt-10 p-6 sm:p-10">
+        <div class="glass-edge-top" aria-hidden="true"></div>
+
+        <div class="relative z-10">
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-widest text-secondary">Budget de réalisation</p>
+              <p class="mt-2 text-3xl font-bold text-purple-300 sm:text-4xl" id="quote-range">—</p>
+              <p class="mt-1 text-xs text-secondary">Montants hors taxes, à affiner ensemble.</p>
+            </div>
+            <div class="flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-500/40 bg-purple-650/20 text-purple-200" aria-hidden="true">
+              <%- include('partials/icon', { name: 'euro', classes: 'h-7 w-7' }) %>
+            </div>
+          </div>
+
+          <!-- Situe la fourchette sur l'échelle de mes interventions -->
+          <div class="mt-7">
+            <div class="funnel-gauge">
+              <div class="funnel-gauge-fill" id="quote-gauge"></div>
+            </div>
+            <div class="mt-2 flex justify-between text-[10px] uppercase tracking-widest text-secondary/70">
+              <span>Projet simple</span>
+              <span>Projet d'envergure</span>
+            </div>
+          </div>
+
+          <dl class="mt-8 grid gap-4 sm:grid-cols-2">
+            <div class="flex items-center gap-3 rounded-xl border border-purple-650/20 bg-background/40 p-4">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-purple-650/25 bg-purple-650/10 text-purple-400" aria-hidden="true">
+                <%- include('partials/icon', { name: 'calendrier', classes: 'h-5 w-5' }) %>
+              </span>
+              <div>
+                <dt class="text-xs uppercase tracking-widest text-secondary">Délai estimé</dt>
+                <dd class="mt-0.5 font-semibold text-primary" id="quote-weeks">—</dd>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 rounded-xl border border-purple-650/20 bg-background/40 p-4">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-purple-650/25 bg-purple-650/10 text-purple-400" aria-hidden="true">
+                <%- include('partials/icon', { name: 'cle', classes: 'h-5 w-5' }) %>
+              </span>
+              <div>
+                <dt class="text-xs uppercase tracking-widest text-secondary">Maintenance</dt>
+                <dd class="mt-0.5 font-semibold text-primary" id="quote-monthly">—</dd>
+              </div>
+            </div>
+          </dl>
+
+          <h3 class="mt-8 text-sm font-semibold text-primary">Ce qui compose ce montant</h3>
+          <ul class="mt-4 flex flex-col gap-3.5" id="quote-breakdown"></ul>
+
+          <p class="mt-8 text-xs leading-relaxed text-secondary"><%= settings.funnelDisclaimer %></p>
+
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a href="/projets" class="btn-primary">Voir mes réalisations</a>
+            <a href="/" class="btn-ghost">Retour à l'accueil</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="field-error mt-6" data-error-for="global" hidden></p>
+
+    <!-- Le bouton d'envoi de la barre de pilotage étant masqué sans JavaScript,
+         celui-ci n'existe que dans ce cas -->
+    <noscript>
+      <button type="submit" class="btn-primary mt-10">Envoyer et voir l'estimation</button>
+    </noscript>
+
+    <!-- Barre de pilotage : estimation en direct et navigation entre les étapes -->
+    <div class="funnel-bar funnel-chrome">
+      <div class="min-w-0">
+        <p class="text-[10px] uppercase tracking-widest text-secondary">Estimation en cours</p>
+        <p class="truncate font-semibold text-purple-300" id="funnel-live">Choisissez un type de projet</p>
+      </div>
+      <div class="flex shrink-0 items-center gap-3">
+        <button type="button" class="btn-ghost btn-sm" id="funnel-prev" hidden>Précédent</button>
+        <button type="button" class="btn-primary btn-sm" id="funnel-next">Continuer</button>
+        <button type="submit" class="btn-primary btn-sm" id="funnel-submit" hidden>Voir mon estimation</button>
+      </div>
+    </div>
+  </form>
+</section>
+
+<script src="/js/funnel.js" defer></script>
+
+<%- include('partials/footer') %>

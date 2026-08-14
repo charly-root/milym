@@ -1,0 +1,13 @@
+<%
+  // Choix d'une icône parmi le jeu de lib/icons.js, sous forme de grille
+  // cliquable. Paramètres : name (nom du champ), selected (clé retenue).
+%>
+<div class="grid grid-cols-6 gap-2 sm:grid-cols-10">
+  <% iconChoices.forEach(([key, label]) => { %>
+    <label class="icon-pick" title="<%= label %>">
+      <input type="radio" name="<%= name %>" value="<%= key %>" class="sr-only" <%= selected === key ? "checked" : "" %>>
+      <%- include('icon', { name: key, classes: 'h-5 w-5' }) %>
+      <span class="sr-only"><%= label %></span>
+    </label>
+  <% }) %>
+</div>

@@ -15,6 +15,7 @@
   <% } %>
 
   <form method="POST" action="<%= isEdit ? '/admin/projets/' + project.id : '/admin/projets' %>" class="glass-card mt-6 grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
+    <%- include('../partials/csrf') %>
     <div class="flex flex-col gap-2 sm:col-span-2">
       <label for="title" class="field-label">Titre</label>
       <input type="text" id="title" name="title" class="field" required minlength="2" maxlength="100"

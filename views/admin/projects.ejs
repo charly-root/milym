@@ -28,6 +28,7 @@
         <div class="flex shrink-0 items-center gap-2">
           <a href="/admin/projets/<%= project.id %>/modifier" class="btn-ghost btn-sm">Modifier</a>
           <form method="POST" action="/admin/projets/<%= project.id %>/supprimer" data-confirm="Supprimer le projet « <%= project.title %> » ?">
+            <%- include('../partials/csrf') %>
             <button type="submit" class="btn-danger btn-sm">Supprimer</button>
           </form>
         </div>

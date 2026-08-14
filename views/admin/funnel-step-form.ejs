@@ -1,0 +1,61 @@
+<%- include('../partials/admin-header') %>
+
+<%
+  const isNew = !step.id;
+  const action = isNew ? "/admin/tunnel/etapes" : `/admin/tunnel/etapes/${step.id}`;
+%>
+
+<div class="mx-auto max-w-2xl">
+  <h1 class="text-2xl font-bold"><%= isNew ? "Nouvelle étape" : "Modifier l'étape" %></h1>
+  <p class="mt-1 text-sm text-secondary">
+    Une étape regroupe les questions affichées sur un même écran du tunnel.
+  </p>
+
+  <% if (errors.length > 0) { %>
+    <div class="mt-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4" role="alert">
+      <ul class="list-inside list-disc text-sm text-red-400">
+        <% errors.forEach(error => { %><li><%= error %></li><% }) %>
+      </ul>
+    </div>
+  <% } %>
+
+  <form method="POST" action="<%= action %>" class="glass-card mt-6 flex flex-col gap-6 p-6 sm:p-8">
+    <%- include('../partials/csrf') %>
+    <div class="flex flex-col gap-2">
+      <label for="title" class="field-label">Titre de l'étape</label>
+      <input type="text" id="title" name="title" class="field" required maxlength="120" value="<%= step.title %>"
+             placeholder="Précisons le périmètre">
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="flex flex-col gap-2">
+        <label for="shortLabel" class="field-label">Nom du jalon</label>
+        <input type="text" id="shortLabel" name="shortLabel" class="field" maxlength="24" value="<%= step.shortLabel %>"
+               placeholder="Périmètre">
+        <p class="text-xs text-secondary/70">Affiché sous la pastille dans la frise de progression.</p>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="position" class="field-label">Ordre d'affichage</label>
+        <input type="number" id="position" name="position" class="field" min="0" max="999" step="1"
+               value="<%= step.position %>">
+        <p class="text-xs text-secondary/70">
+          L'étape la plus basse accueille d'office le choix du type de projet.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="description" class="field-label">Phrase d'introduction</label>
+      <textarea id="description" name="description" rows="2" class="field resize-y" maxlength="300"
+                placeholder="Plus vous êtes précis, plus l'estimation sera juste."><%= step.description %></textarea>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+      <button type="submit" class="btn-primary"><%= isNew ? "Créer l'étape" : "Enregistrer" %></button>
+      <a href="/admin/tunnel" class="btn-ghost">Annuler</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/admin-footer') %>

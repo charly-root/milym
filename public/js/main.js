@@ -101,8 +101,100 @@
     });
   }
 
+  /* ── Matérialisation ──────────────────────────────────────────────────
+     Un bloc se reconstruit de haut en bas derrière une ligne de scan, sur
+     fond de grille holographique, pendant que des particules de données
+     sont absorbées. Le même effet sert à la vitre après son bris, à
+     l'arrivée sur une page et aux blocs découverts au défilement.       */
+  const canAnimate = !prefersReducedMotion && "animate" in Element.prototype;
+
+  // Au-delà, les particules deviennent coûteuses sans rien apporter de plus
+  const MAX_BIT_BURSTS = 4;
+  let activeBitBursts = 0;
+
+  const spawnDataBits = (rect) => {
+    if (activeBitBursts >= MAX_BIT_BURSTS) return;
+    activeBitBursts++;
+
+    const container = document.createElement("div");
+    container.setAttribute("aria-hidden", "true");
+    container.style.cssText =
+      `position:fixed;left:${rect.left}px;top:${rect.top}px;` +
+      `width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:41;`;
+
+    // Les grands blocs absorbent plus de fragments que les petits
+    const area = rect.width * rect.height;
+    const count = Math.round(Math.min(28, Math.max(6, area / 14000)));
+
+    for (let i = 0; i < count; i++) {
+      const bit = document.createElement("div");
+      const size = 2 + Math.random() * 4;
+      const color = Math.random() < 0.5 ? "#c084fc" : "#a855f7";
+      bit.style.cssText =
+        `position:absolute;width:${size}px;height:${size}px;background:${color};` +
+        `left:${(Math.random() * 100).toFixed(1)}%;top:${(Math.random() * 100).toFixed(1)}%;` +
+        "box-shadow:0 0 8px rgba(168,85,247,0.9);opacity:0;";
+      container.appendChild(bit);
+
+      // Chaque fragment arrive de loin et se fait absorber par le bloc
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 90 + Math.random() * 180;
+      bit.animate(
+        [
+          {
+            transform:
+              `translate(${(Math.cos(angle) * distance).toFixed(1)}px, ` +
+              `${(Math.sin(angle) * distance).toFixed(1)}px) rotate(${((Math.random() - 0.5) * 240).toFixed(0)}deg)`,
+            opacity: 0
+          },
+          { opacity: 1, offset: 0.4 },
+          { transform: "translate(0, 0) rotate(0deg)", opacity: 0 }
+        ],
+        {
+          duration: 550 + Math.random() * 650,
+          delay: Math.random() * 550,
+          easing: "cubic-bezier(0.2, 0.7, 0.3, 1)",
+          fill: "both"
+        }
+      );
+    }
+
+    document.body.appendChild(container);
+    setTimeout(() => {
+      container.remove();
+      activeBitBursts--;
+    }, 2000);
+  };
+
+  const materialize = (el) => {
+    el.classList.remove("materialize");
+    if (!canAnimate) return;
+
+    el.classList.add("materializing");
+
+    const scan = document.createElement("div");
+    scan.className = "materialize-scan";
+    scan.setAttribute("aria-hidden", "true");
+
+    const grid = document.createElement("div");
+    grid.className = "holo-grid";
+    grid.setAttribute("aria-hidden", "true");
+
+    el.append(scan, grid);
+    spawnDataBits(el.getBoundingClientRect());
+
+    const onEnd = (e) => {
+      if (e.target !== el || e.animationName !== "materialize") return;
+      el.classList.remove("materializing");
+      scan.remove();
+      grid.remove();
+      el.removeEventListener("animationend", onEnd);
+    };
+    el.addEventListener("animationend", onEnd);
+  };
+
   /* ── Easter egg : 10 clics sur la vitre et elle éclate ──────────────── */
-  if (panel && !prefersReducedMotion && "animate" in Element.prototype) {
+  if (panel && canAnimate) {
     const CLICKS_TO_SHATTER = 10;
     const RESTORE_DELAY = 5000;
     const COLS = 6;
@@ -127,72 +219,6 @@
         grid.push(row);
       }
       return grid;
-    };
-
-    // Particules de données qui convergent vers la vitre pendant sa reconstruction
-    const spawnDataBits = (rect) => {
-      const container = document.createElement("div");
-      container.setAttribute("aria-hidden", "true");
-      container.style.cssText =
-        `position:fixed;left:${rect.left}px;top:${rect.top}px;` +
-        `width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:41;`;
-
-      for (let i = 0; i < 28; i++) {
-        const bit = document.createElement("div");
-        const size = 2 + Math.random() * 4;
-        const color = Math.random() < 0.5 ? "#c084fc" : "#a855f7";
-        bit.style.cssText =
-          `position:absolute;width:${size}px;height:${size}px;background:${color};` +
-          `left:${(Math.random() * 100).toFixed(1)}%;top:${(Math.random() * 100).toFixed(1)}%;` +
-          "box-shadow:0 0 8px rgba(168,85,247,0.9);opacity:0;";
-        container.appendChild(bit);
-
-        // Chaque fragment arrive de loin et se fait absorber par la vitre
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 90 + Math.random() * 180;
-        bit.animate(
-          [
-            {
-              transform:
-                `translate(${(Math.cos(angle) * distance).toFixed(1)}px, ` +
-                `${(Math.sin(angle) * distance).toFixed(1)}px) rotate(${((Math.random() - 0.5) * 240).toFixed(0)}deg)`,
-              opacity: 0
-            },
-            { opacity: 1, offset: 0.4 },
-            { transform: "translate(0, 0) rotate(0deg)", opacity: 0 }
-          ],
-          {
-            duration: 550 + Math.random() * 650,
-            delay: Math.random() * 550,
-            easing: "cubic-bezier(0.2, 0.7, 0.3, 1)",
-            fill: "both"
-          }
-        );
-      }
-
-      document.body.appendChild(container);
-      setTimeout(() => container.remove(), 2000);
-    };
-
-    // Rematérialisation : scan de reconstruction + grille holographique + data bits
-    const materialize = () => {
-      panel.style.visibility = "";
-      panel.classList.add("glass-materializing");
-
-      const grid = document.createElement("div");
-      grid.className = "holo-grid";
-      grid.setAttribute("aria-hidden", "true");
-      panel.appendChild(grid);
-
-      spawnDataBits(panel.getBoundingClientRect());
-
-      const onEnd = (e) => {
-        if (e.animationName !== "glass-materialize") return;
-        panel.classList.remove("glass-materializing");
-        grid.remove();
-        panel.removeEventListener("animationend", onEnd);
-      };
-      panel.addEventListener("animationend", onEnd);
     };
 
     const shatter = () => {
@@ -261,7 +287,8 @@
       // La vitre se rematérialise après 5 secondes
       setTimeout(() => {
         shards.remove();
-        materialize();
+        panel.style.visibility = "";
+        materialize(panel);
         broken = false;
         clickCount = 0;
       }, RESTORE_DELAY);
@@ -362,24 +389,51 @@
     });
   }
 
-  /* ── Apparition des sections au scroll ───────────────────────────────── */
-  const revealElements = document.querySelectorAll(".reveal");
-  if (revealElements.length > 0) {
-    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
-      revealElements.forEach((el) => el.classList.add("reveal-visible"));
+  /* ── Matérialisation des blocs : à l'arrivée puis au fil du défilement ──
+     Les blocs déjà à l'écran se matérialisent du haut vers le bas comme une
+     vague ; les suivants attendent d'entrer dans la fenêtre, ce qui étale
+     l'effet sur toute la hauteur d'une longue page.                      */
+  const blocks = document.querySelectorAll(".materialize");
+  if (blocks.length > 0) {
+    if (!canAnimate || !("IntersectionObserver" in window)) {
+      blocks.forEach((el) => el.classList.remove("materialize"));
     } else {
+      const ARRIVAL_SWEEP = 650; // durée de la vague d'arrivée, de haut en bas
+      const STAGGER = 90; // décalage entre deux blocs révélés ensemble
+      let firstBatch = true;
+      let nextSlot = 0;
+
       const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("reveal-visible");
-              observer.unobserve(entry.target);
-            }
+        (entries, obs) => {
+          const visible = entries.filter((entry) => entry.isIntersecting);
+          if (visible.length === 0) return;
+
+          // Du haut vers le bas : la matérialisation suit le sens de lecture
+          visible.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+          const now = performance.now();
+          const base = Math.max(now, nextSlot);
+          const viewport = window.innerHeight || 1;
+
+          visible.forEach((entry, i) => {
+            obs.unobserve(entry.target);
+
+            // À l'arrivée, le délai suit la position à l'écran (vague de haut
+            // en bas) ; ensuite, cascade régulière à l'entrée dans la fenêtre
+            const delay = firstBatch
+              ? (Math.min(Math.max(entry.boundingClientRect.top, 0), viewport) / viewport) * ARRIVAL_SWEEP
+              : base - now + i * STAGGER;
+
+            setTimeout(() => materialize(entry.target), delay);
           });
+
+          nextSlot = firstBatch ? now + ARRIVAL_SWEEP : base + visible.length * STAGGER;
+          firstBatch = false;
         },
-        { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+        { threshold: 0.08, rootMargin: "0px 0px -6% 0px" }
       );
-      revealElements.forEach((el) => observer.observe(el));
+
+      blocks.forEach((el) => observer.observe(el));
     }
   }
 
@@ -432,12 +486,10 @@
           const match = filter === "Tous" || card.dataset.category === filter;
           card.hidden = !match;
           if (match) {
+            // Les cartes retenues se rematérialisent en cascade
+            card.classList.add("materialize");
+            setTimeout(() => materialize(card), visibleCount * 70);
             visibleCount++;
-            // Rejouer une petite apparition sur les cartes affichées
-            card.classList.remove("reveal-visible");
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => card.classList.add("reveal-visible"));
-            });
           }
         });
 

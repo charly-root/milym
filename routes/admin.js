@@ -5,8 +5,20 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 const multer = require("multer");
 
-const { projectQueries, contactQueries, settingQueries, messageQueries } = require("../data/db");
+const {
+  projectQueries,
+  contactQueries,
+  settingQueries,
+  messageQueries,
+  leadQueries,
+  stepQueries,
+  typeQueries,
+  questionQueries,
+  optionQueries
+} = require("../data/db");
 const { categories, contactKinds } = require("../data/seed");
+const funnel = require("../lib/funnel");
+const { iconNames, iconChoices } = require("../lib/icons");
 
 const router = express.Router();
 
@@ -19,6 +31,46 @@ const loginLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false
+});
+
+// ── Protection CSRF ─────────────────────────────────────────────────────────
+// Le cookie de session est déjà en SameSite=Lax : un formulaire hébergé sur un
+// autre site n'emporte pas la session. Ce jeton ferme les cas restants — vieux
+// navigateurs, page piégée servie depuis le même site.
+
+function csrfToken(req) {
+  if (!req.session.csrfToken) req.session.csrfToken = crypto.randomBytes(32).toString("hex");
+  return req.session.csrfToken;
+}
+
+function checkCsrf(req) {
+  const expected = req.session.csrfToken;
+  const received = String(req.body._csrf || "");
+  if (!expected || received.length !== expected.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(received), Buffer.from(expected));
+}
+
+// Un jeton neuf accompagne le refus, pour que le formulaire de connexion
+// affiché juste après soit immédiatement utilisable
+function refuseCsrf(req, res) {
+  res.status(403).render("admin/login", {
+    pageTitle: "Requête refusée",
+    csrfToken: csrfToken(req),
+    error: "Jeton de sécurité absent ou périmé. Reconnectez-vous, puis recommencez."
+  });
+}
+
+router.use((req, res, next) => {
+  // Émettre un jeton ouvre une session en base : inutile de le faire pour les
+  // robots qui sondent /admin sans jamais voir de formulaire
+  const showsForm = req.session.isAdmin || req.path === "/login";
+  res.locals.csrfToken = showsForm ? csrfToken(req) : "";
+
+  // Le corps d'un envoi multipart n'est lu que plus tard, par multer : la route
+  // concernée vérifie le jeton elle-même une fois l'analyse faite
+  if (req.method !== "POST" || req.is("multipart/form-data")) return next();
+  if (checkCsrf(req)) return next();
+  refuseCsrf(req, res);
 });
 
 // ── Authentification ────────────────────────────────────────────────────────
@@ -42,13 +94,23 @@ router.get("/login", (req, res) => {
 });
 
 router.post("/login", loginLimiter, (req, res) => {
-  if (checkPassword(req.body.password)) {
-    req.session.isAdmin = true;
-    return res.redirect("/admin");
+  if (!checkPassword(req.body.password)) {
+    return res.status(401).render("admin/login", {
+      pageTitle: "Connexion",
+      error: "Mot de passe incorrect."
+    });
   }
-  res.status(401).render("admin/login", {
-    pageTitle: "Connexion",
-    error: "Mot de passe incorrect."
+  // Identifiant de session renouvelé : un jeton connu avant la connexion ne
+  // donne pas accès à la session privilégiée qui suit
+  req.session.regenerate((err) => {
+    if (err) {
+      return res.status(500).render("admin/login", {
+        pageTitle: "Connexion",
+        error: "La session n'a pas pu être ouverte. Réessayez."
+      });
+    }
+    req.session.isAdmin = true;
+    res.redirect("/admin");
   });
 });
 
@@ -154,6 +216,12 @@ router.get("/accueil", (req, res) => renderSiteForm(res));
 
 router.post("/accueil", (req, res) => {
   uploadLogo.single("logo")(req, res, (uploadError) => {
+    // Multer écrit le fichier avant que le jeton soit lisible : on le retire
+    if (!checkCsrf(req)) {
+      if (req.file) fs.unlink(req.file.path, () => {});
+      return refuseCsrf(req, res);
+    }
+
     const errors = [];
     if (uploadError) {
       errors.push(
@@ -341,6 +409,486 @@ router.get("/messages", (req, res) => {
 router.post("/messages/:id/supprimer", (req, res) => {
   messageQueries.remove(req.params.id);
   res.redirect("/admin/messages");
+});
+
+// ── Demandes du tunnel « Créer mon projet » ─────────────────────────────────
+router.get("/demandes", (req, res) => {
+  const definition = funnel.load();
+  res.render("admin/leads", {
+    pageTitle: "Admin — Demandes",
+    // Le questionnaire complet est retraduit en libellés lisibles
+    leads: leadQueries.all().map((lead) => ({ ...lead, summary: funnel.summarize(lead.answers, definition) })),
+    typeLabels: Object.fromEntries(definition.types.map((t) => [t.slug, t.label]))
+  });
+});
+
+router.post("/demandes/:id/supprimer", (req, res) => {
+  leadQueries.remove(req.params.id);
+  res.redirect("/admin/demandes");
+});
+
+// ── Contenu du tunnel « Créer mon projet » ──────────────────────────────────
+// Étapes, types de projet, questions, réponses et tarifs se règlent ici. Les
+// modifications sont prises en compte immédiatement sur le site : la page
+// publique relit la base à chaque affichage.
+
+/** Nombre entier borné, tolérant aux champs vides ou mal remplis. */
+function toInt(value, { min = 0, max = 1000000, fallback = 0 } = {}) {
+  const parsed = Math.round(Number(String(value).replace(",", ".")));
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+}
+
+function toFloat(value, { min = 0, max = 100, fallback = 1 } = {}) {
+  const parsed = Number(String(value).replace(",", "."));
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(parsed * 100) / 100));
+}
+
+/** Un champ de formulaire répété arrive sous forme de tableau, ou seul. */
+function toArray(value) {
+  if (value === undefined) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+// ── Vue d'ensemble ──────────────────────────────────────────────────────────
+router.get("/tunnel", (req, res) => {
+  const steps = stepQueries.all();
+  const questions = questionQueries.all();
+  const types = typeQueries.all();
+  const typeLabels = Object.fromEntries(types.map((t) => [t.slug, t.label]));
+
+  res.render("admin/funnel", {
+    pageTitle: "Admin — Tunnel",
+    types,
+    typeLabels,
+    questionTypes: Object.fromEntries(funnel.QUESTION_TYPES),
+    // Chaque étape porte ses questions, dans l'ordre d'affichage
+    steps: steps.map((step) => ({
+      ...step,
+      questions: questions
+        .filter((question) => question.stepId === step.id)
+        .map((question) => ({ ...question, options: optionQueries.forQuestion(question.id) }))
+    })),
+    settings: settingQueries.all()
+  });
+});
+
+// ── Types de projet ─────────────────────────────────────────────────────────
+function parseTypeForm(body) {
+  const errors = [];
+  const label = String(body.label || "").trim();
+  const tagline = String(body.tagline || "").trim();
+  const icon = String(body.icon || "").trim();
+  const slug = slugify(body.slug || label);
+
+  if (label.length < 2 || label.length > 60) errors.push("Le nom doit contenir entre 2 et 60 caractères.");
+  if (tagline.length > 160) errors.push("La phrase d'accroche est limitée à 160 caractères.");
+  if (!iconNames.includes(icon)) errors.push("Icône invalide.");
+  if (!slug) errors.push("Impossible de générer un identifiant à partir du nom.");
+
+  return {
+    errors,
+    data: {
+      slug,
+      label,
+      tagline,
+      icon,
+      basePrice: toInt(body.basePrice, { max: 500000 }),
+      position: toInt(body.position, { max: 999 })
+    }
+  };
+}
+
+function renderTypeForm(res, { type, errors = [], status = 200 }) {
+  res.status(status).render("admin/funnel-type-form", {
+    pageTitle: type && type.id ? "Admin — Modifier le type" : "Admin — Nouveau type",
+    type,
+    iconChoices,
+    errors
+  });
+}
+
+router.get("/tunnel/types/nouveau", (req, res) => {
+  renderTypeForm(res, {
+    type: { id: null, slug: "", label: "", tagline: "", icon: "etincelles", basePrice: 2000, position: typeQueries.all().length }
+  });
+});
+
+router.post("/tunnel/types", (req, res) => {
+  const { errors, data } = parseTypeForm(req.body);
+  if (errors.length > 0) return renderTypeForm(res, { type: { ...data, id: null }, errors, status: 400 });
+  try {
+    typeQueries.create(data);
+  } catch {
+    return renderTypeForm(res, {
+      type: { ...data, id: null },
+      errors: ["Cet identifiant est déjà utilisé par un autre type de projet."],
+      status: 400
+    });
+  }
+  res.redirect("/admin/tunnel");
+});
+
+router.get("/tunnel/types/:id/modifier", (req, res, next) => {
+  const type = typeQueries.get(req.params.id);
+  if (!type) return next();
+  renderTypeForm(res, { type });
+});
+
+router.post("/tunnel/types/:id", (req, res, next) => {
+  const type = typeQueries.get(req.params.id);
+  if (!type) return next();
+  const { errors, data } = parseTypeForm(req.body);
+  if (errors.length > 0) return renderTypeForm(res, { type: { ...data, id: type.id }, errors, status: 400 });
+  try {
+    typeQueries.update(type.id, data);
+  } catch {
+    return renderTypeForm(res, {
+      type: { ...data, id: type.id },
+      errors: ["Cet identifiant est déjà utilisé par un autre type de projet."],
+      status: 400
+    });
+  }
+  // Renommer l'identifiant casserait le ciblage des questions : on le répercute
+  if (data.slug !== type.slug) {
+    for (const question of questionQueries.all()) {
+      if (!question.showFor.includes(type.slug)) continue;
+      questionQueries.update(question.id, {
+        ...question,
+        showFor: question.showFor.map((slug) => (slug === type.slug ? data.slug : slug))
+      });
+    }
+  }
+  res.redirect("/admin/tunnel");
+});
+
+// Sans aucun type de projet, le tunnel n'a plus de première question et devient
+// impossible à remplir : le dernier reste en place
+router.post("/tunnel/types/:id/supprimer", (req, res) => {
+  const type = typeQueries.get(req.params.id);
+  if (!type || typeQueries.all().length <= 1) return res.redirect("/admin/tunnel");
+
+  typeQueries.remove(type.id);
+
+  // Une question réservée au type disparu ne serait plus jamais posée : elle
+  // repasse aux types restants, ou à tout le monde s'il n'en reste aucun
+  for (const question of questionQueries.all()) {
+    if (!question.showFor.includes(type.slug)) continue;
+    questionQueries.update(question.id, {
+      ...question,
+      showFor: question.showFor.filter((slug) => slug !== type.slug)
+    });
+  }
+
+  res.redirect("/admin/tunnel");
+});
+
+// ── Étapes ──────────────────────────────────────────────────────────────────
+function parseStepForm(body) {
+  const errors = [];
+  const title = String(body.title || "").trim();
+  const shortLabel = String(body.shortLabel || "").trim();
+  const description = String(body.description || "").trim();
+
+  if (title.length < 2 || title.length > 120) errors.push("Le titre doit contenir entre 2 et 120 caractères.");
+  if (shortLabel.length > 24) errors.push("Le nom du jalon est limité à 24 caractères.");
+  if (description.length > 300) errors.push("La description est limitée à 300 caractères.");
+
+  return { errors, data: { title, shortLabel, description, position: toInt(body.position, { max: 999 }) } };
+}
+
+function renderStepForm(res, { step, errors = [], status = 200 }) {
+  res.status(status).render("admin/funnel-step-form", {
+    pageTitle: step && step.id ? "Admin — Modifier l'étape" : "Admin — Nouvelle étape",
+    step,
+    errors
+  });
+}
+
+router.get("/tunnel/etapes/nouvelle", (req, res) => {
+  renderStepForm(res, {
+    step: { id: null, title: "", shortLabel: "", description: "", position: stepQueries.all().length }
+  });
+});
+
+router.post("/tunnel/etapes", (req, res) => {
+  const { errors, data } = parseStepForm(req.body);
+  if (errors.length > 0) return renderStepForm(res, { step: { ...data, id: null }, errors, status: 400 });
+  stepQueries.create(data);
+  res.redirect("/admin/tunnel");
+});
+
+router.get("/tunnel/etapes/:id/modifier", (req, res, next) => {
+  const step = stepQueries.get(req.params.id);
+  if (!step) return next();
+  renderStepForm(res, { step });
+});
+
+router.post("/tunnel/etapes/:id", (req, res, next) => {
+  const step = stepQueries.get(req.params.id);
+  if (!step) return next();
+  const { errors, data } = parseStepForm(req.body);
+  if (errors.length > 0) return renderStepForm(res, { step: { ...data, id: step.id }, errors, status: 400 });
+  stepQueries.update(step.id, data);
+  res.redirect("/admin/tunnel");
+});
+
+// Supprimer une étape emporte ses questions (contrainte ON DELETE CASCADE)
+router.post("/tunnel/etapes/:id/supprimer", (req, res) => {
+  if (stepQueries.all().length > 1) stepQueries.remove(req.params.id);
+  res.redirect("/admin/tunnel");
+});
+
+// ── Questions et réponses ───────────────────────────────────────────────────
+// « type » désigne la question d'ouverture, fabriquée depuis les types de
+// projet, et « global » sert aux messages d'erreur généraux
+const RESERVED_KEYS = ["type", "global"];
+
+function parseQuestionForm(body) {
+  const errors = [];
+  const label = String(body.label || "").trim();
+  const help = String(body.help || "").trim();
+  const type = String(body.type || "").trim();
+  const stepId = toInt(body.stepId);
+  const qkey = slugify(body.qkey || label).replace(/-/g, "_");
+
+  if (label.length < 2 || label.length > 200) errors.push("La question doit contenir entre 2 et 200 caractères.");
+  if (help.length > 300) errors.push("La précision est limitée à 300 caractères.");
+  if (!funnel.QUESTION_TYPES.some(([id]) => id === type)) errors.push("Type de champ invalide.");
+  if (!stepQueries.get(stepId)) errors.push("Étape invalide.");
+  if (!qkey) errors.push("Impossible de générer un identifiant à partir de la question.");
+  if (RESERVED_KEYS.includes(qkey)) errors.push(`L'identifiant « ${qkey} » est réservé.`);
+
+  // Une question n'est posée qu'aux types cochés ; aucun coché = posée à tous
+  const typeSlugs = typeQueries.all().map((t) => t.slug);
+  const showFor = toArray(body.showFor).map(String).filter((slug) => typeSlugs.includes(slug));
+
+  // Chaque type de champ n'utilise que les réglages qui le concernent
+  const config = {};
+  if (type === "number") {
+    config.min = toInt(body.numberMin, { max: 9999 });
+    config.max = toInt(body.numberMax, { min: config.min + 1, max: 9999, fallback: config.min + 1 });
+    config.default = toInt(body.numberDefault, { min: config.min, max: config.max, fallback: config.min });
+    config.included = toInt(body.numberIncluded, { max: config.max });
+    config.perUnit = toInt(body.numberPerUnit, { max: 100000 });
+  } else if (funnel.FREE_TEXT_TYPES.includes(type)) {
+    config.maxLength = toInt(body.maxLength, { min: 10, max: 5000, fallback: 200 });
+  }
+
+  // Les réponses arrivent en colonnes parallèles, une entrée par ligne du
+  // tableau d'édition. La valeur stockée est conservée quand elle existe déjà,
+  // pour que les demandes déjà reçues restent lisibles.
+  const options = [];
+  if (funnel.CHOICE_TYPES.includes(type)) {
+    const labels = toArray(body.optLabel);
+    const values = toArray(body.optValue);
+    const helps = toArray(body.optHelp);
+    const iconsIn = toArray(body.optIcon);
+    const prices = toArray(body.optPrice);
+    const factors = toArray(body.optFactor);
+    const monthlyMins = toArray(body.optMonthlyMin);
+    const monthlyMaxes = toArray(body.optMonthlyMax);
+    const used = new Set();
+
+    labels.forEach((raw, i) => {
+      const optionLabel = String(raw).trim();
+      if (!optionLabel) return;
+
+      let value = slugify(values[i] || optionLabel);
+      if (!value) value = `reponse-${i + 1}`;
+      while (used.has(value)) value = `${value}-2`;
+      used.add(value);
+
+      options.push({
+        value,
+        label: optionLabel.slice(0, 160),
+        help: String(helps[i] || "").trim().slice(0, 200),
+        icon: iconNames.includes(String(iconsIn[i])) ? String(iconsIn[i]) : "etincelles",
+        price: toInt(prices[i], { max: 500000 }),
+        factor: toFloat(factors[i], { min: 0.1, max: 10, fallback: 1 }),
+        monthlyMin: toInt(monthlyMins[i], { max: 100000 }),
+        monthlyMax: toInt(monthlyMaxes[i], { max: 100000 })
+      });
+    });
+
+    if (options.length < 2) errors.push("Une question à choix demande au moins deux réponses.");
+  }
+
+  return {
+    errors,
+    data: {
+      stepId,
+      qkey,
+      type,
+      label,
+      help,
+      required: body.required ? 1 : 0,
+      showFor,
+      config,
+      position: toInt(body.position, { max: 999 })
+    },
+    options
+  };
+}
+
+function renderQuestionForm(res, { question, options, errors = [], status = 200 }) {
+  res.status(status).render("admin/funnel-question-form", {
+    pageTitle: question && question.id ? "Admin — Modifier la question" : "Admin — Nouvelle question",
+    question,
+    options,
+    steps: stepQueries.all(),
+    types: typeQueries.all(),
+    questionTypes: funnel.QUESTION_TYPES,
+    choiceTypes: funnel.CHOICE_TYPES,
+    freeTextTypes: funnel.FREE_TEXT_TYPES,
+    iconChoices,
+    errors
+  });
+}
+
+const BLANK_OPTION = { value: "", label: "", help: "", icon: "etincelles", price: 0, factor: 1, monthlyMin: 0, monthlyMax: 0 };
+
+router.get("/tunnel/questions/nouvelle", (req, res) => {
+  const steps = stepQueries.all();
+  const requested = toInt(req.query.etape, { fallback: 0 });
+  const stepId = steps.some((s) => s.id === requested) ? requested : (steps[0] || {}).id;
+
+  renderQuestionForm(res, {
+    question: {
+      id: null,
+      stepId,
+      qkey: "",
+      type: "radio",
+      label: "",
+      help: "",
+      required: 0,
+      showFor: [],
+      config: {},
+      position: questionQueries.all().length
+    },
+    options: [{ ...BLANK_OPTION }, { ...BLANK_OPTION }]
+  });
+});
+
+router.post("/tunnel/questions", (req, res) => {
+  const { errors, data, options } = parseQuestionForm(req.body);
+  if (errors.length > 0) {
+    return renderQuestionForm(res, { question: { ...data, id: null }, options, errors, status: 400 });
+  }
+  let questionId;
+  try {
+    questionId = questionQueries.create(data).lastInsertRowid;
+  } catch {
+    return renderQuestionForm(res, {
+      question: { ...data, id: null },
+      options,
+      errors: ["Cet identifiant est déjà utilisé par une autre question."],
+      status: 400
+    });
+  }
+  optionQueries.replaceAll(questionId, options);
+  res.redirect("/admin/tunnel");
+});
+
+router.get("/tunnel/questions/:id/modifier", (req, res, next) => {
+  const question = questionQueries.get(req.params.id);
+  if (!question) return next();
+  const options = optionQueries.forQuestion(question.id);
+  renderQuestionForm(res, {
+    question,
+    options: options.length > 0 ? options : [{ ...BLANK_OPTION }, { ...BLANK_OPTION }]
+  });
+});
+
+router.post("/tunnel/questions/:id", (req, res, next) => {
+  const question = questionQueries.get(req.params.id);
+  if (!question) return next();
+  const { errors, data, options } = parseQuestionForm(req.body);
+  if (errors.length > 0) {
+    return renderQuestionForm(res, { question: { ...data, id: question.id }, options, errors, status: 400 });
+  }
+  try {
+    questionQueries.update(question.id, data);
+  } catch {
+    return renderQuestionForm(res, {
+      question: { ...data, id: question.id },
+      options,
+      errors: ["Cet identifiant est déjà utilisé par une autre question."],
+      status: 400
+    });
+  }
+  // Passer une question à choix en champ texte ne doit pas effacer ses
+  // réponses : elles resteront en place si le type est rétabli
+  if (funnel.CHOICE_TYPES.includes(data.type)) optionQueries.replaceAll(question.id, options);
+  res.redirect("/admin/tunnel");
+});
+
+router.post("/tunnel/questions/:id/supprimer", (req, res) => {
+  questionQueries.remove(req.params.id);
+  res.redirect("/admin/tunnel");
+});
+
+// ── Textes et réglages tarifaires ───────────────────────────────────────────
+// [clé, libellé, longueur max, nombre de lignes]
+const FUNNEL_TEXT_FIELDS = [
+  ["funnelCtaLabel", "Libellé du bouton dans la navigation", 40, 1],
+  ["funnelTitle", "Titre de la page", 80, 1],
+  ["funnelIntro", "Texte d'introduction", 400, 3],
+  ["funnelResultLabel", "Nom du dernier jalon", 24, 1],
+  ["funnelResultTitle", "Titre de l'estimation", 80, 1],
+  ["funnelResultIntro", "Texte au-dessus de l'estimation", 300, 2],
+  ["funnelDisclaimer", "Mention sous l'estimation", 500, 3]
+];
+
+// [clé, libellé, précision]
+const FUNNEL_NUMBER_FIELDS = [
+  ["funnelSpreadLow", "Bas de fourchette", "Part du prix de référence retenue comme minimum (0,85 = −15 %)."],
+  ["funnelSpreadHigh", "Haut de fourchette", "Part du prix de référence retenue comme maximum (1,35 = +35 %)."],
+  ["funnelWeeksLowDivisor", "Diviseur du délai minimum", "Budget médian divisé par ce montant = nombre de semaines le plus court."],
+  ["funnelWeeksHighDivisor", "Diviseur du délai maximum", "Plus il est bas, plus le délai annoncé est long."]
+];
+
+function renderFunnelSettings(res, { errors = [], saved = false, status = 200 } = {}) {
+  res.status(status).render("admin/funnel-settings", {
+    pageTitle: "Admin — Réglages du tunnel",
+    current: settingQueries.all(),
+    textFields: FUNNEL_TEXT_FIELDS,
+    numberFields: FUNNEL_NUMBER_FIELDS,
+    // Aperçu du calcul avec les coefficients en vigueur
+    preview: funnel.pricing(),
+    errors,
+    saved
+  });
+}
+
+router.get("/tunnel/reglages", (req, res) => renderFunnelSettings(res));
+
+router.post("/tunnel/reglages", (req, res) => {
+  const errors = [];
+  const values = {};
+
+  for (const [key, label, maxLength] of FUNNEL_TEXT_FIELDS) {
+    const value = String(req.body[key] || "").trim();
+    if (!value) errors.push(`Le champ « ${label} » est obligatoire.`);
+    else if (value.length > maxLength) errors.push(`Le champ « ${label} » est limité à ${maxLength} caractères.`);
+    else values[key] = value;
+  }
+
+  for (const [key, label] of FUNNEL_NUMBER_FIELDS) {
+    const value = Number(String(req.body[key] || "").replace(",", "."));
+    if (!Number.isFinite(value) || value <= 0) errors.push(`Le champ « ${label} » doit être un nombre positif.`);
+    else values[key] = String(value);
+  }
+
+  if (Number(values.funnelSpreadLow) > Number(values.funnelSpreadHigh)) {
+    errors.push("Le bas de fourchette doit être inférieur au haut de fourchette.");
+  }
+
+  if (errors.length > 0) return renderFunnelSettings(res, { errors, status: 400 });
+
+  for (const [key, value] of Object.entries(values)) settingQueries.set(key, value);
+  renderFunnelSettings(res, { saved: true });
 });
 
 module.exports = router;

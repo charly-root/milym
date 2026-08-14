@@ -1,7 +1,7 @@
   </main>
 
   <footer class="relative z-10 border-t border-purple-650/15 bg-surface/40 backdrop-blur-sm">
-    <div class="mx-auto flex max-w-6xl flex-col items-center gap-8 px-5 py-12 sm:px-8 md:flex-row md:justify-between">
+    <div class="materialize mx-auto flex max-w-6xl flex-col items-center gap-8 px-5 py-12 sm:px-8 md:flex-row md:justify-between">
       <div class="flex flex-col items-center gap-3 md:items-start">
         <a href="/" class="flex items-center gap-2.5 focus-ring rounded-lg" aria-label="Retour à l'accueil">
           <img src="<%= site.logo %>" alt="" class="h-7 w-7 object-contain" aria-hidden="true">
@@ -17,6 +17,7 @@
           <li><a href="/" class="footer-link">Accueil</a></li>
           <li><a href="/projets" class="footer-link">Projets</a></li>
           <li><a href="/contact" class="footer-link">Contact</a></li>
+          <li><a href="/creer-mon-projet" class="footer-link"><%= settings.funnelCtaLabel %></a></li>
         </ul>
       </nav>
 
@@ -41,7 +42,7 @@
       </div>
     </div>
 
-    <div class="border-t border-purple-650/10 py-5">
+    <div class="materialize border-t border-purple-650/10 py-5">
       <p class="text-center text-xs text-secondary">© <%= currentYear %> — Tous droits réservés</p>
     </div>
   </footer>

@@ -11,7 +11,7 @@
   <div class="w-full max-w-2xl" style="perspective: 1100px;" data-tilt-scene>
     <!-- Le flottement est porté par ce conteneur pour se combiner à l'inclinaison -->
     <div class="animate-float" style="transform-style: preserve-3d;">
-      <div id="glass-panel" class="glass-panel-3d px-6 py-10 text-center sm:px-14 sm:py-16">
+      <div id="glass-panel" class="materialize glass-panel-3d px-6 py-10 text-center sm:px-14 sm:py-16">
         <!-- Matière du verre : fond, grain, arête lumineuse et reflets -->
         <div class="glass-surface" aria-hidden="true">
           <div class="glass-glare"></div>
@@ -32,9 +32,9 @@
         </p>
 
           <div class="mt-2 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
-            <a href="/projets" class="btn-primary w-full sm:w-auto">Voir mes projets</a>
+            <a href="/creer-mon-projet" class="btn-primary w-full sm:w-auto"><%= settings.funnelCtaLabel %></a>
+            <a href="/projets" class="btn-ghost w-full sm:w-auto">Voir mes projets</a>
             <a href="/contact" class="btn-ghost w-full sm:w-auto">Me contacter</a>
-            <a href="#a-propos" class="btn-ghost w-full sm:w-auto">En savoir plus</a>
           </div>
         </div>
       </div>
@@ -51,22 +51,23 @@
 
 <!-- Section À propos -->
 <section id="a-propos" class="relative mx-auto max-w-6xl px-5 pb-32 pt-8 sm:px-8">
-  <div class="reveal mx-auto max-w-3xl text-center">
+  <div class="materialize mx-auto max-w-3xl text-center">
     <h2 class="section-title">À propos</h2>
     <p class="mt-6 leading-relaxed text-secondary"><%= settings.aboutText %></p>
   </div>
 
   <div class="mt-14 grid gap-6 sm:grid-cols-3">
     <% [1, 2, 3].forEach(i => { %>
-      <div class="reveal glass-card p-8 text-center" style="transition-delay: <%= (i - 1) * 100 %>ms;">
+      <div class="materialize glass-card p-8 text-center">
         <p class="text-3xl font-bold text-purple-400"><%= settings['stat' + i + 'Value'] %></p>
         <p class="mt-2 text-sm text-secondary"><%= settings['stat' + i + 'Label'] %></p>
       </div>
     <% }) %>
   </div>
 
-  <div class="reveal mt-14 text-center">
-    <a href="/projets" class="btn-primary">Découvrir mes projets</a>
+  <div class="materialize mt-14 flex flex-wrap justify-center gap-3">
+    <a href="/creer-mon-projet" class="btn-primary"><%= settings.funnelCtaLabel %></a>
+    <a href="/projets" class="btn-ghost">Découvrir mes projets</a>
   </div>
 </section>
 

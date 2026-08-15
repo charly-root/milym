@@ -1,10 +1,12 @@
 import { useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
+import * as THREE from "three";
 import { experienceStore } from "../../store.js";
 import { STAGE } from "../../stage.js";
 import { between } from "../../utils/acts.js";
 import { lerp } from "../../utils/math.js";
 import { setGroupOpacity } from "../../utils/opacity.js";
+import { faceCamera } from "../../utils/billboard.js";
 import { createTagTexture } from "../../utils/textures.js";
 
 /** Ce qui se trouve derrière l'interface : la passerelle, le serveur, les services. */
@@ -16,7 +18,10 @@ const MODULES = [
 
 export function BackendModules({ quality }) {
   const group = useRef();
+  const { camera } = useThree();
   const tags = useMemo(() => MODULES.map((m) => createTagTexture(m.title, m.sub)), []);
+  // Sans arête, un boîtier sombre sur fond noir n'existe pas à l'écran.
+  const outline = useMemo(() => new THREE.EdgesGeometry(new THREE.BoxGeometry(0.62, 0.34, 0.42)), []);
 
   useFrame(({ clock }) => {
     const p = experienceStore.progress;
@@ -37,9 +42,10 @@ export function BackendModules({ quality }) {
       if (module.userData.index == null) return;
       module.position.y = Math.sin(clock.elapsedTime * 0.4 + i) * 0.018;
 
-      const tag = module.children[1];
+      const tag = module.children[2];
       tag.material.opacity *= named;
       tag.visible = tag.material.opacity > 0.004;
+      if (tag.visible) faceCamera(tag, camera);
     });
   });
 
@@ -56,13 +62,16 @@ export function BackendModules({ quality }) {
               transparent
               opacity={0.92}
               transmission={quality.transmission ? 0.12 : 0}
-              emissive="#2e1064"
-              emissiveIntensity={0.16}
+              emissive="#4c1d95"
+              emissiveIntensity={0.3}
             />
           </mesh>
-          <mesh position={[0, 0.32, 0.05]}>
-            <planeGeometry args={[0.58, 0.145]} />
-            <meshBasicMaterial map={tags[i]} transparent depthWrite={false} />
+          <lineSegments geometry={outline}>
+            <lineBasicMaterial color="#a78bfa" transparent opacity={0.7} />
+          </lineSegments>
+          <mesh position={[0, 0.36, 0.05]}>
+            <planeGeometry args={[0.62, 0.155]} />
+            <meshBasicMaterial map={tags[i]} transparent depthWrite={false} depthTest={false} />
           </mesh>
         </group>
       ))}

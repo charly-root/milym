@@ -26,8 +26,12 @@ const BLOCKS = [
   { paper: [0.213, -0.234, 0.393, 0.311], screen: [0.41, -0.269, 0.765, 0.323], tilt: -0.014 }
 ];
 
-const INK = new THREE.Color("#2b241d");
-const GLASS = new THREE.Color("#1b1233");
+/** Les blocs sont découpés dans la feuille : ils en gardent la couleur, puis
+ *  deviennent du verre sombre en même temps qu'ils se redressent. */
+const PAPER = new THREE.Color("#cdc2ad");
+const GLASS = new THREE.Color("#1d1436");
+
+const blockOutline = new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1));
 
 export function PaperScreen({ quality }) {
   const stage = useRef();
@@ -79,7 +83,9 @@ export function PaperScreen({ quality }) {
     sheet.current.position.z = Math.sin(clock.elapsedTime * 0.5) * breath;
 
     const layers = sheet.current.children;
-    setLayerOpacity(layers[0], (1 - between(p, 0.2, 0.3)) * alive);
+    // Fondu court entre le croquis et l'écran : trop long, les deux calques
+    // restent à demi transparents et la feuille paraît éteinte.
+    setLayerOpacity(layers[0], (1 - between(p, 0.2, 0.27)) * alive);
     setLayerOpacity(layers[1], (1 - between(p, 0.145, 0.225)) * alive);
     setLayerOpacity(
       layers[2],
@@ -87,7 +93,7 @@ export function PaperScreen({ quality }) {
     );
     setLayerOpacity(
       layers[3],
-      between(p, 0.225, 0.3) * (1 - between(p, 0.345, 0.415)) * alive
+      between(p, 0.205, 0.265) * (1 - between(p, 0.345, 0.415)) * alive
     );
     setLayerOpacity(layers[4], between(p, 0.365, 0.435) * alive);
 
@@ -100,7 +106,9 @@ export function PaperScreen({ quality }) {
     }
 
     if (screenLight.current) {
-      screenLight.current.intensity = between(p, 0.3, 0.45) * alive * 1.6;
+      // Placée loin devant, la lampe éclaire les abords de l'écran sans poser
+      // de tache blanche au milieu de l'interface.
+      screenLight.current.intensity = between(p, 0.3, 0.45) * alive * 0.9;
     }
 
     updateBlocks(blocks.current, p, alive);
@@ -122,11 +130,13 @@ export function PaperScreen({ quality }) {
       </group>
 
       <group ref={sheet}>
-        <SheetLayer map={maps.sketch} roughness={0.88} z={0} />
-        <SheetLayer map={maps.annotations} roughness={0.88} z={0.0012} />
-        <SheetLayer map={maps.title} roughness={0.88} z={0.0024} />
-        <SheetLayer map={maps.wireframe} roughness={0.34} z={0.0036} emissive="#241046" />
-        <SheetLayer map={maps.final} roughness={0.26} z={0.0048} emissive="#3b1078" />
+        <SheetLayer map={maps.sketch} z={0} />
+        <SheetLayer map={maps.annotations} z={0.0012} />
+        <SheetLayer map={maps.title} z={0.0024} />
+        {/* Un écran produit sa propre lumière : ces deux calques ne dépendent
+            pas de l'éclairage du studio, sinon l'interface reste dans le noir. */}
+        <SheetLayer map={maps.wireframe} z={0.0036} unlit />
+        <SheetLayer map={maps.final} z={0.0048} unlit />
       </group>
 
       <group ref={blocks}>
@@ -134,37 +144,44 @@ export function PaperScreen({ quality }) {
           <mesh key={i} castShadow={quality.shadows}>
             <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial
-              color="#2b241d"
-              roughness={0.45}
-              metalness={0.18}
+              color="#cdc2ad"
+              roughness={0.6}
+              metalness={0.1}
               transparent
               opacity={0}
               emissive="#3b0764"
               emissiveIntensity={0}
             />
+            {/* La même arête lumineuse que les couches de la vue éclatée : un
+                composant se reconnaît à son contour, pas à son aplat. */}
+            <lineSegments geometry={blockOutline}>
+              <lineBasicMaterial color="#c4b5fd" transparent opacity={0} />
+            </lineSegments>
           </mesh>
         ))}
       </group>
 
-      <pointLight ref={screenLight} position={[0, 0, 0.55]} color="#a78bfa" intensity={0} distance={3} />
+      <pointLight ref={screenLight} position={[0, -0.35, 1.9]} color="#a78bfa" intensity={0} distance={5} />
     </group>
   );
 }
 
-function SheetLayer({ map, roughness, z, emissive }) {
+function SheetLayer({ map, roughness = 0.88, z, unlit = false }) {
   return (
     <mesh position={[0, 0, z]}>
       <planeGeometry args={[1, 1]} />
-      <meshStandardMaterial
-        map={map}
-        roughness={roughness}
-        metalness={0.06}
-        transparent
-        opacity={0}
-        depthWrite={false}
-        emissive={emissive || "#000000"}
-        emissiveIntensity={emissive ? 0.14 : 0}
-      />
+      {unlit ? (
+        <meshBasicMaterial map={map} transparent opacity={0} depthWrite={false} />
+      ) : (
+        <meshStandardMaterial
+          map={map}
+          roughness={roughness}
+          metalness={0.06}
+          transparent
+          opacity={0}
+          depthWrite={false}
+        />
+      )}
     </mesh>
   );
 }
@@ -204,8 +221,9 @@ function updateBlocks(group, p, alive) {
     mesh.rotation.z = tilt * (1 - straight);
 
     const material = mesh.material;
-    material.opacity = opacity;
-    material.color.copy(INK).lerp(GLASS, straight);
-    material.emissiveIntensity = straight * 0.45;
+    material.opacity = opacity * (1 - straight * 0.2);
+    material.color.copy(PAPER).lerp(GLASS, straight);
+    material.emissiveIntensity = straight * 0.26;
+    mesh.children[0].material.opacity = opacity * straight * 0.85;
   });
 }

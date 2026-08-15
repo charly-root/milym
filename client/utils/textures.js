@@ -388,6 +388,31 @@ export function createChipTexture(label) {
   return toTexture(canvas);
 }
 
+/**
+ * Le logo, redessiné dans un canvas carré. Un SVG sans largeur ni hauteur
+ * intrinsèques n'a pas de dimensions exploitables par WebGL : le passer par un
+ * canvas garantit une texture valide quel que soit le fichier téléversé.
+ */
+export function loadBadgeTexture(url) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => {
+      const size = 256;
+      const { canvas, ctx } = makeCanvas(size, size);
+      const width = image.naturalWidth || size;
+      const height = image.naturalHeight || size;
+      const scale = Math.min(size / width, size / height);
+      const w = width * scale;
+      const h = height * scale;
+      ctx.drawImage(image, (size - w) / 2, (size - h) / 2, w, h);
+      resolve(toTexture(canvas));
+    };
+    image.onerror = reject;
+    image.src = url;
+  });
+}
+
 /* ── Écrans de l'écosystème et du produit final ────────────────────────── */
 
 function browserChrome(ctx, w, title) {

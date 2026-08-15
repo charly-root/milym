@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { experienceStore } from "../../store.js";
 import { STAGE } from "../../stage.js";
 import { between } from "../../utils/acts.js";
 import { lerp } from "../../utils/math.js";
 import { setGroupOpacity } from "../../utils/opacity.js";
-import { createChipTexture } from "../../utils/textures.js";
+import { faceCamera } from "../../utils/billboard.js";
+import { createChipTexture, loadBadgeTexture } from "../../utils/textures.js";
 import { coreOpenAmount, coreHubAmount } from "../../animations/digitalCoreTimeline.js";
 
 /** Chaque module a un rôle : ce sont les pièces du produit, pas des logos. */
@@ -29,6 +30,8 @@ export function DigitalCore({ logoUrl, quality }) {
   const group = useRef();
   const shell = useRef();
   const modules = useRef();
+  const badge = useRef();
+  const { camera } = useThree();
   const [logo, setLogo] = useState(null);
 
   const chips = useMemo(() => MODULES.map((m) => createChipTexture(m.label)), []);
@@ -45,10 +48,12 @@ export function DigitalCore({ logoUrl, quality }) {
 
   useEffect(() => {
     let cancelled = false;
-    new THREE.TextureLoader().load(logoUrl, (texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace;
-      if (!cancelled) setLogo(texture);
-    });
+    loadBadgeTexture(logoUrl)
+      .then((texture) => {
+        if (cancelled) texture.dispose();
+        else setLogo(texture);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -67,8 +72,11 @@ export function DigitalCore({ logoUrl, quality }) {
     const hub = coreHubAmount(p);
 
     group.current.scale.setScalar(lerp(1, 0.52, hub));
-    group.current.rotation.y += delta * 0.16;
-    if (shell.current) shell.current.rotation.x += delta * 0.1;
+    // Seuls les modules tournent : le logo doit rester lisible de face.
+    modules.current.rotation.y += delta * 0.16;
+    shell.current.rotation.x += delta * 0.1;
+    shell.current.rotation.y += delta * 0.07;
+    if (badge.current) faceCamera(badge.current, camera);
 
     modules.current?.children.forEach((module, i) => {
       const angle = (i / MODULES.length) * Math.PI * 2;
@@ -82,6 +90,7 @@ export function DigitalCore({ logoUrl, quality }) {
       if (chip) {
         chip.visible = open > 0.05;
         chip.material.opacity = open;
+        if (chip.visible) faceCamera(chip, camera);
       }
     });
   });
@@ -115,7 +124,7 @@ export function DigitalCore({ logoUrl, quality }) {
       </mesh>
 
       <lineSegments geometry={cage} rotation={[0.3, 0.4, 0.1]}>
-        <lineBasicMaterial color="#c4b5fd" transparent opacity={0.4} />
+        <lineBasicMaterial color="#a78bfa" transparent opacity={0.22} />
       </lineSegments>
 
       <lineSegments geometry={fibers}>
@@ -123,9 +132,9 @@ export function DigitalCore({ logoUrl, quality }) {
       </lineSegments>
 
       {logo && (
-        <mesh position={[0, 0, 0.42]}>
-          <planeGeometry args={[0.34, 0.34]} />
-          <meshBasicMaterial map={logo} transparent depthWrite={false} />
+        <mesh ref={badge} position={[0, 0, 0.66]}>
+          <planeGeometry args={[0.3, 0.3]} />
+          <meshBasicMaterial map={logo} transparent depthWrite={false} depthTest={false} />
         </mesh>
       )}
 
@@ -145,9 +154,9 @@ export function DigitalCore({ logoUrl, quality }) {
                   transparent
                 />
               </mesh>
-              <mesh position={[0, 0.27, 0]}>
-                <planeGeometry args={[0.42, 0.126]} />
-                <meshBasicMaterial map={chips[i]} transparent opacity={0} depthWrite={false} />
+              <mesh position={[0, 0.24, 0]}>
+                <planeGeometry args={[0.32, 0.096]} />
+                <meshBasicMaterial map={chips[i]} transparent opacity={0} depthWrite={false} depthTest={false} />
               </mesh>
             </group>
           );

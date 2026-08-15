@@ -34,12 +34,12 @@ export function DataFlow({ quality }) {
       const u = (t * 0.11 + i / count) % 1;
 
       dummy.position.set(0, 0, THREE.MathUtils.lerp(start, end, u));
-      dummy.scale.setScalar(0.022);
+      dummy.scale.setScalar(0.016);
       dummy.updateMatrix();
       request.current?.setMatrixAt(i, dummy.matrix);
 
       dummy.position.set(0, 0, THREE.MathUtils.lerp(end, start, u));
-      dummy.scale.setScalar(0.022);
+      dummy.scale.setScalar(0.016);
       dummy.updateMatrix();
       response.current?.setMatrixAt(i, dummy.matrix);
     }
@@ -48,7 +48,7 @@ export function DataFlow({ quality }) {
   });
 
   return (
-    <group position={[STAGE.center[0], STAGE.center[1] - 0.62, 0]}>
+    <group position={[STAGE.center[0], STAGE.center[1] - 0.68, 0]}>
       <instancedMesh ref={request} args={[undefined, undefined, count]} position={[0.42, 0, 0]}>
         <sphereGeometry args={[1, 6, 6]} />
         <meshBasicMaterial color="#e9d5ff" transparent opacity={0.85} />

@@ -13,8 +13,9 @@ COPY . .
 # Évite la boucle HSTS / upgrade-insecure-requests sans HTTPS prêt
 RUN node patch-helmet.js
 
-# Compiler Tailwind, puis retirer les deps de build/dev
+# Compiler Tailwind et l'expérience 3D, puis retirer les deps de build/dev
 RUN npm run build:css \
+  && npm run build:experience \
   && npm prune --omit=dev \
   && apk del python3 make g++
 

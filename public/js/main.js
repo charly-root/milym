@@ -496,6 +496,16 @@
         if (noProjects) noProjects.hidden = visibleCount > 0;
       });
     });
+
+    const applyHashFilter = () => {
+      const slug = decodeURIComponent(window.location.hash.replace("#", "")).trim();
+      if (!slug) return;
+      const match = [...filterButtons].find((btn) => btn.dataset.slug === slug);
+      if (match) match.click();
+    };
+
+    applyHashFilter();
+    window.addEventListener("hashchange", applyHashFilter);
   }
 
   /* ── Formulaire de contact : validation côté client + envoi ──────────── */

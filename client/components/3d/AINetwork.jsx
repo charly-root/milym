@@ -32,11 +32,11 @@ export function AINetwork({ quality }) {
   const tag = useMemo(() => createTagTexture("IA", "Modèle"), []);
 
   const { nodes, dim, bright, segments } = useMemo(() => {
-    const points = fibonacciSphere(quality.aiNodes, 0.62);
+    const points = fibonacciSphere(quality.aiNodes, 0.85);
     const pairs = [];
     for (let i = 0; i < points.length; i++) {
       for (let j = i + 1; j < points.length; j++) {
-        if (points[i].distanceTo(points[j]) < 0.48) pairs.push(points[i], points[j]);
+        if (points[i].distanceTo(points[j]) < 0.62) pairs.push(points[i], points[j]);
       }
     }
     return {
@@ -74,7 +74,7 @@ export function AINetwork({ quality }) {
   return (
     <group ref={group} position={[-0.85, STAGE.center[1] + 0.62, STAGE.aiZ]}>
       <points geometry={nodes}>
-        <pointsMaterial color="#ddd6fe" size={0.032} sizeAttenuation transparent opacity={0.9} />
+        <pointsMaterial color="#ddd6fe" size={0.042} sizeAttenuation transparent opacity={0.9} />
       </points>
       <lineSegments geometry={dim}>
         <lineBasicMaterial color="#7c3aed" transparent opacity={0.16} />
@@ -82,8 +82,8 @@ export function AINetwork({ quality }) {
       <lineSegments ref={lit} geometry={bright}>
         <lineBasicMaterial color="#ddd6fe" transparent opacity={0.55} />
       </lineSegments>
-      <mesh position={[0, 0.85, 0]}>
-        <planeGeometry args={[0.5, 0.125]} />
+      <mesh position={[0, 1.1, 0]}>
+        <planeGeometry args={[0.56, 0.14]} />
         <meshBasicMaterial map={tag} transparent depthWrite={false} />
       </mesh>
     </group>

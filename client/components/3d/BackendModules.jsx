@@ -27,12 +27,19 @@ export function BackendModules({ quality }) {
     setGroupOpacity(group.current, appear * (1 - collapse));
     if (!group.current.visible) return;
 
+    // Les modules restent, mais cèdent la parole à la base de données.
+    const named = 1 - between(p, 0.695, 0.735);
+
     group.current.position.z = lerp(STAGE.backendZ, 0, collapse);
     group.current.scale.setScalar(1 - collapse);
 
     group.current.children.forEach((module, i) => {
       if (module.userData.index == null) return;
       module.position.y = Math.sin(clock.elapsedTime * 0.4 + i) * 0.018;
+
+      const tag = module.children[1];
+      tag.material.opacity *= named;
+      tag.visible = tag.material.opacity > 0.004;
     });
   });
 

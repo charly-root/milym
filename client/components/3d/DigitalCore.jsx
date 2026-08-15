@@ -72,7 +72,7 @@ export function DigitalCore({ logoUrl, quality }) {
 
     modules.current?.children.forEach((module, i) => {
       const angle = (i / MODULES.length) * Math.PI * 2;
-      const radius = RADIUS + open * 0.75;
+      const radius = RADIUS + open * 0.55;
       module.position.set(
         Math.cos(angle) * radius,
         Math.sin(angle * 1.6) * 0.3 * open,

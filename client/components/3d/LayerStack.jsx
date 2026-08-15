@@ -34,6 +34,9 @@ export function LayerStack({ quality }) {
     const frontFade = between(p, 0.6, 0.675);
     // Tout converge ensuite vers le noyau.
     const collapse = between(p, 0.82, 0.875);
+    // Les noms des couches ne servent que pendant la vue éclatée : au-delà,
+    // c'est le backend qui prend la parole et l'écran se surchargerait.
+    const named = 1 - between(p, 0.595, 0.645);
 
     const alive = expand * (1 - collapse);
     stack.visible = alive > 0.004;
@@ -53,7 +56,10 @@ export function LayerStack({ quality }) {
       if (!child.visible) return;
 
       child.children.forEach((part) => {
-        if (part.material) part.material.opacity = part.userData.baseOpacity * opacity;
+        if (!part.material) return;
+        const factor = part.userData.tag ? named : 1;
+        part.material.opacity = part.userData.baseOpacity * opacity * factor;
+        part.visible = part.material.opacity > 0.004;
       });
     });
 
@@ -87,7 +93,7 @@ export function LayerStack({ quality }) {
               />
             </mesh>
           )}
-          <mesh position={[1.02, 0.32, 0]} userData={{ baseOpacity: 1 }}>
+          <mesh position={[1.02, 0.32, 0]} userData={{ baseOpacity: 1, tag: true }}>
             <planeGeometry args={[0.62, 0.155]} />
             <meshBasicMaterial map={tags[index]} transparent opacity={1} depthWrite={false} />
           </mesh>

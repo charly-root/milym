@@ -48,7 +48,7 @@ export const STAGE = {
   /** Écart entre deux plaques de la vue éclatée. */
   layerGap: 0.34,
   layerCount: 6,
-  backendZ: -2.45,
-  databaseZ: -3.15,
-  aiZ: -3.1
+  backendZ: -2.2,
+  databaseZ: -2.9,
+  aiZ: -2.85
 };

@@ -37,9 +37,9 @@ export function DatabaseStack({ quality }) {
     for (let i = 0; i < count; i++) {
       const ring = i % RINGS;
       const angle = t * (0.3 + ring * 0.06) + i * 0.7;
-      const radius = 0.34 + (ring % 2) * 0.06;
-      dummy.position.set(Math.cos(angle) * radius, (ring - (RINGS - 1) / 2) * 0.15, Math.sin(angle) * radius);
-      dummy.scale.setScalar(0.016);
+      const radius = 0.5 + (ring % 2) * 0.09;
+      dummy.position.set(Math.cos(angle) * radius, (ring - (RINGS - 1) / 2) * 0.18, Math.sin(angle) * radius);
+      dummy.scale.setScalar(0.022);
       dummy.updateMatrix();
       dots.current.setMatrixAt(i, dummy.matrix);
     }
@@ -49,8 +49,8 @@ export function DatabaseStack({ quality }) {
   return (
     <group ref={group} position={[STAGE.center[0], STAGE.center[1] - 0.12, STAGE.databaseZ]}>
       {Array.from({ length: RINGS }, (_, i) => (
-        <mesh key={i} rotation={[Math.PI / 2, 0, 0]} position={[0, (i - (RINGS - 1) / 2) * 0.15, 0]}>
-          <ringGeometry args={[0.28, 0.46, 40]} />
+        <mesh key={i} rotation={[Math.PI / 2, 0, 0]} position={[0, (i - (RINGS - 1) / 2) * 0.18, 0]}>
+          <ringGeometry args={[0.42, 0.72, 44]} />
           <meshPhysicalMaterial
             color="#1c1030"
             roughness={0.14}
@@ -69,8 +69,8 @@ export function DatabaseStack({ quality }) {
         <meshBasicMaterial color="#ddd6fe" transparent opacity={0.85} />
       </instancedMesh>
 
-      <mesh position={[0, 0.6, 0]}>
-        <planeGeometry args={[0.6, 0.15]} />
+      <mesh position={[0, 0.78, 0]}>
+        <planeGeometry args={[0.72, 0.18]} />
         <meshBasicMaterial map={tag} transparent depthWrite={false} />
       </mesh>
     </group>

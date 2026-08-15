@@ -821,4 +821,190 @@
   .toast-hidden {
     @apply pointer-events-none translate-y-4 opacity-0;
   }
+
+  /* ── Accueil immersif ─────────────────────────────────────────────────── */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80]
+      focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:text-primary;
+  }
+
+  .nav-home {
+    opacity: 0.2;
+  }
+
+  .nav-home.nav-home-visible {
+    opacity: 1;
+  }
+
+  .story-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 60;
+    height: 1px;
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: left center;
+    background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.8), rgba(216, 180, 254, 0.95));
+    pointer-events: none;
+  }
+
+  .home-story-sticky {
+    position: relative;
+    min-height: 100svh;
+  }
+
+  .home-canvas {
+    display: none;
+  }
+
+  .home-story-copy {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 4.5rem;
+    padding: 7rem 1.25rem 5rem;
+  }
+
+  .story-chapter {
+    margin: 0 auto;
+    max-width: 42rem;
+    text-align: center;
+  }
+
+  .story-kicker {
+    @apply mb-4 text-xs font-medium uppercase tracking-[0.28em] text-purple-300/80;
+  }
+
+  .story-title {
+    @apply text-3xl font-semibold tracking-tight text-primary sm:text-5xl;
+  }
+
+  .story-title-md {
+    @apply text-2xl sm:text-4xl;
+  }
+
+  .story-lead {
+    @apply mx-auto mt-4 max-w-lg text-sm leading-relaxed text-secondary sm:text-base;
+  }
+
+  .story-cta,
+  .story-ecosystem-nav {
+    @apply mt-8 flex flex-wrap items-center justify-center gap-3;
+  }
+
+  .story-ecosystem-nav a {
+    @apply focus-ring rounded-full border border-purple-650/25 bg-surface/40 px-4 py-2 text-xs
+      text-purple-200 transition-all duration-300 hover:border-purple-400/60 hover:text-primary;
+  }
+
+  .home-story.is-cinematic .home-story-track {
+    height: 800vh;
+  }
+
+  .home-story.is-cinematic .home-story-sticky {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .home-story.is-cinematic .home-canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+  }
+
+  .home-story.is-cinematic .home-canvas canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .home-story.is-cinematic .home-story-sticky::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  .home-story.is-cinematic .home-story-copy {
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding: 0;
+    pointer-events: none;
+  }
+
+  .home-story.is-cinematic .story-chapter {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    max-width: none;
+    margin: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 1.25rem 6.5rem;
+    opacity: 0;
+  }
+
+  .home-story.is-cinematic .story-cta,
+  .home-story.is-cinematic .story-ecosystem-nav {
+    pointer-events: auto;
+  }
+
+  .studio-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 80;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .studio-cursor-dot {
+    display: block;
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    border-radius: 9999px;
+    background: rgba(245, 243, 255, 0.9);
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.45);
+  }
+
+  .studio-cursor-label {
+    display: block;
+    margin-top: 10px;
+    margin-left: 8px;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(216, 180, 254, 0.9);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .has-custom-cursor,
+  .has-custom-cursor a,
+  .has-custom-cursor button {
+    cursor: none;
+  }
+
+  @media (hover: none) {
+    .studio-cursor,
+    .has-custom-cursor,
+    .has-custom-cursor a,
+    .has-custom-cursor button {
+      cursor: auto;
+    }
+
+    .studio-cursor {
+      display: none;
+    }
+  }
 }

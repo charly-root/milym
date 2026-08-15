@@ -31,8 +31,9 @@ app.use(
         // 'unsafe-inline' est nécessaire pour les attributs style des templates
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:"],
+        imgSrc: ["'self'", "data:", "blob:"],
         connectSrc: ["'self'"],
+        workerSrc: ["'self'", "blob:"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
         baseUri: ["'self'"],

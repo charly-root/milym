@@ -21,8 +21,11 @@ const contactLimiter = rateLimit({
 
 // ── Pages ───────────────────────────────────────────────────────────────────
 router.get("/", (req, res) => {
-  // hideNav : la page d'accueil s'affiche sans barre de navigation
-  res.render("index", { pageTitle: "Accueil", hideNav: true });
+  res.render("index", {
+    pageTitle: "Créateur de projets numériques",
+    hideNav: false,
+    homeExperience: true
+  });
 });
 
 router.get("/projets", (req, res) => {

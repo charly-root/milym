@@ -1,56 +1,122 @@
 <%- include('partials/header') %>
 
-<!-- Particules discrètes (dessinées en JS, désactivées si prefers-reduced-motion) -->
-<canvas id="particles" class="pointer-events-none fixed inset-0 -z-10" aria-hidden="true"></canvas>
+<div id="story-progress" class="story-progress" aria-hidden="true"></div>
 
-<section class="relative flex min-h-[100svh] items-center justify-center px-5 py-24 sm:px-8 sm:py-28">
-  <!-- Halo principal derrière le panneau -->
-  <div class="halo animate-pulse-halo left-1/2 top-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2" aria-hidden="true"></div>
+<a href="#a-propos" class="skip-link">Aller au contenu</a>
 
-  <!-- Scène avec perspective pour l'effet 3D -->
-  <div class="w-full max-w-2xl" style="perspective: 1100px;" data-tilt-scene>
-    <!-- Le flottement est porté par ce conteneur pour se combiner à l'inclinaison -->
-    <div class="animate-float" style="transform-style: preserve-3d;">
-      <div id="glass-panel" class="materialize glass-panel-3d px-6 py-10 text-center sm:px-14 sm:py-16">
-        <!-- Matière du verre : fond, grain, arête lumineuse et reflets -->
-        <div class="glass-surface" aria-hidden="true">
-          <div class="glass-glare"></div>
-          <div class="glass-shine"></div>
-        </div>
+<article id="home-story" class="home-story">
+  <div id="home-story-track" class="home-story-track">
+    <div class="home-story-sticky">
+      <div
+        id="milym-experience"
+        class="home-canvas"
+        data-logo="<%= site.logo %>"
+        data-site-name="<%= site.name %>"
+        data-hero-title="<%= settings.heroTitle %>"
+        data-hero-subtitle="<%= settings.heroSubtitle %>"
+        data-cta="<%= settings.funnelCtaLabel %>"
+        aria-hidden="true"
+      ></div>
 
-        <div class="glass-depth relative z-10 flex flex-col items-center gap-6">
-        <img src="<%= site.logo %>" alt="Logo de <%= site.name %>" class="h-40 w-40 object-contain drop-shadow-[0_0_18px_rgba(168,85,247,0.6)] sm:h-80 sm:w-80">
+      <div class="home-story-copy">
+        <section class="story-chapter" data-chapter="idea" data-start="0" data-end="0.10">
+          <p class="story-kicker"><%= site.name %></p>
+          <h1 class="story-title">Créateur de projets numériques</h1>
+          <p class="story-lead">Tout commence par une idée.</p>
+        </section>
 
-        <h1 class="text-3xl font-bold tracking-tight sm:text-5xl">
-          <span class="bg-gradient-to-r from-purple-300 via-purple-400 to-purple-500 bg-clip-text text-transparent">
-            <%= settings.heroTitle %>
-          </span>
-        </h1>
+        <section class="story-chapter" data-chapter="sketch" data-start="0.10" data-end="0.20">
+          <h2 class="story-title story-title-md">Même griffonnée sur un coin de table.</h2>
+          <p class="story-lead">Un croquis, quelques flèches, une intuition.</p>
+        </section>
 
-        <p class="max-w-md text-sm leading-relaxed text-secondary sm:text-base">
-          <%= settings.heroSubtitle %>
-        </p>
+        <section class="story-chapter" data-chapter="wireframe" data-start="0.20" data-end="0.30">
+          <h2 class="story-title story-title-md">On lui donne une forme.</h2>
+          <p class="story-lead">Les traits deviennent une structure. Le papier devient un écran.</p>
+        </section>
 
-          <div class="mt-2 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
-            <a href="/creer-mon-projet" class="btn-primary w-full sm:w-auto"><%= settings.funnelCtaLabel %></a>
-            <a href="/projets" class="btn-ghost w-full sm:w-auto">Voir mes projets</a>
-            <a href="/contact" class="btn-ghost w-full sm:w-auto">Me contacter</a>
+        <section class="story-chapter" data-chapter="prototype" data-start="0.30" data-end="0.40">
+          <p class="story-kicker">Prototype</p>
+          <h2 class="story-title story-title-md">Puis une interface.</h2>
+          <p class="story-lead">Un premier écran. Encore imparfait, déjà vivant.</p>
+        </section>
+
+        <section class="story-chapter" data-chapter="interface" data-start="0.40" data-end="0.50">
+          <h2 class="story-title story-title-md">L’idée prend place dans le navigateur.</h2>
+          <p class="story-lead">La navbar, le hero, les cartes : le produit s’assemble.</p>
+        </section>
+
+        <section class="story-chapter" data-chapter="factory" data-start="0.50" data-end="0.60">
+          <p class="story-kicker">Web Factory</p>
+          <h2 class="story-title story-title-md">Puis une logique.</h2>
+          <p class="story-lead">UI · React · State · API · Node.js · Database</p>
+        </section>
+
+        <section class="story-chapter" data-chapter="backend" data-start="0.60" data-end="0.70">
+          <p class="story-kicker">Backend</p>
+          <h2 class="story-title story-title-md">Une interface n’est que le début.</h2>
+          <p class="story-lead">Nous construisons aussi ce qu’il y a derrière.</p>
+        </section>
+
+        <section class="story-chapter" data-chapter="data" data-start="0.70" data-end="0.75">
+          <h2 class="story-title story-title-md">On connecte les données.</h2>
+          <p class="story-lead">Les services. Les requêtes. Les réponses.</p>
+        </section>
+
+        <section class="story-chapter" data-chapter="ai" data-start="0.75" data-end="0.80">
+          <h2 class="story-title story-title-md">L’intelligence.</h2>
+          <p class="story-lead">Des outils classiques aux systèmes intelligents.</p>
+        </section>
+
+        <section class="story-chapter" data-chapter="core" data-start="0.80" data-end="0.90">
+          <p class="story-kicker">Digital Core</p>
+          <h2 class="story-title story-title-md">Et l’idée devient un produit.</h2>
+          <p class="story-lead">Un ensemble de technologies qui fonctionnent ensemble.</p>
+        </section>
+
+        <section class="story-chapter story-chapter-ecosystem" data-chapter="ecosystem" data-start="0.90" data-end="0.96">
+          <p class="story-kicker">Milym</p>
+          <h2 class="story-title story-title-md">L’écosystème Milym</h2>
+          <p class="story-lead">Sites, applications, IA, backend, données, automatisation.</p>
+          <nav class="story-ecosystem-nav" aria-label="Domaines Milym">
+            <a href="/projets#sites-web">Sites web</a>
+            <a href="/projets#applications">Applications</a>
+            <a href="/projets#intelligence-artificielle">Intelligence artificielle</a>
+            <a href="/projets">Backend</a>
+            <a href="/projets">Database</a>
+            <a href="/projets#outils">Automatisation</a>
+          </nav>
+        </section>
+
+        <section class="story-chapter story-chapter-final" data-chapter="final" data-start="0.96" data-end="1">
+          <h2 class="story-title">Une idée peut devenir beaucoup de choses.</h2>
+          <p class="story-lead">Parlons de la vôtre.</p>
+          <p class="sr-only"><%= settings.heroTitle %>. <%= settings.heroSubtitle %></p>
+          <div class="story-cta">
+            <a href="/creer-mon-projet" class="btn-primary"><%= settings.funnelCtaLabel %></a>
+            <a href="/projets" class="btn-ghost">Voir mes projets</a>
+            <a href="/contact" class="btn-ghost">Me contacter</a>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   </div>
+</article>
 
-  <!-- Indicateur de défilement (masqué sur mobile où il chevauche le panneau) -->
-  <a href="#a-propos" class="focus-ring absolute bottom-8 left-1/2 hidden -translate-x-1/2 rounded-full p-2 text-secondary transition-colors hover:text-purple-400 md:block" aria-label="Faire défiler vers la section À propos">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 animate-bounce" aria-hidden="true">
-      <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
-    </svg>
-  </a>
-</section>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "<%= site.name %>",
+  "description": "<%= settings.heroSubtitle %>",
+  "url": "/",
+  "image": "<%= site.logo %>",
+  "areaServed": "FR",
+  "knowsAbout": ["Sites web", "Applications web", "Intelligence artificielle", "API", "Backend", "Automatisation"]
+}
+</script>
 
-<!-- Section À propos -->
-<section id="a-propos" class="relative mx-auto max-w-6xl px-5 pb-32 pt-8 sm:px-8">
+<section id="a-propos" class="relative mx-auto max-w-6xl px-5 pb-32 pt-16 sm:px-8">
   <div class="materialize mx-auto max-w-3xl text-center">
     <h2 class="section-title">À propos</h2>
     <p class="mt-6 leading-relaxed text-secondary"><%= settings.aboutText %></p>
@@ -70,5 +136,7 @@
     <a href="/projets" class="btn-ghost">Découvrir mes projets</a>
   </div>
 </section>
+
+<script type="module" src="/experience/experience.js"></script>
 
 <%- include('partials/footer') %>

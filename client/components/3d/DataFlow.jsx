@@ -2,48 +2,61 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { experienceStore } from "../../store.js";
-import { rangeOpacity } from "../../utils/math.js";
+import { STAGE } from "../../stage.js";
+import { between } from "../../utils/acts.js";
 
+/**
+ * Le trajet d'une requête. Elle part de l'interface, traverse les couches
+ * jusqu'à la base, et la réponse revient par la voie opposée.
+ */
 export function DataFlow({ quality }) {
-  const mesh = useRef();
+  const request = useRef();
+  const response = useRef();
   const dummy = useMemo(() => new THREE.Object3D(), []);
-  const count = Math.max(8, Math.floor(quality.particles / 2));
-  const curve = useMemo(
-    () =>
-      new THREE.CatmullRomCurve3([
-        new THREE.Vector3(0, 1.3, 0.6),
-        new THREE.Vector3(0.4, 1.1, 0.1),
-        new THREE.Vector3(0.8, 0.7, -0.2),
-        new THREE.Vector3(0.2, 0.25, -0.35),
-        new THREE.Vector3(-0.3, 0.2, -0.5),
-        new THREE.Vector3(-0.1, 0.7, 0.1),
-        new THREE.Vector3(0, 1.3, 0.6)
-      ]),
-    []
-  );
+  const count = Math.max(6, Math.round(quality.particles / 3));
+  const start = 0.08;
+  const end = STAGE.databaseZ;
 
   useFrame(({ clock }) => {
     const p = experienceStore.progress;
-    const visible = rangeOpacity(p, 0.5, 0.58, 0.82, 0.9);
-    if (!mesh.current) return;
-    mesh.current.visible = visible > 0.01;
-    if (!mesh.current.visible) return;
+    const visible = between(p, 0.52, 0.6) * (1 - between(p, 0.83, 0.88));
+    const lanes = [request.current, response.current];
+    lanes.forEach((lane) => {
+      if (lane) {
+        lane.visible = visible > 0.01;
+        lane.material.opacity = 0.85 * visible;
+      }
+    });
+    if (visible <= 0.01) return;
+
     const t = clock.elapsedTime;
     for (let i = 0; i < count; i++) {
-      const u = (t * 0.06 + i / count) % 1;
-      const point = curve.getPointAt(u);
-      dummy.position.copy(point);
-      dummy.scale.setScalar(0.025);
+      const u = (t * 0.11 + i / count) % 1;
+
+      dummy.position.set(0, 0, THREE.MathUtils.lerp(start, end, u));
+      dummy.scale.setScalar(0.022);
       dummy.updateMatrix();
-      mesh.current.setMatrixAt(i, dummy.matrix);
+      request.current?.setMatrixAt(i, dummy.matrix);
+
+      dummy.position.set(0, 0, THREE.MathUtils.lerp(end, start, u));
+      dummy.scale.setScalar(0.022);
+      dummy.updateMatrix();
+      response.current?.setMatrixAt(i, dummy.matrix);
     }
-    mesh.current.instanceMatrix.needsUpdate = true;
+    if (request.current) request.current.instanceMatrix.needsUpdate = true;
+    if (response.current) response.current.instanceMatrix.needsUpdate = true;
   });
 
   return (
-    <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
-      <sphereGeometry args={[1, 8, 8]} />
-      <meshBasicMaterial color="#e9d5ff" transparent opacity={0.85} />
-    </instancedMesh>
+    <group position={[STAGE.center[0], STAGE.center[1] - 0.62, 0]}>
+      <instancedMesh ref={request} args={[undefined, undefined, count]} position={[0.42, 0, 0]}>
+        <sphereGeometry args={[1, 6, 6]} />
+        <meshBasicMaterial color="#e9d5ff" transparent opacity={0.85} />
+      </instancedMesh>
+      <instancedMesh ref={response} args={[undefined, undefined, count]} position={[-0.42, 0, 0]}>
+        <sphereGeometry args={[1, 6, 6]} />
+        <meshBasicMaterial color="#a78bfa" transparent opacity={0.85} />
+      </instancedMesh>
+    </group>
   );
 }

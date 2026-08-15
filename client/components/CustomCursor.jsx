@@ -1,22 +1,27 @@
 import { useEffect, useRef } from "react";
 import { experienceStore } from "../store.js";
 
+/** Un point discret sur desktop, qui annonce ce qu'on peut faire d'un objet 3D. */
 export function CustomCursor() {
   const cursor = useRef(null);
   const label = useRef(null);
 
   useEffect(() => {
-    const touch = window.matchMedia("(hover: none)").matches;
-    if (touch) return undefined;
+    if (window.matchMedia("(hover: none)").matches) return undefined;
 
     document.body.classList.add("has-custom-cursor");
+    let visible = false;
+
     const onMove = (event) => {
-      if (!cursor.current) return;
-      cursor.current.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
-      if (label.current) {
-        const active = Boolean(experienceStore.hovered);
+      const node = cursor.current;
+      if (!node) return;
+      node.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+
+      const active = Boolean(experienceStore.hovered);
+      if (active !== visible) {
+        visible = active;
         label.current.textContent = active ? experienceStore.hoverLabel || "Explorer" : "";
-        label.current.style.opacity = active ? "1" : "0";
+        node.classList.toggle("is-active", active);
       }
     };
 

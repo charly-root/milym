@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { CustomCursor } from "./components/CustomCursor.jsx";
+import { HoverCard } from "./components/HoverCard.jsx";
 import { createHomeTimeline } from "./animations/homeTimeline.js";
 import { usePerformanceTier } from "./hooks/usePerformanceTier.js";
 import { useReducedMotion } from "./hooks/useReducedMotion.js";
@@ -65,6 +66,7 @@ export function Experience({ root }) {
       <Suspense fallback={null}>
         <ExperienceCanvas quality={quality} logoUrl={logoUrl} tier={tier} frameloop={frameloop} />
       </Suspense>
+      <HoverCard />
       <CustomCursor />
     </>
   );

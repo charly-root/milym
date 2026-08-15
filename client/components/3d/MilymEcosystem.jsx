@@ -1,97 +1,110 @@
 import { useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
+import { useFrame, useThree } from "@react-three/fiber";
 import { experienceStore } from "../../store.js";
-import { rangeOpacity, lerp } from "../../utils/math.js";
-import { ecosystemSpinSpeed } from "../../animations/ecosystemTimeline.js";
+import { STAGE } from "../../stage.js";
+import { between } from "../../utils/acts.js";
+import { lerp } from "../../utils/math.js";
+import { setGroupOpacity } from "../../utils/opacity.js";
+import { ecosystemSpinSpeed, ecosystemRadius } from "../../animations/ecosystemTimeline.js";
 import {
-  createBrowserTexture,
+  createSiteTexture,
   createPhoneTexture,
   createAiPanelTexture,
-  createLabelTexture,
-  createToolTexture
+  createDashboardTexture,
+  createDataPanelTexture,
+  createAutomationTexture
 } from "../../utils/textures.js";
 
 const ITEMS = [
   {
     id: "web",
     label: "Sites web",
+    description: "Vitrines rapides, soignées, pensées pour convertir.",
+    stack: "React · Node.js · SEO",
     href: "/projets#sites-web",
-    description: "Sites modernes, rapides et soignés."
+    size: [0.86, 0.51]
   },
   {
     id: "app",
     label: "Applications",
+    description: "Applications modernes, rapides et connectées.",
+    stack: "React · Node.js · API",
     href: "/projets#applications",
-    description: "Applications modernes, rapides et connectées."
+    size: [0.4, 0.8]
   },
   {
     id: "ai",
     label: "Intelligence artificielle",
+    description: "Des outils classiques aux systèmes intelligents.",
+    stack: "Modèles · API · Traitement",
     href: "/projets#intelligence-artificielle",
-    description: "Des outils classiques aux systèmes intelligents."
+    size: [0.82, 0.51]
   },
   {
     id: "backend",
     label: "Backend",
+    description: "Services, authentification et logique métier.",
+    stack: "Node.js · API · Docker",
     href: "/projets",
-    description: "API, services et architecture Node.js."
+    size: [0.82, 0.51]
   },
   {
     id: "data",
-    label: "Database",
+    label: "Bases de données",
+    description: "Des données structurées, sûres et interrogeables.",
+    stack: "SQL · Migrations · Sauvegardes",
     href: "/projets",
-    description: "Données structurées, sûres et accessibles."
+    size: [0.82, 0.51]
   },
   {
     id: "auto",
     label: "Automatisation",
+    description: "Trigger → Logic → API → Action, sans intervention.",
+    stack: "Webhooks · Tâches · Intégrations",
     href: "/projets#outils",
-    description: "Trigger → Logic → API → Action."
+    size: [0.82, 0.51]
   }
 ];
 
-export function MilymEcosystem({ quality }) {
+/** L'écosystème : les activités de Milym gravitent autour du noyau. */
+export function MilymEcosystem() {
   const group = useRef();
   const spin = useRef(0);
+
   const textures = useMemo(
     () => ({
-      web: createBrowserTexture("site"),
+      web: createSiteTexture(),
       app: createPhoneTexture(),
       ai: createAiPanelTexture(),
-      backend: createLabelTexture("Node.js", "Services"),
-      data: createLabelTexture("Data", "Storage"),
-      auto: createToolTexture()
+      backend: createDashboardTexture(),
+      data: createDataPanelTexture(),
+      auto: createAutomationTexture()
     }),
     []
   );
 
   useFrame((_, delta) => {
     const p = experienceStore.progress;
-    const visible = rangeOpacity(p, 0.88, 0.91, 0.965, 1);
     if (!group.current) return;
-    group.current.visible = visible > 0.01;
-    const hovered = experienceStore.hovered;
-    const speed = ecosystemSpinSpeed(hovered);
-    spin.current += delta * speed * visible;
-    group.current.rotation.y = spin.current;
+
+    const presence = between(p, 0.895, 0.925) * (1 - between(p, 0.955, 0.985));
+    setGroupOpacity(group.current, presence);
+    if (!group.current.visible) {
+      if (experienceStore.hovered) {
+        experienceStore.hovered = null;
+        experienceStore.hoverLabel = "";
+      }
+      return;
+    }
+
+    spin.current += delta * ecosystemSpinSpeed(experienceStore.hovered);
+    group.current.userData.spin = spin.current;
   });
 
   return (
-    <group ref={group} position={[0, 0.7, 0]}>
-      <mesh>
-        <sphereGeometry args={[0.42, 32, 32]} />
-        <meshPhysicalMaterial
-          color="#0b0712"
-          roughness={0.18}
-          metalness={0.55}
-          emissive="#4c1d95"
-          emissiveIntensity={0.2}
-          transmission={quality.transmission ? 0.15 : 0}
-        />
-      </mesh>
-      {ITEMS.map((item, i) => (
-        <OrbitItem key={item.id} item={item} index={i} texture={textures[item.id]} />
+    <group ref={group} position={STAGE.center}>
+      {ITEMS.map((item, index) => (
+        <OrbitItem key={item.id} item={item} index={index} texture={textures[item.id]} />
       ))}
     </group>
   );
@@ -99,46 +112,74 @@ export function MilymEcosystem({ quality }) {
 
 function OrbitItem({ item, index, texture }) {
   const ref = useRef();
-  const angle = (index / ITEMS.length) * Math.PI * 2;
-  const radius = 2.15;
-  const isPhone = item.id === "app";
+  const { camera } = useThree();
+  const base = (index / ITEMS.length) * Math.PI * 2;
 
   useFrame((_, delta) => {
-    if (!ref.current) return;
+    const node = ref.current;
+    if (!node?.parent) return;
+
     const hovered = experienceStore.hovered === item.id;
-    const targetScale = hovered ? 1.18 : 1;
-    const targetRadius = hovered ? 1.55 : radius;
-    const r = lerp(ref.current.userData.r ?? radius, targetRadius, 1 - Math.pow(0.04, delta));
-    ref.current.userData.r = r;
-    ref.current.position.set(Math.cos(angle) * r, Math.sin(angle * 2) * 0.15, Math.sin(angle) * r);
-    const s = lerp(ref.current.scale.x, targetScale, 1 - Math.pow(0.04, delta));
-    ref.current.scale.setScalar(s);
-    ref.current.lookAt(0, 0.7, 4.5);
+    const spin = node.parent.userData.spin || 0;
+    const angle = base + spin;
+
+    const radius = lerp(
+      node.userData.radius ?? ecosystemRadius(false),
+      ecosystemRadius(hovered),
+      1 - Math.pow(0.02, delta)
+    );
+    node.userData.radius = radius;
+
+    node.position.set(
+      Math.cos(angle) * radius,
+      Math.sin(angle * 2) * 0.22,
+      Math.sin(angle) * radius
+    );
+    node.quaternion.copy(camera.quaternion);
+
+    const scale = lerp(node.scale.x, hovered ? 1.16 : 1, 1 - Math.pow(0.02, delta));
+    node.scale.setScalar(scale);
   });
+
+  const select = () => {
+    window.location.href = item.href;
+  };
 
   return (
     <group
       ref={ref}
-      onPointerOver={(e) => {
-        e.stopPropagation();
+      onPointerOver={(event) => {
+        event.stopPropagation();
         experienceStore.hovered = item.id;
         experienceStore.hoverLabel = "Explorer";
-        document.body.style.cursor = "none";
+        experienceStore.hoverTitle = item.label;
+        experienceStore.hoverDescription = item.description;
+        experienceStore.hoverStack = item.stack;
       }}
       onPointerOut={() => {
-        if (experienceStore.hovered === item.id) {
-          experienceStore.hovered = null;
-          experienceStore.hoverLabel = "";
-        }
+        if (experienceStore.hovered !== item.id) return;
+        experienceStore.hovered = null;
+        experienceStore.hoverLabel = "";
       }}
-      onClick={(e) => {
-        e.stopPropagation();
-        window.location.href = item.href;
+      onClick={(event) => {
+        event.stopPropagation();
+        select();
       }}
     >
+      <mesh position={[0, 0, -0.012]}>
+        <planeGeometry args={[item.size[0] + 0.05, item.size[1] + 0.05]} />
+        <meshBasicMaterial color="#150c26" transparent opacity={0.9} />
+      </mesh>
       <mesh>
-        {isPhone ? <planeGeometry args={[0.42, 0.84]} /> : <planeGeometry args={[0.9, 0.56]} />}
-        <meshStandardMaterial map={texture} roughness={0.25} metalness={0.1} />
+        <planeGeometry args={item.size} />
+        <meshStandardMaterial
+          map={texture}
+          roughness={0.28}
+          metalness={0.1}
+          transparent
+          emissive="#2e1064"
+          emissiveIntensity={0.16}
+        />
       </mesh>
     </group>
   );

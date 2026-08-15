@@ -822,14 +822,18 @@
     @apply pointer-events-none translate-y-4 opacity-0;
   }
 
-  /* ── Accueil immersif ─────────────────────────────────────────────────── */
+  /* ── Accueil : le récit « une idée devient un produit » ────────────────
+     Sans JavaScript ni animation, les chapitres s'empilent simplement les uns
+     sous les autres. La classe `is-cinematic`, posée par l'expérience 3D une
+     fois montée, les superpose sur une scène collante.                     */
   .skip-link {
     @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80]
       focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:text-primary;
   }
 
   .nav-home {
-    opacity: 0.2;
+    opacity: 0.16;
+    transition: opacity 0.8s ease;
   }
 
   .nav-home.nav-home-visible {
@@ -837,16 +841,10 @@
   }
 
   .story-progress {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 60;
-    height: 1px;
-    width: 100%;
+    @apply pointer-events-none fixed inset-x-0 top-0 z-[60] h-px;
     transform: scaleX(0);
     transform-origin: left center;
-    background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.8), rgba(216, 180, 254, 0.95));
-    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.75), rgba(216, 180, 254, 0.95));
   }
 
   .home-story-sticky {
@@ -854,27 +852,22 @@
     min-height: 100svh;
   }
 
-  .home-canvas {
+  .home-canvas,
+  .story-rail,
+  .story-hint {
     display: none;
   }
 
   .home-story-copy {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 4.5rem;
-    padding: 7rem 1.25rem 5rem;
+    @apply relative z-10 flex flex-col gap-24 px-5 pb-24 pt-32;
   }
 
   .story-chapter {
-    margin: 0 auto;
-    max-width: 42rem;
-    text-align: center;
+    @apply mx-auto max-w-2xl text-center;
   }
 
   .story-kicker {
-    @apply mb-4 text-xs font-medium uppercase tracking-[0.28em] text-purple-300/80;
+    @apply mb-4 text-[11px] font-medium uppercase tracking-[0.3em] text-purple-300/70;
   }
 
   .story-title {
@@ -896,11 +889,12 @@
 
   .story-ecosystem-nav a {
     @apply focus-ring rounded-full border border-purple-650/25 bg-surface/40 px-4 py-2 text-xs
-      text-purple-200 transition-all duration-300 hover:border-purple-400/60 hover:text-primary;
+      text-purple-200 transition-colors duration-300 hover:border-purple-400/60 hover:text-primary;
   }
 
+  /* ── Mode cinématique ─────────────────────────────────────────────────── */
   .home-story.is-cinematic .home-story-track {
-    height: 800vh;
+    height: 900vh;
   }
 
   .home-story.is-cinematic .home-story-sticky {
@@ -922,14 +916,15 @@
     height: 100%;
   }
 
+  /* Grain très léger : la scène ne doit pas paraître numériquement propre */
   .home-story.is-cinematic .home-story-sticky::after {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.028;
     mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   .home-story.is-cinematic .home-story-copy {
@@ -942,15 +937,24 @@
 
   .home-story.is-cinematic .story-chapter {
     position: absolute;
-    inset: 0;
+    inset: auto 0 0 0;
     display: flex;
     max-width: none;
-    margin: 0;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
-    padding: 0 1.25rem 6.5rem;
+    padding: 0 1.25rem 5.5rem;
     opacity: 0;
+    will-change: opacity, transform;
+  }
+
+  /* Le texte reste lisible même quand la scène s'éclaircit derrière lui */
+  .home-story.is-cinematic .home-story-copy::before {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 42%;
+    pointer-events: none;
+    background: linear-gradient(to top, rgba(5, 5, 7, 0.92), rgba(5, 5, 7, 0.55) 45%, transparent);
   }
 
   .home-story.is-cinematic .story-cta,
@@ -958,35 +962,141 @@
     pointer-events: auto;
   }
 
-  .studio-cursor {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 80;
+  /* ── Repère de lecture ────────────────────────────────────────────────── */
+  .home-story.is-cinematic .story-rail {
+    position: absolute;
+    right: 2rem;
+    top: 50%;
+    z-index: 20;
+    display: none;
+    transform: translateY(-50%);
+    flex-direction: column;
+    gap: 0.65rem;
     pointer-events: none;
+  }
+
+  @media (min-width: 1024px) {
+    .home-story.is-cinematic .story-rail {
+      display: flex;
+    }
+  }
+
+  .story-rail-step {
+    @apply flex items-center justify-end gap-3;
+  }
+
+  .story-rail-mark {
+    display: block;
+    height: 1px;
+    width: 14px;
+    background: rgba(216, 180, 254, 0.25);
+    transition: width 0.5s ease, background-color 0.5s ease;
+  }
+
+  .story-rail-step.is-done .story-rail-mark {
+    background: rgba(168, 85, 247, 0.55);
+  }
+
+  .story-rail-step.is-active .story-rail-mark {
+    width: 30px;
+    background: rgba(233, 213, 255, 0.95);
+  }
+
+  .story-rail-label {
+    @apply text-[10px] uppercase tracking-[0.22em] text-secondary/50;
+    opacity: 0;
+    transition: opacity 0.5s ease, color 0.5s ease;
+  }
+
+  .story-rail-step.is-active .story-rail-label {
+    @apply text-purple-200;
+    opacity: 1;
+  }
+
+  /* ── Indice de défilement ─────────────────────────────────────────────── */
+  .home-story.is-cinematic .story-hint {
+    position: absolute;
+    bottom: 1.75rem;
+    left: 50%;
+    z-index: 20;
+    display: block;
+    transform: translateX(-50%);
+    pointer-events: none;
+    @apply text-[10px] uppercase tracking-[0.3em] text-secondary/60;
+  }
+
+  .home-story.is-cinematic .story-hint::after {
+    content: "";
+    display: block;
+    width: 1px;
+    height: 26px;
+    margin: 0.6rem auto 0;
+    background: linear-gradient(to bottom, rgba(216, 180, 254, 0.6), transparent);
+  }
+
+  /* ── Carte de survol de l'écosystème ──────────────────────────────────── */
+  .story-hover-card {
+    @apply pointer-events-none fixed bottom-8 right-8 z-[70] max-w-xs rounded-2xl border
+      border-purple-650/25 bg-surface/85 p-5 backdrop-blur-xl;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+
+  .story-hover-card.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .story-hover-title {
+    @apply text-sm font-semibold text-primary;
+  }
+
+  .story-hover-text {
+    @apply mt-1.5 text-xs leading-relaxed text-secondary;
+  }
+
+  .story-hover-stack {
+    @apply mt-3 text-[10px] uppercase tracking-[0.2em] text-purple-300/80;
+  }
+
+  @media (max-width: 1023px) {
+    .story-hover-card {
+      display: none;
+    }
+  }
+
+  /* ── Curseur personnalisé (desktop uniquement) ────────────────────────── */
+  .studio-cursor {
+    @apply pointer-events-none fixed left-0 top-0 z-[80];
     will-change: transform;
   }
 
   .studio-cursor-dot {
     display: block;
-    width: 8px;
     height: 8px;
+    width: 8px;
     margin: -4px 0 0 -4px;
     border-radius: 9999px;
     background: rgba(245, 243, 255, 0.9);
     box-shadow: 0 0 12px rgba(168, 85, 247, 0.45);
+    transition: transform 0.3s ease;
+  }
+
+  .studio-cursor.is-active .studio-cursor-dot {
+    transform: scale(1.8);
   }
 
   .studio-cursor-label {
     display: block;
-    margin-top: 10px;
-    margin-left: 8px;
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: rgba(216, 180, 254, 0.9);
+    margin: 12px 0 0 10px;
     opacity: 0;
     transition: opacity 0.25s ease;
+    @apply text-[10px] uppercase tracking-[0.2em] text-purple-200;
+  }
+
+  .studio-cursor.is-active .studio-cursor-label {
+    opacity: 1;
   }
 
   .has-custom-cursor,
@@ -996,15 +1106,14 @@
   }
 
   @media (hover: none) {
-    .studio-cursor,
+    .studio-cursor {
+      display: none;
+    }
+
     .has-custom-cursor,
     .has-custom-cursor a,
     .has-custom-cursor button {
       cursor: auto;
-    }
-
-    .studio-cursor {
-      display: none;
     }
   }
 }

@@ -1,65 +1,59 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { experienceStore } from "../../store.js";
-import { lerp, smoothstep } from "../../utils/math.js";
+import { STAGE } from "../../stage.js";
+import { between } from "../../utils/acts.js";
+import { lerp } from "../../utils/math.js";
 
+/**
+ * Deux ambiances : la lampe chaude du bureau au début, la lumière violette du
+ * studio dès que le croquis devient numérique.
+ */
 export function Lights({ quality }) {
   const lamp = useRef();
-  const purple = useRef();
+  const studio = useRef();
   const fill = useRef();
 
   useFrame(() => {
-    const p = experienceStore.progress;
-    const digital = smoothstep(0.18, 0.42, p);
-    if (lamp.current) lamp.current.intensity = lerp(7.5, 0.15, digital);
-    if (purple.current) purple.current.intensity = lerp(0.2, 5.2, digital);
-    if (fill.current) fill.current.intensity = lerp(0.15, 0.55, digital);
+    const digital = between(experienceStore.progress, 0.14, 0.32);
+    if (lamp.current) lamp.current.intensity = lerp(6.5, 0.1, digital);
+    if (studio.current) studio.current.intensity = lerp(0.15, 4.6, digital);
+    if (fill.current) fill.current.intensity = lerp(0.12, 0.7, digital);
   });
 
   return (
     <>
-      <ambientLight intensity={0.12} color="#9aa0b5" />
-      <hemisphereLight args={["#2a2038", "#050507", 0.35]} />
+      <ambientLight intensity={0.14} color="#9aa0b5" />
+      <hemisphereLight args={["#241c33", "#050507", 0.32]} />
 
       <spotLight
         ref={lamp}
-        position={[-1.55, 2.4, 0.9]}
-        angle={0.55}
-        penumbra={0.85}
-        color="#f2e6d4"
-        intensity={7.5}
-        distance={9}
+        position={[-1.3, 2.1, 0.8]}
+        angle={0.6}
+        penumbra={0.9}
+        color="#f4e7d2"
+        intensity={6.5}
+        distance={8}
         castShadow={quality.shadows}
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
       />
 
       <pointLight
-        ref={purple}
-        position={[0.8, 1.8, 2.2]}
+        ref={studio}
+        position={[1.4, STAGE.center[1] + 1.1, 2.4]}
         color="#8b5cf6"
-        intensity={0.2}
-        distance={10}
-      />
-
-      <pointLight
-        ref={fill}
-        position={[-2.2, 1.2, -1.4]}
-        color="#64748b"
         intensity={0.15}
         distance={12}
       />
 
-      {quality.extraLights && (
-        <rectAreaLight
-          position={[0, 2.4, 1.2]}
-          width={4}
-          height={1.2}
-          intensity={1.4}
-          color="#c4b5fd"
-          rotation={[-Math.PI / 2.6, 0, 0]}
-        />
-      )}
+      <pointLight
+        ref={fill}
+        position={[-2.4, STAGE.center[1] + 0.4, -1.6]}
+        color="#64748b"
+        intensity={0.12}
+        distance={14}
+      />
     </>
   );
 }

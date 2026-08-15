@@ -2,8 +2,6 @@
 
 <div id="story-progress" class="story-progress" aria-hidden="true"></div>
 
-<a href="#a-propos" class="skip-link">Aller au contenu</a>
-
 <article id="home-story" class="home-story">
   <div id="home-story-track" class="home-story-track">
     <div class="home-story-sticky">
@@ -12,83 +10,95 @@
         class="home-canvas"
         data-logo="<%= site.logo %>"
         data-site-name="<%= site.name %>"
-        data-hero-title="<%= settings.heroTitle %>"
-        data-hero-subtitle="<%= settings.heroSubtitle %>"
-        data-cta="<%= settings.funnelCtaLabel %>"
         aria-hidden="true"
       ></div>
 
+      <!-- Repère de lecture : où en est-on dans la fabrication du projet -->
+      <ol class="story-rail" aria-hidden="true">
+        <% ['Idée','Croquis','Wireframe','Prototype','Interface','Frontend','Backend','Données','IA','Digital Core','Écosystème','Produit'].forEach((label, i) => { %>
+          <li class="story-rail-step" data-rail-step="<%= i %>">
+            <span class="story-rail-mark"></span>
+            <span class="story-rail-label"><%= label %></span>
+          </li>
+        <% }) %>
+      </ol>
+
       <div class="home-story-copy">
-        <section class="story-chapter" data-chapter="idea" data-start="0" data-end="0.10">
-          <p class="story-kicker"><%= site.name %></p>
+        <section class="story-chapter" data-chapter="idea">
+          <p class="story-kicker">01 — L’idée</p>
           <h1 class="story-title">Créateur de projets numériques</h1>
-          <p class="story-lead">Tout commence par une idée.</p>
+          <p class="story-lead">Tout commence par une idée, griffonnée sur un coin de table.</p>
         </section>
 
-        <section class="story-chapter" data-chapter="sketch" data-start="0.10" data-end="0.20">
+        <section class="story-chapter" data-chapter="sketch">
+          <p class="story-kicker">02 — Le croquis</p>
           <h2 class="story-title story-title-md">Même griffonnée sur un coin de table.</h2>
-          <p class="story-lead">Un croquis, quelques flèches, une intuition.</p>
+          <p class="story-lead">Les blocs dessinés se détachent de la feuille : un bandeau, un titre, un bouton, deux cartes.</p>
         </section>
 
-        <section class="story-chapter" data-chapter="wireframe" data-start="0.20" data-end="0.30">
+        <section class="story-chapter" data-chapter="wireframe">
+          <p class="story-kicker">03 — Le wireframe</p>
           <h2 class="story-title story-title-md">On lui donne une forme.</h2>
-          <p class="story-lead">Les traits deviennent une structure. Le papier devient un écran.</p>
+          <p class="story-lead">Les traits se redressent, les annotations s’effacent, la feuille devient un écran.</p>
         </section>
 
-        <section class="story-chapter" data-chapter="prototype" data-start="0.30" data-end="0.40">
-          <p class="story-kicker">Prototype</p>
+        <section class="story-chapter" data-chapter="prototype">
+          <p class="story-kicker">04 — Le prototype</p>
           <h2 class="story-title story-title-md">Puis une interface.</h2>
-          <p class="story-lead">Un premier écran. Encore imparfait, déjà vivant.</p>
+          <p class="story-lead">Blocs gris et textes provisoires : la structure tient, le reste viendra.</p>
         </section>
 
-        <section class="story-chapter" data-chapter="interface" data-start="0.40" data-end="0.50">
-          <h2 class="story-title story-title-md">L’idée prend place dans le navigateur.</h2>
-          <p class="story-lead">La navbar, le hero, les cartes : le produit s’assemble.</p>
+        <section class="story-chapter" data-chapter="interface">
+          <p class="story-kicker">05 — L’interface</p>
+          <h2 class="story-title story-title-md">Le produit prend son visage.</h2>
+          <p class="story-lead">Composants finis, contenus réels, images en place.</p>
         </section>
 
-        <section class="story-chapter" data-chapter="factory" data-start="0.50" data-end="0.60">
-          <p class="story-kicker">Web Factory</p>
+        <section class="story-chapter" data-chapter="factory">
+          <p class="story-kicker">06 — Le frontend</p>
           <h2 class="story-title story-title-md">Puis une logique.</h2>
-          <p class="story-lead">UI · React · State · API · Node.js · Database</p>
+          <p class="story-lead">L’écran s’ouvre en couches : UI, React, état, API, Node.js, base de données.</p>
         </section>
 
-        <section class="story-chapter" data-chapter="backend" data-start="0.60" data-end="0.70">
-          <p class="story-kicker">Backend</p>
+        <section class="story-chapter" data-chapter="backend">
+          <p class="story-kicker">07 — Le backend</p>
           <h2 class="story-title story-title-md">Une interface n’est que le début.</h2>
-          <p class="story-lead">Nous construisons aussi ce qu’il y a derrière.</p>
+          <p class="story-lead">Nous construisons aussi ce qu’il y a derrière : passerelle, serveur, services.</p>
         </section>
 
-        <section class="story-chapter" data-chapter="data" data-start="0.70" data-end="0.75">
+        <section class="story-chapter" data-chapter="data">
+          <p class="story-kicker">08 — Les données</p>
           <h2 class="story-title story-title-md">On connecte les données.</h2>
-          <p class="story-lead">Les services. Les requêtes. Les réponses.</p>
+          <p class="story-lead">Une requête part de l’écran, traverse l’API, et revient avec sa réponse.</p>
         </section>
 
-        <section class="story-chapter" data-chapter="ai" data-start="0.75" data-end="0.80">
-          <h2 class="story-title story-title-md">L’intelligence.</h2>
-          <p class="story-lead">Des outils classiques aux systèmes intelligents.</p>
+        <section class="story-chapter" data-chapter="ai">
+          <p class="story-kicker">09 — L’intelligence</p>
+          <h2 class="story-title story-title-md">Des outils classiques aux systèmes intelligents.</h2>
+          <p class="story-lead">Le réseau s’allume, connexion après connexion.</p>
         </section>
 
-        <section class="story-chapter" data-chapter="core" data-start="0.80" data-end="0.90">
-          <p class="story-kicker">Digital Core</p>
+        <section class="story-chapter" data-chapter="core">
+          <p class="story-kicker">10 — Digital Core</p>
           <h2 class="story-title story-title-md">Et l’idée devient un produit.</h2>
-          <p class="story-lead">Un ensemble de technologies qui fonctionnent ensemble.</p>
+          <p class="story-lead">Un ensemble de technologies qui fonctionnent ensemble, puis se referment.</p>
         </section>
 
-        <section class="story-chapter story-chapter-ecosystem" data-chapter="ecosystem" data-start="0.90" data-end="0.96">
-          <p class="story-kicker">Milym</p>
+        <section class="story-chapter story-chapter-ecosystem" data-chapter="ecosystem">
+          <p class="story-kicker">11 — L’écosystème</p>
           <h2 class="story-title story-title-md">L’écosystème Milym</h2>
-          <p class="story-lead">Sites, applications, IA, backend, données, automatisation.</p>
-          <nav class="story-ecosystem-nav" aria-label="Domaines Milym">
+          <p class="story-lead">Sites, applications, intelligence artificielle, backend, données, automatisation.</p>
+          <nav class="story-ecosystem-nav" aria-label="Domaines d’intervention">
             <a href="/projets#sites-web">Sites web</a>
             <a href="/projets#applications">Applications</a>
             <a href="/projets#intelligence-artificielle">Intelligence artificielle</a>
-            <a href="/projets">Backend</a>
-            <a href="/projets">Database</a>
+            <a href="/projets">Backend &amp; données</a>
             <a href="/projets#outils">Automatisation</a>
           </nav>
         </section>
 
-        <section class="story-chapter story-chapter-final" data-chapter="final" data-start="0.96" data-end="1">
+        <section class="story-chapter story-chapter-final" data-chapter="final">
+          <p class="story-kicker">12 — Le produit</p>
           <h2 class="story-title">Une idée peut devenir beaucoup de choses.</h2>
           <p class="story-lead">Parlons de la vôtre.</p>
           <p class="sr-only"><%= settings.heroTitle %>. <%= settings.heroSubtitle %></p>
@@ -99,6 +109,8 @@
           </div>
         </section>
       </div>
+
+      <p id="story-hint" class="story-hint" aria-hidden="true">Faites défiler</p>
     </div>
   </div>
 </article>

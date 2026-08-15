@@ -1,33 +1,40 @@
 import { CameraRig } from "./CameraRig.jsx";
 import { Lights } from "./Lights.jsx";
-import { IdeaPaper } from "./IdeaPaper.jsx";
-import { PrototypeScreen } from "./PrototypeScreen.jsx";
-import { WebFactory } from "./WebFactory.jsx";
-import { BackendNetwork } from "./BackendNetwork.jsx";
-import { DatabaseRings } from "./Database.jsx";
+import { Desk } from "./Desk.jsx";
+import { PaperScreen } from "./PaperScreen.jsx";
+import { LayerStack } from "./LayerStack.jsx";
+import { BackendModules } from "./BackendModules.jsx";
+import { DatabaseStack } from "./DatabaseStack.jsx";
 import { AINetwork } from "./AINetwork.jsx";
+import { DataFlow } from "./DataFlow.jsx";
 import { DigitalCore } from "./DigitalCore.jsx";
 import { MilymEcosystem } from "./MilymEcosystem.jsx";
 import { FinalProduct } from "./FinalProduct.jsx";
-import { DataFlow } from "./DataFlow.jsx";
 
+/**
+ * Une seule scène, un seul décor. Les objets se succèdent au même endroit :
+ * la feuille devient l'écran, l'écran s'ouvre en couches, les couches se
+ * referment en noyau, le noyau devient l'écosystème puis le produit fini.
+ */
 export function Scene({ quality, logoUrl }) {
   return (
     <>
       <color attach="background" args={["#050507"]} />
-      <fog attach="fog" args={["#050507", 7, 16]} />
+      <fog attach="fog" args={["#050507", 10, 26]} />
+
       <CameraRig />
       <Lights quality={quality} />
-      <IdeaPaper quality={quality} />
-      <PrototypeScreen />
-      <WebFactory quality={quality} />
-      <BackendNetwork quality={quality} />
-      <DatabaseRings quality={quality} />
+
+      <Desk quality={quality} />
+      <PaperScreen quality={quality} />
+      <LayerStack quality={quality} />
+      <BackendModules quality={quality} />
+      <DatabaseStack quality={quality} />
       <AINetwork quality={quality} />
-      <DigitalCore logoUrl={logoUrl} quality={quality} />
-      <MilymEcosystem quality={quality} />
-      <FinalProduct />
       <DataFlow quality={quality} />
+      <DigitalCore logoUrl={logoUrl} quality={quality} />
+      <MilymEcosystem />
+      <FinalProduct />
     </>
   );
 }

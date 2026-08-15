@@ -20,7 +20,16 @@ export function createHomeTimeline(root) {
 
   const chapters = gsap.utils.toArray("[data-chapter]").map((element) => {
     const [start, end] = ACTS[element.dataset.chapter] || [0, 1];
-    return { element, start, end, fade: Math.min((end - start) * 0.3, 0.028) };
+    return {
+      element,
+      start,
+      end,
+      fade: Math.min((end - start) * 0.3, 0.028),
+      // Le premier chapitre est déjà là à l'ouverture, et le dernier ne doit
+      // pas s'effacer au moment où l'on atteint ses boutons.
+      openStart: start <= 0,
+      openEnd: end >= 1
+    };
   });
 
   const steps = gsap.utils.toArray("[data-rail-step]");
@@ -39,11 +48,14 @@ export function createHomeTimeline(root) {
     }
 
     let active = 0;
-    chapters.forEach(({ element, start, end, fade }, index) => {
+    chapters.forEach(({ element, start, end, fade, openStart, openEnd }, index) => {
       let opacity = 0;
-      if (progress > start - fade && progress < end + fade) {
-        if (progress < start + fade) opacity = (progress - (start - fade)) / (fade * 2);
-        else if (progress > end - fade) opacity = ((end + fade) - progress) / (fade * 2);
+      const before = openStart ? -Infinity : start - fade;
+      const after = openEnd ? Infinity : end + fade;
+
+      if (progress > before && progress < after) {
+        if (!openStart && progress < start + fade) opacity = (progress - before) / (fade * 2);
+        else if (!openEnd && progress > end - fade) opacity = (after - progress) / (fade * 2);
         else opacity = 1;
       }
       opacity = Math.min(1, Math.max(0, opacity));
@@ -53,7 +65,8 @@ export function createHomeTimeline(root) {
       element.style.filter = opacity > 0.99 ? "none" : `blur(${((1 - opacity) * 5).toFixed(2)}px)`;
       element.setAttribute("aria-hidden", opacity < 0.3 ? "true" : "false");
 
-      if (progress >= start && progress < end) active = index;
+      // Les chapitres sont ordonnés : le dernier commencé est l'actif.
+      if (progress >= start) active = index;
     });
 
     steps.forEach((step, index) => {

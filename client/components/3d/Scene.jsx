@@ -10,11 +10,17 @@ import { DataFlow } from "./DataFlow.jsx";
 import { DigitalCore } from "./DigitalCore.jsx";
 import { MilymEcosystem } from "./MilymEcosystem.jsx";
 import { FinalProduct } from "./FinalProduct.jsx";
+import { ParticleField } from "../../fx/ParticleField.jsx";
+import { ScanBeam } from "../../fx/ScanBeam.jsx";
+import { Shockwave } from "../../fx/Shockwave.jsx";
+import { Effects } from "../../fx/Effects.jsx";
 
 /**
- * Une seule scène, un seul décor. Les objets se succèdent au même endroit :
- * la feuille devient l'écran, l'écran s'ouvre en couches, les couches se
- * referment en noyau, le noyau devient l'écosystème puis le produit fini.
+ * Une seule scène, un seul décor, et deux registres qui se répondent :
+ * les objets (feuille, écran, couches, serveurs, noyau, écosystème) jouent le
+ * concret, pendant qu'une nappe de particules unique se métamorphose d'une
+ * forme à l'autre et porte le souffle du récit. Les balayages de numérisation,
+ * l'onde de choc du noyau et le bloom donnent les accents.
  */
 export function Scene({ quality, logoUrl }) {
   return (
@@ -35,6 +41,14 @@ export function Scene({ quality, logoUrl }) {
       <DigitalCore logoUrl={logoUrl} quality={quality} />
       <MilymEcosystem />
       <FinalProduct />
+
+      <ParticleField quality={quality} />
+      {/* Deux passes de numérisation : la feuille, puis l'interface finale. */}
+      <ScanBeam range={[0.235, 0.315]} />
+      <ScanBeam range={[0.4, 0.455]} />
+      <Shockwave />
+
+      <Effects enabled={quality.postprocessing} />
     </>
   );
 }

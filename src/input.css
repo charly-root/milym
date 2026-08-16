@@ -845,6 +845,7 @@
     transform: scaleX(0);
     transform-origin: left center;
     background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.75), rgba(216, 180, 254, 0.95));
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.55), 0 0 3px rgba(233, 213, 255, 0.8);
   }
 
   .home-story-sticky {
@@ -945,6 +946,37 @@
     padding: 0 1.25rem 5.5rem;
     opacity: 0;
     will-change: opacity, transform;
+  }
+
+  /* ── Cascade typographique ────────────────────────────────────────────────
+     L'opacité du chapitre est pilotée par le scroll (inline), mais ses enfants
+     entrent chacun leur tour dès que le chapitre devient « vivant ». */
+  .home-story.is-cinematic .story-chapter > * {
+    opacity: 0;
+    transform: translateY(22px);
+    filter: blur(6px);
+    transition:
+      opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .home-story.is-cinematic .story-chapter.is-live > * {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+
+  .home-story.is-cinematic .story-chapter.is-live > *:nth-child(2) {
+    transition-delay: 0.09s;
+  }
+
+  .home-story.is-cinematic .story-chapter.is-live > *:nth-child(3) {
+    transition-delay: 0.18s;
+  }
+
+  .home-story.is-cinematic .story-chapter.is-live > *:nth-child(4) {
+    transition-delay: 0.27s;
   }
 
   /* Le texte reste lisible même quand la scène s'éclaircit derrière lui */

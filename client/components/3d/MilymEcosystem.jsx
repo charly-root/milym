@@ -172,14 +172,8 @@ function OrbitItem({ item, index, texture }) {
       </mesh>
       <mesh>
         <planeGeometry args={item.size} />
-        <meshStandardMaterial
-          map={texture}
-          roughness={0.28}
-          metalness={0.1}
-          transparent
-          emissive="#2e1064"
-          emissiveIntensity={0.16}
-        />
+        {/* Non éclairé : les cartes restent lisibles quel que soit l'angle. */}
+        <meshBasicMaterial map={texture} transparent />
       </mesh>
     </group>
   );

@@ -34,6 +34,11 @@ export function createHomeTimeline(root) {
 
   const steps = gsap.utils.toArray("[data-rail-step]");
 
+  // La cascade typographique (CSS) n'est armée qu'après le premier rendu :
+  // sinon la classe arriverait dans le même recalcul de style que
+  // `is-cinematic` et l'entrée du premier chapitre ne se jouerait pas.
+  let armed = false;
+
   const render = (progress) => {
     experienceStore.progress = progress;
 
@@ -64,6 +69,8 @@ export function createHomeTimeline(root) {
       element.style.transform = `translate3d(0, ${((1 - opacity) * 14).toFixed(2)}px, 0)`;
       element.style.filter = opacity > 0.99 ? "none" : `blur(${((1 - opacity) * 5).toFixed(2)}px)`;
       element.setAttribute("aria-hidden", opacity < 0.3 ? "true" : "false");
+      // Les enfants entrent en cascade (kicker, titre, texte, boutons).
+      element.classList.toggle("is-live", armed && opacity > 0.4);
 
       // Les chapitres sont ordonnés : le dernier commencé est l'actif.
       if (progress >= start) active = index;
@@ -84,19 +91,6 @@ export function createHomeTimeline(root) {
       onUpdate: (self) => render(self.progress)
     });
 
-    const first = chapters[0]?.element;
-    if (first) {
-      gsap.from(first.children, {
-        y: 22,
-        opacity: 0,
-        filter: "blur(6px)",
-        duration: 1.1,
-        stagger: 0.12,
-        ease: "power3.out",
-        delay: 0.15
-      });
-    }
-
     gsap.utils.toArray(".btn-primary, .btn-ghost, .story-ecosystem-nav a").forEach((button) => {
       button.addEventListener("pointerenter", () =>
         gsap.to(button, { y: -2, scale: 1.02, duration: 0.35, ease: "power3.out", overwrite: "auto" })
@@ -110,6 +104,10 @@ export function createHomeTimeline(root) {
   // Sans ce premier rendu, rien n'est visible tant que le visiteur n'a pas bougé.
   render(0);
   ScrollTrigger.refresh();
+  requestAnimationFrame(() => {
+    armed = true;
+    render(experienceStore.progress);
+  });
 
   return () => context.revert();
 }

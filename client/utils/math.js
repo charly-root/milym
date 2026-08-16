@@ -41,7 +41,8 @@ export function sampleKeyframes(frames, progress) {
         p: progress,
         pos: lerpArray(a.pos, b.pos, t),
         look: lerpArray(a.look, b.look, t),
-        fov: lerp(a.fov, b.fov, t)
+        fov: lerp(a.fov, b.fov, t),
+        roll: lerp(a.roll || 0, b.roll || 0, t)
       };
     }
   }

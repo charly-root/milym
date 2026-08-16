@@ -31,6 +31,7 @@ export function DigitalCore({ logoUrl, quality }) {
   const shell = useRef();
   const modules = useRef();
   const badge = useRef();
+  const heart = useRef();
   const { camera } = useThree();
   const [logo, setLogo] = useState(null);
 
@@ -71,6 +72,10 @@ export function DigitalCore({ logoUrl, quality }) {
     const open = coreOpenAmount(p);
     const hub = coreHubAmount(p);
 
+    // L'allumage : le cœur flambe au moment où l'onde de choc part.
+    const ignition = Math.sin(Math.PI * between(p, 0.868, 0.94));
+    if (heart.current) heart.current.emissiveIntensity = 0.6 + ignition * 3.4;
+
     group.current.scale.setScalar(lerp(1, 0.52, hub));
     // Seuls les modules tournent : le logo doit rester lisible de face.
     modules.current.rotation.y += delta * 0.16;
@@ -80,12 +85,16 @@ export function DigitalCore({ logoUrl, quality }) {
 
     modules.current?.children.forEach((module, i) => {
       const angle = (i / MODULES.length) * Math.PI * 2;
-      const radius = RADIUS + open * 0.55;
+      // Fermé, chaque module est rangé à l'intérieur de la coque : on ne voit
+      // pas une rangée de cubes flotter autour du noyau pendant l'implosion.
+      const radius = lerp(0.22, RADIUS + open * 0.55, open);
       module.position.set(
         Math.cos(angle) * radius,
         Math.sin(angle * 1.6) * 0.3 * open,
         Math.sin(angle) * radius
       );
+      module.scale.setScalar(lerp(0.2, 1, open));
+      module.visible = open > 0.02;
       const chip = module.children[1];
       if (chip) {
         chip.visible = open > 0.05;
@@ -100,6 +109,7 @@ export function DigitalCore({ logoUrl, quality }) {
       <mesh castShadow={quality.shadows}>
         <icosahedronGeometry args={[0.4, 0]} />
         <meshStandardMaterial
+          ref={heart}
           color="#12081c"
           emissive="#6d28d9"
           emissiveIntensity={0.6}

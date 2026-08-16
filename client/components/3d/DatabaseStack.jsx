@@ -27,7 +27,10 @@ export function DatabaseStack({ quality }) {
 
     const appear = between(p, 0.685, 0.735);
     const collapse = between(p, 0.82, 0.875);
-    setGroupOpacity(group.current, appear * (1 - collapse));
+    // Pendant l'acte IA, la base s'efface aux trois quarts : vue de haut, la
+    // pile d'anneaux émissifs ferait une tache violette au pied du réseau.
+    const aiFocus = between(p, 0.755, 0.79) * (1 - between(p, 0.82, 0.86));
+    setGroupOpacity(group.current, appear * (1 - collapse) * (1 - aiFocus * 0.75));
     if (!group.current.visible) return;
 
     group.current.position.z = lerp(STAGE.databaseZ, 0, collapse);
@@ -56,18 +59,20 @@ export function DatabaseStack({ quality }) {
 
   return (
     <group ref={group} position={[STAGE.center[0], STAGE.center[1] - 0.12, STAGE.databaseZ]}>
+      {/* Des disques pleins, pas des anneaux : vus de haut ou de biais, les
+          anneaux plats se fondaient en une tache ; l'empilement de galettes
+          reste l'icône « base de données » sous tous les angles. */}
       {Array.from({ length: RINGS }, (_, i) => (
-        <mesh key={i} rotation={[Math.PI / 2, 0, 0]} position={[0, (i - (RINGS - 1) / 2) * 0.26, 0]}>
-          <ringGeometry args={[0.42, 0.72, 44]} />
+        <mesh key={i} position={[0, (i - (RINGS - 1) / 2) * 0.26, 0]}>
+          <cylinderGeometry args={[0.58, 0.58, 0.15, 40]} />
           <meshStandardMaterial
-            color="#2a1a4d"
+            color="#1d1236"
             roughness={0.24}
             metalness={0.4}
             transparent
-            opacity={0.85}
-            side={THREE.DoubleSide}
+            opacity={0.92}
             emissive="#7c3aed"
-            emissiveIntensity={0.45}
+            emissiveIntensity={0.4}
           />
         </mesh>
       ))}

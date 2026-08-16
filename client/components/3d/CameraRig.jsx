@@ -4,30 +4,33 @@ import { experienceStore } from "../../store.js";
 import { sampleKeyframes, lerp } from "../../utils/math.js";
 
 /**
- * La caméra raconte, elle ne tourne pas pour tourner : elle se penche sur la
- * feuille, se redresse avec elle, s'écarte pour montrer l'épaisseur de
- * l'application, puis revient de face pour la fin.
+ * La caméra joue la mise en scène : plongée lente sur le bureau, contre-plongée
+ * héroïque quand la feuille se lève, coup de zoom sur la numérisation, travée
+ * latérale avec un léger roulis pour longer l'épaisseur de l'application,
+ * recul brutal avant l'implosion, grand large sur la galaxie, et remontée
+ * douce vers la constellation finale.
  *
- * Règle de cadrage : le sujet du moment occupe environ deux tiers de la
- * largeur. La caméra reste toujours à l'extérieur de la scène — y entrer
- * donnait des plans illisibles où tout débordait du cadre.
+ * Le roulis reste sous trois degrés : assez pour donner du mouvement, jamais
+ * assez pour donner le mal de mer.
  */
 const KEYFRAMES = [
-  { p: 0.0, pos: [0.5, 2.15, 1.7], look: [0.0, 0.04, 0.02], fov: 38 },
-  { p: 0.07, pos: [0.28, 1.88, 1.5], look: [0.0, 0.04, 0.0], fov: 35 },
-  { p: 0.15, pos: [0.2, 1.95, 1.9], look: [0.0, 0.3, 0.0], fov: 35 },
-  { p: 0.24, pos: [0.05, 1.22, 3.0], look: [0.0, 1.16, 0.0], fov: 34 },
-  { p: 0.33, pos: [0.0, 1.2, 3.05], look: [0.0, 1.18, 0.0], fov: 33 },
-  { p: 0.45, pos: [0.0, 1.19, 2.9], look: [0.0, 1.18, 0.0], fov: 32 },
-  { p: 0.55, pos: [3.0, 1.65, 1.35], look: [0.0, 1.15, -0.85], fov: 40 },
-  { p: 0.65, pos: [3.1, 1.55, 0.5], look: [0.0, 1.12, -1.7], fov: 40 },
-  { p: 0.73, pos: [2.4, 1.3, -0.5], look: [0.0, 1.02, -2.6], fov: 40 },
-  { p: 0.79, pos: [3.2, 2.1, -0.4], look: [1.5, 1.72, -2.9], fov: 38 },
-  { p: 0.825, pos: [1.6, 1.55, 1.4], look: [0.0, 1.2, -0.8], fov: 38 },
-  { p: 0.87, pos: [0.1, 1.22, 4.1], look: [0.0, 1.16, 0.0], fov: 36 },
-  { p: 0.93, pos: [0.0, 1.3, 5.0], look: [0.0, 1.12, 0.0], fov: 42 },
-  { p: 0.975, pos: [0.0, 1.16, 3.05], look: [0.0, 1.12, 0.0], fov: 38 },
-  { p: 1.0, pos: [0.0, 1.2, 4.4], look: [0.0, 1.08, 0.0], fov: 40 }
+  { p: 0.0, pos: [0.85, 2.5, 2.0], look: [0.0, 0.05, 0.02], fov: 38 },
+  { p: 0.06, pos: [0.3, 1.85, 1.5], look: [0.0, 0.05, 0.0], fov: 34 },
+  { p: 0.13, pos: [0.55, 1.05, 2.0], look: [0.0, 0.55, 0.0], fov: 37, roll: -1.2 },
+  { p: 0.22, pos: [0.0, 1.3, 2.95], look: [0.0, 1.14, 0.0], fov: 33 },
+  { p: 0.275, pos: [0.0, 1.18, 2.35], look: [0.0, 1.15, 0.0], fov: 30 },
+  { p: 0.34, pos: [0.0, 1.2, 3.0], look: [0.0, 1.16, 0.0], fov: 33 },
+  { p: 0.46, pos: [0.35, 1.25, 2.7], look: [0.0, 1.16, 0.0], fov: 31, roll: 0.8 },
+  { p: 0.55, pos: [2.9, 1.7, 1.5], look: [0.0, 1.14, -0.8], fov: 40, roll: 2.4 },
+  { p: 0.64, pos: [2.9, 1.55, 0.4], look: [0.0, 1.1, -1.7], fov: 42, roll: 1.5 },
+  { p: 0.72, pos: [1.9, 1.35, -0.5], look: [0.0, 1.03, -2.6], fov: 42 },
+  { p: 0.79, pos: [3.0, 2.25, -1.1], look: [1.5, 1.72, -2.85], fov: 34, roll: -1.5 },
+  { p: 0.83, pos: [1.9, 1.7, 2.2], look: [0.0, 1.2, -0.5], fov: 38 },
+  { p: 0.875, pos: [0.05, 1.25, 4.2], look: [0.0, 1.15, 0.0], fov: 34 },
+  { p: 0.9, pos: [0.0, 1.5, 4.6], look: [0.0, 1.13, 0.0], fov: 38 },
+  { p: 0.93, pos: [0.0, 3.5, 4.2], look: [0.0, 0.9, 0.0], fov: 42 },
+  { p: 0.965, pos: [0.0, 1.35, 3.2], look: [0.0, 1.2, 0.0], fov: 38 },
+  { p: 1.0, pos: [0.0, 1.5, 4.5], look: [0.0, 1.38, 0.0], fov: 41 }
 ];
 
 const PARALLAX = 0.1;
@@ -61,6 +64,7 @@ function fitToViewport(aspect, fov) {
 export function CameraRig() {
   const { camera } = useThree();
   const look = useRef({ x: 0, y: 0.04, z: 0 });
+  const roll = useRef(0);
 
   useFrame((_, delta) => {
     const frame = sampleKeyframes(KEYFRAMES, experienceStore.progress);
@@ -81,6 +85,10 @@ export function CameraRig() {
     camera.position.y = lerp(camera.position.y, targetY + (frame.pos[1] + py - targetY) * fit.distance, k);
     camera.position.z = lerp(camera.position.z, targetZ + (frame.pos[2] - targetZ) * fit.distance, k);
     camera.lookAt(look.current.x, look.current.y, look.current.z);
+
+    // Roulis appliqué après le lookAt : il ne s'accumule donc jamais.
+    roll.current = lerp(roll.current, frame.roll || 0, k);
+    if (Math.abs(roll.current) > 0.01) camera.rotateZ(roll.current * DEG);
 
     if (Math.abs(camera.fov - fit.fov) > 0.01) {
       camera.fov = lerp(camera.fov, fit.fov, k);

@@ -63,14 +63,8 @@ export function FinalProduct() {
       {SCREENS.map((screen) => (
         <mesh key={screen.id} position={screen.closed}>
           <planeGeometry args={screen.size} />
-          <meshStandardMaterial
-            map={textures[screen.id]}
-            roughness={0.24}
-            metalness={0.12}
-            transparent
-            emissive="#2e1064"
-            emissiveIntensity={0.14}
-          />
+          {/* Non éclairé : un écran émet sa propre lumière, il ne la reçoit pas. */}
+          <meshBasicMaterial map={textures[screen.id]} transparent />
         </mesh>
       ))}
     </group>

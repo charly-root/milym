@@ -22,34 +22,43 @@ export function getQualityProfile(tier) {
   if (tier === "mobile") {
     return {
       particles: 12,
+      particleCount: 5000,
+      particleSize: 2.5,
       aiNodes: 18,
       shadows: false,
       antialias: false,
       transmission: false,
       extraLights: false,
-      contactShadows: false
+      contactShadows: false,
+      postprocessing: false
     };
   }
 
   if (tier === "laptop") {
     return {
       particles: 36,
+      particleCount: 12000,
+      particleSize: 2.9,
       aiNodes: 32,
       shadows: false,
       antialias: true,
       transmission: false,
       extraLights: true,
-      contactShadows: true
+      contactShadows: true,
+      postprocessing: true
     };
   }
 
   return {
     particles: 72,
+    particleCount: 22000,
+    particleSize: 3.1,
     aiNodes: 48,
     shadows: true,
     antialias: true,
     transmission: true,
     extraLights: true,
-    contactShadows: true
+    contactShadows: true,
+    postprocessing: true
   };
 }

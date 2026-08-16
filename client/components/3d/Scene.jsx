@@ -13,6 +13,7 @@ import { FinalProduct } from "./FinalProduct.jsx";
 import { ParticleField } from "../../fx/ParticleField.jsx";
 import { ScanBeam } from "../../fx/ScanBeam.jsx";
 import { Shockwave } from "../../fx/Shockwave.jsx";
+import { Earth } from "../../fx/Earth.jsx";
 import { Effects } from "../../fx/Effects.jsx";
 
 /**
@@ -30,6 +31,9 @@ export function Scene({ quality, logoUrl }) {
 
       <CameraRig />
       <Lights quality={quality} />
+
+      {/* Prologue : la Terre de nuit, la rotation, la plongée vers la France. */}
+      <Earth />
 
       <Desk quality={quality} />
       <PaperScreen quality={quality} />

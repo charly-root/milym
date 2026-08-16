@@ -54,6 +54,7 @@ export function Experience({ root }) {
     const onPointer = (event) => {
       experienceStore.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
       experienceStore.pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      experienceStore.pointerActive = true;
     };
     window.addEventListener("pointermove", onPointer, { passive: true });
     return () => window.removeEventListener("pointermove", onPointer);

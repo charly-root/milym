@@ -13,9 +13,12 @@
         aria-hidden="true"
       ></div>
 
+      <!-- Le flash qui couvre le raccord entre la France vue du ciel et le bureau -->
+      <div id="story-flash" class="story-flash" aria-hidden="true"></div>
+
       <!-- Repère de lecture : où en est-on dans la fabrication du projet -->
       <ol class="story-rail" aria-hidden="true">
-        <% ['Idée','Croquis','Wireframe','Prototype','Interface','Frontend','Backend','Données','IA','Digital Core','Écosystème','Produit'].forEach((label, i) => { %>
+        <% ['Espace','Idée','Croquis','Wireframe','Prototype','Interface','Frontend','Backend','Données','IA','Digital Core','Écosystème','Produit'].forEach((label, i) => { %>
           <li class="story-rail-step" data-rail-step="<%= i %>">
             <span class="story-rail-mark"></span>
             <span class="story-rail-label"><%= label %></span>
@@ -24,10 +27,16 @@
       </ol>
 
       <div class="home-story-copy">
+        <section class="story-chapter" data-chapter="earth">
+          <p class="story-kicker">00 — Depuis l’espace</p>
+          <h1 class="story-title">Créateur de projets numériques</h1>
+          <p class="story-lead">La nuit, chaque lumière est un projet qui veille. Le prochain s’allume en France.</p>
+        </section>
+
         <section class="story-chapter" data-chapter="idea">
           <p class="story-kicker">01 — L’idée</p>
-          <h1 class="story-title">Créateur de projets numériques</h1>
-          <p class="story-lead">Tout commence par une idée, griffonnée sur un coin de table.</p>
+          <h2 class="story-title">Tout commence par une idée.</h2>
+          <p class="story-lead">Griffonnée sur un coin de table, un soir, à la lumière d’une lampe.</p>
         </section>
 
         <section class="story-chapter" data-chapter="sketch">

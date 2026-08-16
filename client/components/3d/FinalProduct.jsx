@@ -42,11 +42,13 @@ export function FinalProduct() {
     const p = experienceStore.progress;
     if (!group.current) return;
 
-    const presence = between(p, 0.95, 0.975);
+    // Les écrans n'entrent qu'une fois la caméra posée et la scène vidée
+    // (noyau et écosystème partis) : l'enchaînement était le point bugué.
+    const presence = between(p, 0.958, 0.978);
     setGroupOpacity(group.current, presence);
     if (!group.current.visible) return;
 
-    const spread = between(p, 0.972, 1);
+    const spread = between(p, 0.978, 1);
     group.current.children.forEach((screen, i) => {
       const { closed, open, tilt } = SCREENS[i];
       screen.position.set(

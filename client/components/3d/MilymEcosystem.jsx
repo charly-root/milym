@@ -87,7 +87,9 @@ export function MilymEcosystem() {
     const p = experienceStore.progress;
     if (!group.current) return;
 
-    const presence = between(p, 0.895, 0.925) * (1 - between(p, 0.955, 0.985));
+    // Les cartes sortent avant l'arrivée des écrans du final : les deux
+    // familles superposées rendaient la conclusion illisible.
+    const presence = between(p, 0.895, 0.925) * (1 - between(p, 0.938, 0.962));
     setGroupOpacity(group.current, presence);
     if (!group.current.visible) {
       if (experienceStore.hovered) {

@@ -1,19 +1,34 @@
 import { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { experienceStore } from "../../store.js";
+import { EARTH, PROLOGUE } from "../../stage.js";
 import { sampleKeyframes, lerp } from "../../utils/math.js";
 
 /**
- * La caméra joue la mise en scène : plongée lente sur le bureau, contre-plongée
- * héroïque quand la feuille se lève, coup de zoom sur la numérisation, travée
- * latérale avec un léger roulis pour longer l'épaisseur de l'application,
- * recul brutal avant l'implosion, grand large sur la galaxie, et remontée
- * douce vers la constellation finale.
+ * La caméra joue la mise en scène : d'abord le prologue — la Terre de nuit qui
+ * tourne, puis une plongée oblique vers la France jusqu'à ce que ses lumières
+ * remplissent l'écran (le flash couvre le raccord vers le bureau) — puis le
+ * récit : plongée lente sur le bureau, contre-plongée quand la feuille se
+ * lève, coup de zoom sur la numérisation, travée latérale avec un léger
+ * roulis, recul avant l'implosion, plongée sur la galaxie et remontée douce
+ * vers la constellation finale.
  *
  * Le roulis reste sous trois degrés : assez pour donner du mouvement, jamais
  * assez pour donner le mal de mer.
  */
-const KEYFRAMES = [
+const FRANCE = EARTH.france.map((v, i) => EARTH.center[i] + v * EARTH.radius);
+const approach = (d) => EARTH.france.map((v, i) => EARTH.center[i] + v * (EARTH.radius + d));
+
+/** Prologue, en progrès brut : l'espace, la rotation, la plongée. */
+const PROLOGUE_KEYFRAMES = [
+  { p: 0.0, pos: [0.0, 2.45, 33.5], look: EARTH.center, fov: 40 },
+  { p: 0.04, pos: [1.6, 3.1, 31.0], look: EARTH.center, fov: 38 },
+  { p: 0.07, pos: approach(3.4), look: FRANCE, fov: 33 },
+  { p: 0.0935, pos: approach(0.55), look: FRANCE, fov: 26 }
+];
+
+/** Le récit, en progrès récit (0 → 1) : remappé après le prologue. */
+const STORY_KEYFRAMES = [
   { p: 0.0, pos: [0.85, 2.5, 2.0], look: [0.0, 0.05, 0.02], fov: 38 },
   { p: 0.06, pos: [0.3, 1.85, 1.5], look: [0.0, 0.05, 0.0], fov: 34 },
   { p: 0.13, pos: [0.55, 1.05, 2.0], look: [0.0, 0.55, 0.0], fov: 37, roll: -1.2 },
@@ -29,8 +44,15 @@ const KEYFRAMES = [
   { p: 0.875, pos: [0.05, 1.25, 4.2], look: [0.0, 1.15, 0.0], fov: 34 },
   { p: 0.9, pos: [0.0, 1.5, 4.6], look: [0.0, 1.13, 0.0], fov: 38 },
   { p: 0.93, pos: [0.0, 3.5, 4.2], look: [0.0, 0.9, 0.0], fov: 42 },
-  { p: 0.965, pos: [0.0, 1.35, 3.2], look: [0.0, 1.2, 0.0], fov: 38 },
-  { p: 1.0, pos: [0.0, 1.5, 4.5], look: [0.0, 1.38, 0.0], fov: 41 }
+  // La fin, réécrite : la caméra se pose avant que les écrans n'apparaissent,
+  // puis recule doucement pour cadrer l'éventail et la constellation.
+  { p: 0.958, pos: [0.0, 1.35, 3.3], look: [0.0, 1.25, 0.0], fov: 38 },
+  { p: 1.0, pos: [0.0, 1.5, 4.6], look: [0.0, 1.38, 0.0], fov: 41 }
+];
+
+const KEYFRAMES = [
+  ...PROLOGUE_KEYFRAMES,
+  ...STORY_KEYFRAMES.map((frame) => ({ ...frame, p: PROLOGUE + frame.p * (1 - PROLOGUE) }))
 ];
 
 const PARALLAX = 0.1;
@@ -63,11 +85,11 @@ function fitToViewport(aspect, fov) {
 
 export function CameraRig() {
   const { camera } = useThree();
-  const look = useRef({ x: 0, y: 0.04, z: 0 });
+  const look = useRef({ x: EARTH.center[0], y: EARTH.center[1], z: EARTH.center[2] });
   const roll = useRef(0);
 
   useFrame((_, delta) => {
-    const frame = sampleKeyframes(KEYFRAMES, experienceStore.progress);
+    const frame = sampleKeyframes(KEYFRAMES, experienceStore.rawProgress);
     const fit = fitToViewport(camera.aspect, frame.fov);
     const px = experienceStore.pointer.x * PARALLAX;
     const py = experienceStore.pointer.y * PARALLAX * 0.5;

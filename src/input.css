@@ -855,7 +855,8 @@
 
   .home-canvas,
   .story-rail,
-  .story-hint {
+  .story-hint,
+  .story-flash {
     display: none;
   }
 
@@ -895,7 +896,20 @@
 
   /* ── Mode cinématique ─────────────────────────────────────────────────── */
   .home-story.is-cinematic .home-story-track {
-    height: 900vh;
+    height: 1000vh;
+  }
+
+  /* Le flash qui couvre le raccord France → bureau, au-dessus du canvas et
+     sous les textes. Un voile lumineux, pas un blanc d'hôpital. */
+  .home-story.is-cinematic .story-flash {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0;
+    will-change: opacity;
+    background: radial-gradient(circle at 52% 44%, #f4efff 0%, #cbb8fa 38%, #4c2d96 78%, #17102b 100%);
   }
 
   .home-story.is-cinematic .home-story-sticky {

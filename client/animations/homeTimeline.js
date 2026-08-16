@@ -1,9 +1,11 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { experienceStore } from "../store.js";
-import { ACTS } from "../stage.js";
+import { ACTS, PROLOGUE, storyProgress } from "../stage.js";
 
 gsap.registerPlugin(ScrollTrigger);
+
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
 
 /**
  * Une seule timeline pilote tout : la progression 3D, l'apparition des textes,
@@ -17,14 +19,22 @@ export function createHomeTimeline(root) {
   const nav = document.getElementById("navbar");
   const bar = document.getElementById("story-progress");
   const hint = document.getElementById("story-hint");
+  const flash = document.getElementById("story-flash");
 
+  // Les chapitres vivent en progrès brut : le chapitre « Terre » occupe le
+  // prologue, les autres reçoivent leur plage récit remappée après lui.
   const chapters = gsap.utils.toArray("[data-chapter]").map((element) => {
-    const [start, end] = ACTS[element.dataset.chapter] || [0, 1];
+    const isEarth = element.dataset.chapter === "earth";
+    const [s, e] = ACTS[element.dataset.chapter] || [0, 1];
+    const start = isEarth ? 0 : PROLOGUE + s * (1 - PROLOGUE);
+    // Le chapitre Terre s'efface avant le flash, pas sous lui : sinon son
+    // titre et celui de l'idée se superposaient pendant le raccord.
+    const end = isEarth ? PROLOGUE - 0.025 : PROLOGUE + e * (1 - PROLOGUE);
     return {
       element,
       start,
       end,
-      fade: Math.min((end - start) * 0.3, 0.028),
+      fade: Math.min((end - start) * 0.3, 0.025),
       // Le premier chapitre est déjà là à l'ouverture, et le dernier ne doit
       // pas s'effacer au moment où l'on atteint ses boutons.
       openStart: start <= 0,
@@ -40,14 +50,24 @@ export function createHomeTimeline(root) {
   let armed = false;
 
   const render = (progress) => {
-    experienceStore.progress = progress;
+    const story = storyProgress(progress);
+    experienceStore.progress = story;
+    experienceStore.rawProgress = progress;
 
     if (bar) bar.style.transform = `scaleX(${progress})`;
     if (hint) hint.style.opacity = String(1 - Math.min(progress / 0.02, 1));
 
+    // Le flash blanc-violet qui couvre le raccord France → bureau : montée
+    // rapide quand la surface remplit l'écran, retombée douce sur la feuille.
+    if (flash) {
+      const up = clamp01((progress - 0.084) / 0.012);
+      const down = 1 - clamp01((progress - 0.103) / 0.016);
+      flash.style.opacity = String(Math.min(up, down));
+    }
+
     if (nav) {
       // Le header n'existe vraiment qu'une fois l'idée passée au numérique.
-      const digital = progress > ACTS.wireframe[0];
+      const digital = story > ACTS.wireframe[0];
       nav.classList.toggle("nav-home-visible", digital);
       nav.classList.toggle("nav-scrolled", digital);
     }

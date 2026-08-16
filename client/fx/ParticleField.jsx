@@ -17,8 +17,8 @@ import * as shapes from "./shapes.js";
  * chaque particule pour que la nuée voyage en vagues plutôt qu'en bloc.
  */
 const TIMELINE = [
-  { p: 0.0, shape: "dust", size: 1.0, swirl: 0.35, alpha: 0.4, color: "#d9c8a6" },
-  { p: 0.12, shape: "dust", size: 1.0, swirl: 0.35, alpha: 0.45, color: "#d9c8a6" },
+  { p: 0.0, shape: "dust", size: 1.15, swirl: 0.35, alpha: 0.5, color: "#d9c8a6" },
+  { p: 0.12, shape: "dust", size: 1.15, swirl: 0.35, alpha: 0.55, color: "#d9c8a6" },
   { p: 0.2, shape: "vortex", size: 1.1, swirl: 0.85, alpha: 0.7, color: "#c2a8e8" },
   { p: 0.29, shape: "grid", size: 1.0, swirl: 0.4, alpha: 0.95, color: "#a78bfa" },
   { p: 0.37, shape: "grid", size: 0.95, swirl: 0.35, alpha: 0.85, color: "#a78bfa" },
@@ -34,8 +34,8 @@ const TIMELINE = [
   { p: 0.878, shape: "core", size: 1.15, swirl: 1.5, alpha: 1.0, color: "#c084fc" },
   { p: 0.905, shape: "core", size: 1.1, swirl: 0.5, alpha: 1.0, color: "#c084fc" },
   { p: 0.945, shape: "galaxy", size: 1.35, swirl: 0.4, alpha: 1.0, color: "#b39dfb" },
-  { p: 0.963, shape: "galaxy", size: 1.3, swirl: 0.35, alpha: 0.95, color: "#bda9f7" },
-  { p: 0.993, shape: "logo", size: 1.45, swirl: 0.3, alpha: 1.0, color: "#f3efff" },
+  { p: 0.962, shape: "galaxy", size: 1.3, swirl: 0.35, alpha: 0.95, color: "#bda9f7" },
+  { p: 0.988, shape: "logo", size: 1.45, swirl: 0.3, alpha: 1.0, color: "#f3efff" },
   { p: 1.0, shape: "logo", size: 1.45, swirl: 0.25, alpha: 1.0, color: "#f3efff" }
 ];
 
@@ -50,6 +50,9 @@ const VERTEX = /* glsl */ `
   uniform float uAlpha;
   uniform float uPixelRatio;
   uniform vec3 uColor;
+  uniform vec2 uPointer;
+  uniform float uAspect;
+  uniform float uRepel;
   varying float vAlpha;
   varying vec3 vColor;
 
@@ -71,10 +74,22 @@ const VERTEX = /* glsl */ `
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
 
+    // Répulsion du curseur, en espace écran : les particules proches de la
+    // souris s'écartent et s'accumulent au bord de la zone — un halo.
+    vec2 ndc = gl_Position.xy / max(0.0001, gl_Position.w);
+    vec2 away = ndc - uPointer;
+    away.x *= uAspect;
+    float dist = length(away);
+    float push = smoothstep(0.34, 0.06, dist) * uRepel;
+    vec2 dir = dist > 0.0001 ? away / dist : vec2(0.0, 1.0);
+    dir.x /= uAspect;
+    // Chaque particule réagit un peu différemment : le bord du halo respire.
+    gl_Position.xy += dir * push * (0.16 + aSeed.w * 0.1) * gl_Position.w;
+
     float twinkle = 0.72 + 0.28 * sin(uTime * (1.5 + aSeed.w * 2.0) + aSeed.x * 40.0);
     vAlpha = uAlpha * twinkle;
-    // En transit, la particule brille un peu plus fort : le voyage se voit.
-    vColor = uColor * (0.75 + aSeed.w * 0.7) * (1.0 + transit * 1.1);
+    // En transit ou repoussée par le curseur, la particule brille plus fort.
+    vColor = uColor * (0.75 + aSeed.w * 0.7) * (1.0 + transit * 1.1 + push * 2.2);
     gl_PointSize = uSize * (0.5 + aSeed.w * 1.1) * (1.0 + transit * 1.1) * uPixelRatio * (2.4 / max(0.4, -mv.z));
   }
 `;
@@ -128,7 +143,10 @@ export function ParticleField({ quality }) {
         uSwirl: { value: 0.35 },
         uAlpha: { value: 0.4 },
         uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
-        uColor: { value: new THREE.Color("#d9c8a6") }
+        uColor: { value: new THREE.Color("#d9c8a6") },
+        uPointer: { value: new THREE.Vector2(0, 0) },
+        uAspect: { value: 1 },
+        uRepel: { value: 0 }
       }
     });
 
@@ -138,11 +156,21 @@ export function ParticleField({ quality }) {
   const colorA = useMemo(() => new THREE.Color(), []);
   const colorB = useMemo(() => new THREE.Color(), []);
 
-  useFrame(({ clock, gl }) => {
+  useFrame(({ clock, gl, size }, delta) => {
     const p = experienceStore.progress;
     const u = material.uniforms;
     u.uTime.value = clock.elapsedTime;
     u.uPixelRatio.value = gl.getPixelRatio();
+
+    // Le halo suit la souris avec un léger retard, et ne s'active qu'au
+    // premier mouvement — sinon il creuserait le centre de l'écran au chargement.
+    const ease = 1 - Math.pow(0.0015, Math.min(delta, 0.05));
+    const pointer = u.uPointer.value;
+    pointer.x += (experienceStore.pointer.x - pointer.x) * ease;
+    pointer.y += (experienceStore.pointer.y - pointer.y) * ease;
+    u.uAspect.value = size.width / size.height;
+    const repelTarget = experienceStore.pointerActive ? 1 : 0;
+    u.uRepel.value += (repelTarget - u.uRepel.value) * ease;
 
     let i = 0;
     while (i < TIMELINE.length - 2 && p >= TIMELINE[i + 1].p) i++;

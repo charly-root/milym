@@ -65,7 +65,9 @@ export function DigitalCore({ logoUrl, quality }) {
     if (!group.current) return;
 
     const appear = between(p, 0.795, 0.845);
-    const leave = between(p, 0.955, 0.985);
+    // Le noyau quitte la scène AVANT que les écrans du final n'apparaissent :
+    // à moitié transparent au milieu d'eux, il semblait traverser le site.
+    const leave = between(p, 0.938, 0.962);
     setGroupOpacity(group.current, appear * (1 - leave));
     if (!group.current.visible) return;
 
@@ -76,7 +78,9 @@ export function DigitalCore({ logoUrl, quality }) {
     const ignition = Math.sin(Math.PI * between(p, 0.868, 0.94));
     if (heart.current) heart.current.emissiveIntensity = 0.6 + ignition * 3.4;
 
-    group.current.scale.setScalar(lerp(1, 0.52, hub));
+    // Il rétrécit en devenant le moyeu de la galaxie, puis s'éteint en
+    // s'effondrant sur lui-même plutôt qu'en s'évaporant sur place.
+    group.current.scale.setScalar(lerp(1, 0.52, hub) * (1 - leave));
     // Seuls les modules tournent : le logo doit rester lisible de face.
     modules.current.rotation.y += delta * 0.16;
     shell.current.rotation.x += delta * 0.1;

@@ -37,6 +37,26 @@ export const ACT_LABELS = {
   final: "Produit"
 };
 
+/**
+ * Prologue : la part du scroll réservée à la Terre vue de l'espace, avant que
+ * le récit « de l'idée au produit » ne commence. Les scènes existantes vivent
+ * en « progrès récit » (0 → 1) ; seule la caméra, la Terre et le flash de
+ * transition lisent le progrès brut.
+ */
+export const PROLOGUE = 0.1;
+
+export function storyProgress(raw) {
+  return Math.min(1, Math.max(0, (raw - PROLOGUE) / (1 - PROLOGUE)));
+}
+
+/** La Terre du prologue, posée loin derrière la caméra du récit. */
+export const EARTH = {
+  center: [0, 1.15, 20],
+  radius: 4,
+  /** Direction locale de la France sur la sphère (lat 46.6° N, lon 2.3° E). */
+  france: [0.6864, 0.7266, -0.0276]
+};
+
 /** Repères géométriques communs à toutes les scènes. */
 export const STAGE = {
   /** Point où se joue toute l'histoire : la feuille y monte, l'écran s'y forme. */

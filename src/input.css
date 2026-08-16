@@ -909,7 +909,15 @@
     pointer-events: none;
     opacity: 0;
     will-change: opacity;
-    background: radial-gradient(circle at 52% 44%, #f4efff 0%, #cbb8fa 38%, #4c2d96 78%, #17102b 100%);
+    /* Tons magma : c'est la détonation de la Terre qui blanchit l'écran. */
+    background: radial-gradient(
+      circle at 52% 44%,
+      #fff6e8 0%,
+      #ffc687 26%,
+      #f0642a 54%,
+      #6e1f38 80%,
+      #17102b 100%
+    );
   }
 
   .home-story.is-cinematic .home-story-sticky {

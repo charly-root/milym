@@ -1,8 +1,8 @@
 import { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { experienceStore } from "../../store.js";
-import { EARTH, PROLOGUE } from "../../stage.js";
-import { sampleKeyframes, lerp } from "../../utils/math.js";
+import { BOOM, EARTH, PROLOGUE } from "../../stage.js";
+import { sampleKeyframes, lerp, smoothstep } from "../../utils/math.js";
 
 /**
  * La caméra joue la mise en scène : d'abord le prologue — la Terre de nuit qui
@@ -19,12 +19,19 @@ import { sampleKeyframes, lerp } from "../../utils/math.js";
 const FRANCE = EARTH.france.map((v, i) => EARTH.center[i] + v * EARTH.radius);
 const approach = (d) => EARTH.france.map((v, i) => EARTH.center[i] + v * (EARTH.radius + d));
 
-/** Prologue, en progrès brut : l'espace, la rotation, la plongée. */
+/**
+ * Prologue, en progrès brut : l'espace, la rotation, l'approche de la France…
+ * puis la détonation. La caméra est rejetée en arrière par le souffle (recul
+ * + ouverture de focale) pour laisser l'explosion remplir le cadre.
+ */
 const PROLOGUE_KEYFRAMES = [
   { p: 0.0, pos: [0.0, 2.45, 33.5], look: EARTH.center, fov: 40 },
   { p: 0.04, pos: [1.6, 3.1, 31.0], look: EARTH.center, fov: 38 },
-  { p: 0.07, pos: approach(3.4), look: FRANCE, fov: 33 },
-  { p: 0.0935, pos: approach(0.55), look: FRANCE, fov: 26 }
+  { p: 0.062, pos: approach(4.4), look: FRANCE, fov: 33 },
+  { p: BOOM.start, pos: approach(2.4), look: FRANCE, fov: 28 },
+  // Rejetée par le souffle — mais pas trop loin : les débris doivent frôler
+  // l'objectif pour que l'explosion se vive de l'intérieur.
+  { p: 0.0935, pos: approach(6.2), look: EARTH.center, fov: 44 }
 ];
 
 /** Le récit, en progrès récit (0 → 1) : remappé après le prologue. */
@@ -36,9 +43,11 @@ const STORY_KEYFRAMES = [
   { p: 0.275, pos: [0.0, 1.18, 2.35], look: [0.0, 1.15, 0.0], fov: 30 },
   { p: 0.34, pos: [0.0, 1.2, 3.0], look: [0.0, 1.16, 0.0], fov: 33 },
   { p: 0.46, pos: [0.35, 1.25, 2.7], look: [0.0, 1.16, 0.0], fov: 31, roll: 0.8 },
+  // La travée reste à l'extérieur de la pile : entrer dedans transformait
+  // les plaques en murs de verre qui masquaient l'API et la base de données.
   { p: 0.55, pos: [2.9, 1.7, 1.5], look: [0.0, 1.14, -0.8], fov: 40, roll: 2.4 },
-  { p: 0.64, pos: [2.9, 1.55, 0.4], look: [0.0, 1.1, -1.7], fov: 42, roll: 1.5 },
-  { p: 0.72, pos: [1.9, 1.35, -0.5], look: [0.0, 1.03, -2.6], fov: 42 },
+  { p: 0.64, pos: [3.15, 1.6, 0.5], look: [0.0, 1.1, -1.6], fov: 42, roll: 1.5 },
+  { p: 0.72, pos: [2.7, 1.5, -0.7], look: [0.0, 1.05, -2.5], fov: 41 },
   { p: 0.79, pos: [3.0, 2.25, -1.1], look: [1.5, 1.72, -2.85], fov: 34, roll: -1.5 },
   { p: 0.83, pos: [1.9, 1.7, 2.2], look: [0.0, 1.2, -0.5], fov: 38 },
   { p: 0.875, pos: [0.05, 1.25, 4.2], look: [0.0, 1.15, 0.0], fov: 34 },
@@ -88,8 +97,9 @@ export function CameraRig() {
   const look = useRef({ x: EARTH.center[0], y: EARTH.center[1], z: EARTH.center[2] });
   const roll = useRef(0);
 
-  useFrame((_, delta) => {
-    const frame = sampleKeyframes(KEYFRAMES, experienceStore.rawProgress);
+  useFrame(({ clock }, delta) => {
+    const raw = experienceStore.rawProgress;
+    const frame = sampleKeyframes(KEYFRAMES, raw);
     const fit = fitToViewport(camera.aspect, frame.fov);
     const px = experienceStore.pointer.x * PARALLAX;
     const py = experienceStore.pointer.y * PARALLAX * 0.5;
@@ -106,6 +116,19 @@ export function CameraRig() {
     camera.position.x = lerp(camera.position.x, targetX + (frame.pos[0] + px - targetX) * fit.distance, k);
     camera.position.y = lerp(camera.position.y, targetY + (frame.pos[1] + py - targetY) * fit.distance, k);
     camera.position.z = lerp(camera.position.z, targetZ + (frame.pos[2] - targetZ) * fit.distance, k);
+
+    // La secousse de la détonation : un tremblement multi-fréquence appliqué
+    // à la position avant le lookAt — la caméra vibre, le cadre reste tenu.
+    const shake =
+      smoothstep(BOOM.start, BOOM.start + 0.004, raw) * (1 - smoothstep(BOOM.peak + 0.006, BOOM.end, raw));
+    if (shake > 0.001) {
+      const t = clock.elapsedTime;
+      const amp = shake * 0.34;
+      camera.position.x += Math.sin(t * 39.0) * amp;
+      camera.position.y += Math.cos(t * 47.0) * amp * 0.7;
+      camera.position.z += Math.sin(t * 31.0 + 1.7) * amp * 0.5;
+    }
+
     camera.lookAt(look.current.x, look.current.y, look.current.z);
 
     // Roulis appliqué après le lookAt : il ne s'accumule donc jamais.

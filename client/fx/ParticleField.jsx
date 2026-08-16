@@ -25,8 +25,10 @@ const TIMELINE = [
   { p: 0.45, shape: "halo", size: 1.0, swirl: 0.35, alpha: 0.55, color: "#c4b5fd" },
   { p: 0.52, shape: "halo", size: 1.0, swirl: 0.35, alpha: 0.55, color: "#c4b5fd" },
   { p: 0.6, shape: "layers", size: 0.95, swirl: 0.5, alpha: 0.8, color: "#8b5cf6" },
-  { p: 0.655, shape: "layers", size: 0.95, swirl: 0.4, alpha: 0.8, color: "#8b5cf6" },
-  { p: 0.72, shape: "streams", size: 1.05, swirl: 0.5, alpha: 0.9, color: "#c4b5fd" },
+  // Les particules quittent les plaques en même temps qu'elles : elles se
+  // changent en rubans de données pendant que la pile s'enfonce dans le noir.
+  { p: 0.648, shape: "layers", size: 0.95, swirl: 0.4, alpha: 0.8, color: "#8b5cf6" },
+  { p: 0.715, shape: "streams", size: 1.05, swirl: 0.5, alpha: 0.9, color: "#c4b5fd" },
   { p: 0.765, shape: "streams", size: 1.05, swirl: 0.5, alpha: 0.9, color: "#c4b5fd" },
   { p: 0.8, shape: "neural", size: 1.0, swirl: 0.35, alpha: 0.9, color: "#ddd6fe" },
   { p: 0.835, shape: "neural", size: 1.0, swirl: 0.45, alpha: 0.9, color: "#ddd6fe" },

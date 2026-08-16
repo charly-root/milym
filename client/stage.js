@@ -57,6 +57,19 @@ export const EARTH = {
   france: [0.6864, 0.7266, -0.0276]
 };
 
+/**
+ * L'explosion de la Terre, en progrès brut. La chauffe précède la détonation,
+ * les débris et la lave vivent jusqu'au flash qui raccorde vers le bureau.
+ * Partagé entre la Terre (débris, lave), la caméra (secousse, recul) et le
+ * flash DOM pour que tout détone à la même frame.
+ */
+export const BOOM = {
+  heatStart: 0.058,
+  start: 0.074,
+  peak: 0.088,
+  end: 0.108
+};
+
 /** Repères géométriques communs à toutes les scènes. */
 export const STAGE = {
   /** Point où se joue toute l'histoire : la feuille y monte, l'écran s'y forme. */

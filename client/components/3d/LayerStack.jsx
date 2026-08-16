@@ -39,25 +39,27 @@ export function LayerStack({ quality }) {
 
     const expand = between(p, 0.485, 0.575);
     // Les couches de surface s'effacent quand on passe derrière l'interface.
-    const frontFade = between(p, 0.6, 0.675);
-    // Tout converge ensuite vers le noyau.
-    const collapse = between(p, 0.82, 0.875);
-    // Les noms ne servent que pendant la vue éclatée : au-delà c'est le backend
-    // qui prend la parole, et l'écran se couvrirait de titres concurrents.
+    const frontFade = between(p, 0.6, 0.655);
+    // La pile entière cède la place au backend : gardées en scène, les plaques
+    // devenaient des murs de verre que la caméra traversait — le passage
+    // « couches → API → base de données » en était illisible.
+    const handoff = between(p, 0.645, 0.71);
+    // Les noms ne servent que pendant la vue éclatée.
     const named = 1 - between(p, 0.595, 0.645);
 
-    const alive = expand * (1 - collapse);
+    const alive = expand * (1 - handoff);
     stack.visible = alive > 0.004;
     if (!stack.visible) return;
 
     stack.children.forEach((child) => {
       const index = child.userData.index;
-      const depth = -index * STAGE.layerGap * expand;
-      child.position.z = lerp(depth, 0, collapse);
-      child.scale.setScalar(1 - collapse);
+      // En partant, chaque plaque recule : la pile s'enfonce dans le noir
+      // vers la salle des machines au lieu de s'évaporer sur place.
+      child.position.z = -index * STAGE.layerGap * expand - handoff * 0.9;
+      child.scale.setScalar(1);
 
       const isFront = index <= 2;
-      const opacity = expand * (isFront ? 1 - frontFade : 1);
+      const opacity = alive * (isFront ? 1 - frontFade : 1);
       child.visible = opacity > 0.004;
       if (!child.visible) return;
 

@@ -1,7 +1,7 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { experienceStore } from "../store.js";
-import { ACTS, PROLOGUE, storyProgress } from "../stage.js";
+import { ACTS, BOOM, PROLOGUE, storyProgress } from "../stage.js";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -57,11 +57,11 @@ export function createHomeTimeline(root) {
     if (bar) bar.style.transform = `scaleX(${progress})`;
     if (hint) hint.style.opacity = String(1 - Math.min(progress / 0.02, 1));
 
-    // Le flash blanc-violet qui couvre le raccord France → bureau : montée
-    // rapide quand la surface remplit l'écran, retombée douce sur la feuille.
+    // Le flash magma qui couvre le raccord explosion → bureau : il monte
+    // après le plan des débris (le « money shot ») et retombe sur la feuille.
     if (flash) {
-      const up = clamp01((progress - 0.084) / 0.012);
-      const down = 1 - clamp01((progress - 0.103) / 0.016);
+      const up = clamp01((progress - BOOM.peak) / 0.011);
+      const down = 1 - clamp01((progress - (BOOM.end - 0.005)) / 0.016);
       flash.style.opacity = String(Math.min(up, down));
     }
 

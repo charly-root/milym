@@ -29,7 +29,11 @@ export function BackendModules({ quality }) {
 
     const appear = between(p, 0.595, 0.655);
     const collapse = between(p, 0.82, 0.875);
-    setGroupOpacity(group.current, appear * (1 - collapse));
+    // Pendant l'acte données, les modules s'ouvrent comme des portes et
+    // s'estompent : plantés devant la base, ils la masquaient entièrement
+    // depuis la travée latérale.
+    const dataFocus = between(p, 0.695, 0.745) * (1 - between(p, 0.8, 0.84));
+    setGroupOpacity(group.current, appear * (1 - collapse) * (1 - dataFocus * 0.72));
     if (!group.current.visible) return;
 
     // Les modules restent, mais cèdent la parole à la base de données.
@@ -41,6 +45,9 @@ export function BackendModules({ quality }) {
     group.current.children.forEach((module, i) => {
       if (module.userData.index == null) return;
       module.position.y = Math.sin(clock.elapsedTime * 0.4 + i) * 0.018;
+      // L'écartement : chaque boîtier glisse vers son côté et recule un peu.
+      module.position.x = MODULES[i].x * (1 + dataFocus * 1.1);
+      module.position.z = -dataFocus * 0.35;
 
       const tag = module.children[2];
       tag.material.opacity *= named;

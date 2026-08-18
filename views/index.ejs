@@ -17,9 +17,21 @@
       <div id="story-flash" class="story-flash" aria-hidden="true"></div>
 
       <!-- Repère de lecture : où en est-on dans la fabrication du projet -->
-      <ol class="story-rail" aria-hidden="true">
-        <% ['Espace','Idée','Croquis','Wireframe','Prototype','Interface','Frontend','Backend','Données','IA','Digital Core','Écosystème','Produit'].forEach((label, i) => { %>
-          <li class="story-rail-step" data-rail-step="<%= i %>">
+      <ol class="story-rail" aria-label="Chapitres du récit">
+        <% [
+          ['earth','Espace'],
+          ['idea','Idée'],
+          ['sketch','Croquis'],
+          ['interface','Interface'],
+          ['factory','Frontend'],
+          ['backend','Backend'],
+          ['data','Données'],
+          ['ai','IA'],
+          ['core','Digital Core'],
+          ['ecosystem','Écosystème'],
+          ['final','Produit']
+        ].forEach(([id, label], i) => { %>
+          <li class="story-rail-step" data-rail-step="<%= i %>" data-snap="<%= id %>">
             <span class="story-rail-mark"></span>
             <span class="story-rail-label"><%= label %></span>
           </li>
@@ -45,56 +57,56 @@
           <p class="story-lead">Les blocs dessinés se détachent de la feuille : un bandeau, un titre, un bouton, deux cartes.</p>
         </section>
 
-        <section class="story-chapter" data-chapter="wireframe">
+        <section class="story-chapter story-chapter-bridge" data-chapter="wireframe">
           <p class="story-kicker">03 — Le wireframe</p>
           <h2 class="story-title story-title-md">On lui donne une forme.</h2>
           <p class="story-lead">Les traits se redressent, les annotations s’effacent, la feuille devient un écran.</p>
         </section>
 
-        <section class="story-chapter" data-chapter="prototype">
+        <section class="story-chapter story-chapter-bridge" data-chapter="prototype">
           <p class="story-kicker">04 — Le prototype</p>
           <h2 class="story-title story-title-md">Puis une interface.</h2>
           <p class="story-lead">Blocs gris et textes provisoires : la structure tient, le reste viendra.</p>
         </section>
 
         <section class="story-chapter" data-chapter="interface">
-          <p class="story-kicker">05 — L’interface</p>
+          <p class="story-kicker">03 — L’interface</p>
           <h2 class="story-title story-title-md">Le produit prend son visage.</h2>
           <p class="story-lead">Composants finis, contenus réels, images en place.</p>
         </section>
 
         <section class="story-chapter" data-chapter="factory">
-          <p class="story-kicker">06 — Le frontend</p>
+          <p class="story-kicker">04 — Le frontend</p>
           <h2 class="story-title story-title-md">Puis une logique.</h2>
           <p class="story-lead">L’écran s’ouvre en couches : UI, React, état, API, Node.js, base de données.</p>
         </section>
 
         <section class="story-chapter" data-chapter="backend">
-          <p class="story-kicker">07 — Le backend</p>
+          <p class="story-kicker">05 — Le backend</p>
           <h2 class="story-title story-title-md">Une interface n’est que le début.</h2>
           <p class="story-lead">Nous construisons aussi ce qu’il y a derrière : passerelle, serveur, services.</p>
         </section>
 
         <section class="story-chapter" data-chapter="data">
-          <p class="story-kicker">08 — Les données</p>
-          <h2 class="story-title story-title-md">On connecte les données.</h2>
-          <p class="story-lead">Une requête part de l’écran, traverse l’API, et revient avec sa réponse.</p>
+          <p class="story-kicker">06 — Les données</p>
+          <h2 class="story-title story-title-md">Les données se rangent.</h2>
+          <p class="story-lead">Lignes d’une table, disques d’une base : la requête s’écrit, puis se relit.</p>
         </section>
 
         <section class="story-chapter" data-chapter="ai">
-          <p class="story-kicker">09 — L’intelligence</p>
-          <h2 class="story-title story-title-md">Des outils classiques aux systèmes intelligents.</h2>
-          <p class="story-lead">Le réseau s’allume, connexion après connexion.</p>
+          <p class="story-kicker">07 — L’intelligence</p>
+          <h2 class="story-title story-title-md">Le modèle s’allume.</h2>
+          <p class="story-lead">Une impulsion traverse les données et le réseau s’ouvre, nœud après nœud.</p>
         </section>
 
         <section class="story-chapter" data-chapter="core">
-          <p class="story-kicker">10 — Digital Core</p>
-          <h2 class="story-title story-title-md">Et l’idée devient un produit.</h2>
-          <p class="story-lead">Un ensemble de technologies qui fonctionnent ensemble, puis se referment.</p>
+          <p class="story-kicker">08 — Digital Core</p>
+          <h2 class="story-title story-title-md">Tout se rassemble.</h2>
+          <p class="story-lead">Le réseau se referme : l’idée devient un produit, un noyau de technologies.</p>
         </section>
 
         <section class="story-chapter story-chapter-ecosystem" data-chapter="ecosystem">
-          <p class="story-kicker">11 — L’écosystème</p>
+          <p class="story-kicker">09 — L’écosystème</p>
           <h2 class="story-title story-title-md">L’écosystème Milym</h2>
           <p class="story-lead">Sites, applications, intelligence artificielle, backend, données, automatisation.</p>
           <nav class="story-ecosystem-nav" aria-label="Domaines d’intervention">
@@ -107,7 +119,7 @@
         </section>
 
         <section class="story-chapter story-chapter-final" data-chapter="final">
-          <p class="story-kicker">12 — Le produit</p>
+          <p class="story-kicker">10 — Le produit</p>
           <h2 class="story-title">Une idée peut devenir beaucoup de choses.</h2>
           <p class="story-lead">Parlons de la vôtre.</p>
           <p class="sr-only"><%= settings.heroTitle %>. <%= settings.heroSubtitle %></p>
@@ -131,7 +143,7 @@
   "name": "<%= site.name %>",
   "description": "<%= settings.heroSubtitle %>",
   "url": "/",
-  "image": "<%= site.logo %>",
+  "image": "/logos/milym-wordmark.png",
   "areaServed": "FR",
   "knowsAbout": ["Sites web", "Applications web", "Intelligence artificielle", "API", "Backend", "Automatisation"]
 }

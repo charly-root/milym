@@ -38,14 +38,9 @@ export function LayerStack({ quality }) {
     if (!stack) return;
 
     const expand = between(p, 0.485, 0.575);
-    // Les couches de surface s'effacent quand on passe derrière l'interface.
-    const frontFade = between(p, 0.6, 0.655);
-    // La pile entière cède la place au backend : gardées en scène, les plaques
-    // devenaient des murs de verre que la caméra traversait — le passage
-    // « couches → API → base de données » en était illisible.
-    const handoff = between(p, 0.645, 0.71);
-    // Les noms ne servent que pendant la vue éclatée.
-    const named = 1 - between(p, 0.595, 0.645);
+    const frontFade = between(p, 0.575, 0.62);
+    const handoff = between(p, 0.61, 0.655);
+    const named = 1 - between(p, 0.58, 0.63);
 
     const alive = expand * (1 - handoff);
     stack.visible = alive > 0.004;

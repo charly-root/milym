@@ -38,6 +38,24 @@ export const ACT_LABELS = {
 };
 
 /**
+ * Crans de scroll. Wireframe et prototype n'ont pas de palier : ils se jouent
+ * pendant la transition Croquis → Interface.
+ */
+export const SNAP_CHAPTERS = [
+  "earth",
+  "idea",
+  "sketch",
+  "interface",
+  "factory",
+  "backend",
+  "data",
+  "ai",
+  "core",
+  "ecosystem",
+  "final"
+];
+
+/**
  * Prologue : la part du scroll réservée à la Terre vue de l'espace, avant que
  * le récit « de l'idée au produit » ne commence. Les scènes existantes vivent
  * en « progrès récit » (0 → 1) ; seule la caméra, la Terre et le flash de
@@ -47,6 +65,21 @@ export const PROLOGUE = 0.1;
 
 export function storyProgress(raw) {
   return Math.min(1, Math.max(0, (raw - PROLOGUE) / (1 - PROLOGUE)));
+}
+
+/**
+ * Progrès brut où un chapitre se « pose ». Un cran de scroll y amène la scène,
+ * déjà lisible, après avoir joué la transition depuis le cran précédent.
+ * L'espace reste à 0 (plan d'ouverture) ; le produit se pose près de la fin.
+ */
+export function chapterSnapProgress(chapter) {
+  if (chapter === "earth") return 0;
+  const range = ACTS[chapter];
+  if (!range) return 0;
+  const start = PROLOGUE + range[0] * (1 - PROLOGUE);
+  const end = PROLOGUE + range[1] * (1 - PROLOGUE);
+  const settle = chapter === "final" ? 0.72 : 0.58;
+  return start + (end - start) * settle;
 }
 
 /** La Terre du prologue, posée loin derrière la caméra du récit. */
@@ -81,7 +114,8 @@ export const STAGE = {
   /** Écart entre deux plaques de la vue éclatée. */
   layerGap: 0.34,
   layerCount: 6,
-  backendZ: -2.2,
-  databaseZ: -2.9,
-  aiZ: -2.85
+  /** Backend, données et IA se relaient au même endroit : un sujet à la fois. */
+  backendZ: -1.45,
+  databaseZ: -1.45,
+  aiZ: -1.45
 };

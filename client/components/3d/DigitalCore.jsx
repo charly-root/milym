@@ -7,7 +7,7 @@ import { between } from "../../utils/acts.js";
 import { lerp } from "../../utils/math.js";
 import { setGroupOpacity } from "../../utils/opacity.js";
 import { faceCamera } from "../../utils/billboard.js";
-import { createChipTexture, loadBadgeTexture } from "../../utils/textures.js";
+import { createChipTexture, loadWordmarkTexture } from "../../utils/textures.js";
 import { coreOpenAmount, coreHubAmount } from "../../animations/digitalCoreTimeline.js";
 
 /** Chaque module a un rôle : ce sont les pièces du produit, pas des logos. */
@@ -26,7 +26,7 @@ const RADIUS = 1.15;
  * Le noyau : tout ce qu'on vient de traverser, assemblé. Il s'ouvre pour
  * montrer ses pièces, puis se referme.
  */
-export function DigitalCore({ logoUrl, quality }) {
+export function DigitalCore({ quality }) {
   const group = useRef();
   const shell = useRef();
   const modules = useRef();
@@ -34,6 +34,7 @@ export function DigitalCore({ logoUrl, quality }) {
   const heart = useRef();
   const { camera } = useThree();
   const [logo, setLogo] = useState(null);
+  const [logoAspect, setLogoAspect] = useState(699 / 184);
 
   const chips = useMemo(() => MODULES.map((m) => createChipTexture(m.label)), []);
   const cage = useMemo(() => new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(0.78, 0)), []);
@@ -49,42 +50,54 @@ export function DigitalCore({ logoUrl, quality }) {
 
   useEffect(() => {
     let cancelled = false;
-    loadBadgeTexture(logoUrl)
-      .then((texture) => {
-        if (cancelled) texture.dispose();
-        else setLogo(texture);
+    loadWordmarkTexture()
+      .then(({ texture, aspect }) => {
+        if (cancelled) {
+          texture.dispose();
+          return;
+        }
+        setLogo(texture);
+        setLogoAspect(aspect);
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [logoUrl]);
+  }, []);
 
   useFrame((_, delta) => {
     const p = experienceStore.progress;
     if (!group.current) return;
 
-    const appear = between(p, 0.795, 0.845);
-    // Le noyau quitte la scène AVANT que les écrans du final n'apparaissent :
-    // à moitié transparent au milieu d'eux, il semblait traverser le site.
+    const appear = between(p, 0.828, 0.862);
     const leave = between(p, 0.938, 0.962);
     setGroupOpacity(group.current, appear * (1 - leave));
     if (!group.current.visible) return;
 
     const open = coreOpenAmount(p);
     const hub = coreHubAmount(p);
+    const travel = between(p, 0.855, 0.905);
+    const born = appear;
 
-    // L'allumage : le cœur flambe au moment où l'onde de choc part.
+    const fromX = 0;
+    const fromY = STAGE.center[1] + 0.08;
+    const fromZ = STAGE.aiZ;
+    group.current.position.set(
+      lerp(fromX, STAGE.center[0], travel),
+      lerp(fromY, STAGE.center[1], travel),
+      lerp(fromZ, STAGE.center[2], travel)
+    );
+
     const ignition = Math.sin(Math.PI * between(p, 0.868, 0.94));
     if (heart.current) heart.current.emissiveIntensity = 0.6 + ignition * 3.4;
 
-    // Il rétrécit en devenant le moyeu de la galaxie, puis s'éteint en
-    // s'effondrant sur lui-même plutôt qu'en s'évaporant sur place.
-    group.current.scale.setScalar(lerp(1, 0.52, hub) * (1 - leave));
+    group.current.scale.setScalar(lerp(0.18, 1, born) * lerp(1, 0.52, hub) * (1 - leave));
     // Seuls les modules tournent : le logo doit rester lisible de face.
-    modules.current.rotation.y += delta * 0.16;
-    shell.current.rotation.x += delta * 0.1;
-    shell.current.rotation.y += delta * 0.07;
+    if (modules.current) modules.current.rotation.y += delta * 0.16;
+    if (shell.current) {
+      shell.current.rotation.x += delta * 0.1;
+      shell.current.rotation.y += delta * 0.07;
+    }
     if (badge.current) faceCamera(badge.current, camera);
 
     modules.current?.children.forEach((module, i) => {
@@ -109,7 +122,7 @@ export function DigitalCore({ logoUrl, quality }) {
   });
 
   return (
-    <group ref={group} position={STAGE.center}>
+    <group ref={group} position={[0, STAGE.center[1] + 0.08, STAGE.aiZ]}>
       <mesh castShadow={quality.shadows}>
         <icosahedronGeometry args={[0.4, 0]} />
         <meshStandardMaterial
@@ -146,8 +159,8 @@ export function DigitalCore({ logoUrl, quality }) {
       </lineSegments>
 
       {logo && (
-        <mesh ref={badge} position={[0, 0, 0.66]}>
-          <planeGeometry args={[0.3, 0.3]} />
+        <mesh key={logoAspect} ref={badge} position={[0, 0, 0.66]}>
+          <planeGeometry args={[0.92, 0.92 / logoAspect]} />
           <meshBasicMaterial map={logo} transparent depthWrite={false} depthTest={false} />
         </mesh>
       )}

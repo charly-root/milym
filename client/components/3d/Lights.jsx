@@ -16,9 +16,10 @@ export function Lights({ quality }) {
 
   useFrame(() => {
     const digital = between(experienceStore.progress, 0.14, 0.32);
+    const machine = between(experienceStore.progress, 0.62, 0.8);
     if (lamp.current) lamp.current.intensity = lerp(6.5, 0.1, digital);
-    if (studio.current) studio.current.intensity = lerp(0.15, 4.6, digital);
-    if (fill.current) fill.current.intensity = lerp(0.12, 0.7, digital);
+    if (studio.current) studio.current.intensity = lerp(0.15, 4.6, digital) + machine * 1.6;
+    if (fill.current) fill.current.intensity = lerp(0.12, 0.7, digital) + machine * 0.4;
   });
 
   return (

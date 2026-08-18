@@ -23,7 +23,7 @@ import { Effects } from "../../fx/Effects.jsx";
  * forme à l'autre et porte le souffle du récit. Les balayages de numérisation,
  * l'onde de choc du noyau et le bloom donnent les accents.
  */
-export function Scene({ quality, logoUrl }) {
+export function Scene({ quality }) {
   return (
     <>
       <color attach="background" args={["#050507"]} />
@@ -32,7 +32,7 @@ export function Scene({ quality, logoUrl }) {
       <CameraRig />
       <Lights quality={quality} />
 
-      {/* Prologue : la Terre de nuit, la rotation, la plongée vers la France. */}
+      {/* Prologue : la France de nuit vue de l'espace, puis la plongée. */}
       <Earth />
 
       <Desk quality={quality} />
@@ -42,7 +42,7 @@ export function Scene({ quality, logoUrl }) {
       <DatabaseStack quality={quality} />
       <AINetwork quality={quality} />
       <DataFlow quality={quality} />
-      <DigitalCore logoUrl={logoUrl} quality={quality} />
+      <DigitalCore quality={quality} />
       <MilymEcosystem />
       <FinalProduct />
 

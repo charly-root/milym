@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/output.css">
-  <link rel="icon" href="<%= site.logo %>">
+  <link rel="icon" href="/logos/logo.svg">
 </head>
 <body class="bg-background font-sans text-primary antialiased min-h-screen flex flex-col overflow-x-hidden">
 
@@ -20,9 +20,8 @@
 
   <header class="border-b border-purple-650/15 bg-surface/60 backdrop-blur-xl">
     <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8" aria-label="Navigation du centre de contrôle">
-      <a href="/admin" class="flex items-center gap-2.5 focus-ring rounded-lg" aria-label="Tableau de bord">
-        <img src="<%= site.logo %>" alt="" class="h-7 w-7 object-contain" aria-hidden="true">
-        <span class="font-semibold text-purple-300"><%= site.name %></span>
+      <a href="/admin" class="flex items-center gap-3 focus-ring rounded-lg" aria-label="Tableau de bord">
+        <%- include('wordmark', { size: 'sm' }) %>
         <span class="rounded-full border border-purple-650/40 px-2.5 py-0.5 text-[10px] uppercase tracking-widest text-secondary">admin</span>
       </a>
 

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { BRAND_WORDMARK_URL, drawWordmark } from "../brand/wordmark.js";
 
 const PAPER_W = 1024;
 const PAPER_H = 1448; // proportions A4
@@ -224,10 +225,13 @@ export function createAnnotationTexture() {
 /** « MILYM » et la phrase d'ouverture, écrits au centre de la feuille. */
 export function createPaperTitleTexture() {
   const { canvas, ctx } = makeCanvas(PAPER_W, PAPER_H);
+  drawWordmark(ctx, PAPER_W / 2, 1300, {
+    fontSize: 92,
+    color: "rgba(38, 31, 26, 0.82)",
+    align: "center"
+  });
   ctx.textAlign = "center";
-  ctx.fillStyle = "rgba(38, 31, 26, 0.82)";
-  ctx.font = 'italic 96px Georgia, "Times New Roman", serif';
-  ctx.fillText("MILYM", PAPER_W / 2, 1300);
+  ctx.textBaseline = "alphabetic";
   ctx.fillStyle = "rgba(38, 31, 26, 0.5)";
   ctx.font = 'italic 38px Georgia, "Times New Roman", serif';
   ctx.fillText("Tout commence par une idée.", PAPER_W / 2, 1364);
@@ -306,10 +310,7 @@ export function createFinalUITexture() {
   // Bandeau
   fillRounded(ctx, 56, 34, 912, 58, 14, "rgba(255, 255, 255, 0.04)");
   strokeRounded(ctx, 56, 34, 912, 58, 14, "rgba(168, 85, 247, 0.22)");
-  fillRounded(ctx, 76, 48, 30, 30, 9, "rgba(168, 85, 247, 0.85)");
-  ctx.fillStyle = "rgba(245, 243, 255, 0.92)";
-  ctx.font = "600 19px Inter, system-ui, sans-serif";
-  ctx.fillText("milym", 118, 70);
+  drawWordmark(ctx, 76, 72, { fontSize: 22, color: "rgba(245, 243, 255, 0.95)" });
   ctx.fillStyle = "rgba(196, 181, 253, 0.66)";
   ctx.font = "500 15px Inter, system-ui, sans-serif";
   ctx.fillText("Accueil", 632, 69);
@@ -407,6 +408,23 @@ export function loadBadgeTexture(url) {
       const h = height * scale;
       ctx.drawImage(image, (size - w) / 2, (size - h) / 2, w, h);
       resolve(toTexture(canvas));
+    };
+    image.onerror = reject;
+    image.src = url;
+  });
+}
+
+/** Wordmark officiel, sans letterbox : le noyau l'affiche dans son vrai ratio. */
+export function loadWordmarkTexture(url = BRAND_WORDMARK_URL) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => {
+      const width = image.naturalWidth || 699;
+      const height = image.naturalHeight || 184;
+      const { canvas, ctx } = makeCanvas(width, height);
+      ctx.drawImage(image, 0, 0);
+      resolve({ texture: toTexture(canvas), aspect: width / height });
     };
     image.onerror = reject;
     image.src = url;

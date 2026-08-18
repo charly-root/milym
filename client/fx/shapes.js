@@ -1,4 +1,5 @@
 import { STAGE } from "../stage.js";
+import { collectWordmarkSamples, drawWordmark, scatterWordmark } from "../brand/wordmark.js";
 
 /**
  * Les dix formes que la nappe de particules traverse pendant le récit.
@@ -124,7 +125,7 @@ export function streams(count) {
   const to = [CX, CY - 0.12, STAGE.databaseZ + 0.2];
   for (let i = 0; i < count; i++) {
     const side = Math.random() < 0.5 ? -1 : 1;
-    const swing = side * (0.45 + Math.random() * 0.6);
+    const swing = side * (0.12 + Math.random() * 0.18);
     const t = Math.random();
     // Bézier quadratique : départ à l'écran, détour latéral, arrivée aux données.
     const mid = [from[0] + swing, CY + 0.1 + Math.random() * 0.25, (from[2] + to[2]) / 2];
@@ -136,13 +137,13 @@ export function streams(count) {
   return out;
 }
 
-/** Sphère neuronale à l'emplacement du réseau IA. */
+/** Sphère neuronale autour du réseau IA, au centre de la scène. */
 export function neural(count) {
   const out = new Float32Array(count * 3);
-  const home = [1.5, CY + 0.55, STAGE.aiZ];
+  const home = [CX, CY + 0.08, STAGE.aiZ];
   for (let i = 0; i < count; i++) {
-    const shell = Math.random() < 0.8;
-    const radius = shell ? 0.86 + gauss() * 0.03 : Math.random() * 0.7;
+    const shell = Math.random() < 0.82;
+    const radius = shell ? 1.04 + gauss() * 0.035 : Math.random() * 0.5;
     const theta = Math.random() * Math.PI * 2;
     const y = Math.random() * 2 - 1;
     const ring = Math.sqrt(Math.max(0, 1 - y * y));
@@ -195,34 +196,33 @@ export function galaxy(count) {
   return out;
 }
 
-/** Constellation finale : les particules épellent le nom du studio. */
-export function logo(count) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 640;
-  canvas.height = 170;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#fff";
-  ctx.font = "700 118px Inter, 'Segoe UI', sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("MILYM", 320, 92);
+function mapLogoPoint(sx, sy, canvasW, canvasH) {
+  const width = 2.55;
+  const height = (width * canvasH) / canvasW;
+  return [
+    CX + (sx / canvasW - 0.5) * width + gauss() * 0.008,
+    CY + 1.12 - (sy / canvasH - 0.5) * height + gauss() * 0.008,
+    CZ - 0.3 + gauss() * 0.02
+  ];
+}
 
-  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-  const samples = [];
-  for (let y = 0; y < canvas.height; y += 2) {
-    for (let x = 0; x < canvas.width; x += 2) {
-      if (pixels[(y * canvas.width + x) * 4 + 3] > 128) samples.push([x, y]);
-    }
+/** Constellation finale : MILYM + le carré violet du logo. */
+export function logo(count, image) {
+  let samples;
+  if (image) {
+    const canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth || image.width;
+    canvas.height = image.naturalHeight || image.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(image, 0, 0);
+    samples = collectWordmarkSamples(canvas);
+  } else {
+    const canvas = document.createElement("canvas");
+    canvas.width = 720;
+    canvas.height = 180;
+    const ctx = canvas.getContext("2d");
+    drawWordmark(ctx, 360, 124, { fontSize: 108, align: "center" });
+    samples = collectWordmarkSamples(canvas);
   }
-
-  const out = new Float32Array(count * 3);
-  const width = 2.5;
-  const height = (width * canvas.height) / canvas.width;
-  for (let i = 0; i < count; i++) {
-    const [sx, sy] = samples[Math.floor(Math.random() * samples.length)] || [320, 85];
-    out[i * 3] = CX + (sx / canvas.width - 0.5) * width + gauss() * 0.008;
-    out[i * 3 + 1] = CY + 1.12 - (sy / canvas.height - 0.5) * height + gauss() * 0.008;
-    out[i * 3 + 2] = CZ - 0.3 + gauss() * 0.02;
-  }
-  return out;
+  return scatterWordmark(samples, count, mapLogoPoint);
 }

@@ -5,13 +5,13 @@ import { BOOM, EARTH, PROLOGUE } from "../../stage.js";
 import { sampleKeyframes, lerp, smoothstep } from "../../utils/math.js";
 
 /**
- * La caméra joue la mise en scène : d'abord le prologue — la Terre de nuit qui
- * tourne, puis une plongée oblique vers la France jusqu'à ce que ses lumières
- * remplissent l'écran (le flash couvre le raccord vers le bureau) — puis le
- * récit : plongée lente sur le bureau, contre-plongée quand la feuille se
- * lève, coup de zoom sur la numérisation, travée latérale avec un léger
- * roulis, recul avant l'implosion, plongée sur la galaxie et remontée douce
- * vers la constellation finale.
+ * La caméra joue la mise en scène : d'abord le prologue — la France de nuit
+ * vue de l'espace, puis une plongée jusqu'à ce que ses lumières remplissent
+ * l'écran (le flash couvre le raccord vers le bureau) — puis le récit :
+ * plongée lente sur le bureau, contre-plongée quand la feuille se lève, coup
+ * de zoom sur la numérisation, travée latérale avec un léger roulis, recul
+ * avant l'implosion, plongée sur la galaxie et remontée douce vers la
+ * constellation finale.
  *
  * Le roulis reste sous trois degrés : assez pour donner du mouvement, jamais
  * assez pour donner le mal de mer.
@@ -20,13 +20,13 @@ const FRANCE = EARTH.france.map((v, i) => EARTH.center[i] + v * EARTH.radius);
 const approach = (d) => EARTH.france.map((v, i) => EARTH.center[i] + v * (EARTH.radius + d));
 
 /**
- * Prologue, en progrès brut : l'espace, la rotation, l'approche de la France…
- * puis la détonation. La caméra est rejetée en arrière par le souffle (recul
- * + ouverture de focale) pour laisser l'explosion remplir le cadre.
+ * Prologue, en progrès brut : la France déjà face caméra, la plongée, puis la
+ * détonation. La caméra est rejetée en arrière par le souffle (recul +
+ * ouverture de focale) pour laisser l'explosion remplir le cadre.
  */
 const PROLOGUE_KEYFRAMES = [
-  { p: 0.0, pos: [0.0, 2.45, 33.5], look: EARTH.center, fov: 40 },
-  { p: 0.04, pos: [1.6, 3.1, 31.0], look: EARTH.center, fov: 38 },
+  { p: 0.0, pos: approach(7.6), look: EARTH.center, fov: 36 },
+  { p: 0.045, pos: approach(5.5), look: FRANCE, fov: 34 },
   { p: 0.062, pos: approach(4.4), look: FRANCE, fov: 33 },
   { p: BOOM.start, pos: approach(2.4), look: FRANCE, fov: 28 },
   // Rejetée par le souffle — mais pas trop loin : les débris doivent frôler
@@ -46,12 +46,16 @@ const STORY_KEYFRAMES = [
   // La travée reste à l'extérieur de la pile : entrer dedans transformait
   // les plaques en murs de verre qui masquaient l'API et la base de données.
   { p: 0.55, pos: [2.9, 1.7, 1.5], look: [0.0, 1.14, -0.8], fov: 40, roll: 2.4 },
-  { p: 0.64, pos: [3.15, 1.6, 0.5], look: [0.0, 1.1, -1.6], fov: 42, roll: 1.5 },
-  { p: 0.72, pos: [2.7, 1.5, -0.7], look: [0.0, 1.05, -2.5], fov: 41 },
-  { p: 0.79, pos: [3.0, 2.25, -1.1], look: [1.5, 1.72, -2.85], fov: 34, roll: -1.5 },
-  { p: 0.83, pos: [1.9, 1.7, 2.2], look: [0.0, 1.2, -0.5], fov: 38 },
-  { p: 0.875, pos: [0.05, 1.25, 4.2], look: [0.0, 1.15, 0.0], fov: 34 },
-  { p: 0.9, pos: [0.0, 1.5, 4.6], look: [0.0, 1.13, 0.0], fov: 38 },
+  // On revient face au plateau : un seul sujet au centre, du backend à l'IA.
+  { p: 0.61, pos: [0.0, 1.34, 3.15], look: [0.0, 1.15, -1.45], fov: 36 },
+  { p: 0.66, pos: [0.0, 1.32, 3.05], look: [0.0, 1.15, -1.45], fov: 34 },
+  // Données : 3/4 un peu au-dessus, pour lire la table et la pile de disques.
+  { p: 0.73, pos: [1.75, 1.98, 2.4], look: [0.0, 1.02, -1.45], fov: 34 },
+  { p: 0.79, pos: [0.0, 1.38, 3.25], look: [0.0, 1.22, -1.45], fov: 34 },
+  // L'IA s'implose sur place, le noyau naît au même point, puis avance au centre.
+  { p: 0.84, pos: [0.0, 1.4, 3.55], look: [0.0, 1.18, -1.45], fov: 35 },
+  { p: 0.88, pos: [0.12, 1.48, 4.15], look: [0.0, 1.15, -0.35], fov: 36 },
+  { p: 0.91, pos: [0.0, 1.5, 4.6], look: [0.0, 1.13, 0.0], fov: 38 },
   { p: 0.93, pos: [0.0, 3.5, 4.2], look: [0.0, 0.9, 0.0], fov: 42 },
   // La fin, réécrite : la caméra se pose avant que les écrans n'apparaissent,
   // puis recule doucement pour cadrer l'éventail et la constellation.
@@ -78,18 +82,22 @@ const DEG = Math.PI / 180;
  */
 function fitToViewport(aspect, fov) {
   const need = Math.max(1, REFERENCE_ASPECT / aspect);
+  const portrait = aspect < 0.86;
   const share = Math.sqrt(need);
   const halfTangent = Math.tan((fov * DEG) / 2);
   let widened = (2 * Math.atan(halfTangent * share)) / DEG;
-  let distance = share;
+  let distance = share * (portrait ? 1.22 : 1);
 
   if (widened > MAX_FOV) {
     const capped = Math.tan((MAX_FOV * DEG) / 2) / halfTangent;
-    distance = need / capped;
+    distance = (need / capped) * (portrait ? 1.22 : 1);
     widened = MAX_FOV;
   }
 
-  return { fov: widened, distance, drop: Math.min(need - 1, 1.2) * 0.3 };
+  // Sur un téléphone, le texte occupe le bas : on baisse le point visé pour
+  // que la scène 3D reste dans la moitié haute du cadre.
+  const drop = Math.min(need - 1, 1.4) * (portrait ? 0.52 : 0.3) + (portrait ? 0.42 : 0);
+  return { fov: widened, distance, drop };
 }
 
 export function CameraRig() {
@@ -101,8 +109,9 @@ export function CameraRig() {
     const raw = experienceStore.rawProgress;
     const frame = sampleKeyframes(KEYFRAMES, raw);
     const fit = fitToViewport(camera.aspect, frame.fov);
-    const px = experienceStore.pointer.x * PARALLAX;
-    const py = experienceStore.pointer.y * PARALLAX * 0.5;
+    const parallax = experienceStore.tier === "mobile" ? 0 : PARALLAX;
+    const px = experienceStore.pointer.x * parallax;
+    const py = experienceStore.pointer.y * parallax * 0.5;
     const k = 1 - Math.pow(0.008, Math.min(delta, 0.05));
 
     const targetX = frame.look[0] + px * 0.2;

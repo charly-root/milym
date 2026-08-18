@@ -6,10 +6,10 @@ import { EARTH, BOOM } from "../stage.js";
 import { smoothstep, lerp } from "../utils/math.js";
 
 /**
- * Le prologue : la Terre de nuit qui tourne sur elle-même, se fige avec la
- * France face caméra, chauffe de l'intérieur… puis détone. La sphère éclate
- * en débris rocheux bordés de lave, une gerbe de particules incandescentes
- * jaillit, et l'éclair de la détonation couvre le raccord vers le bureau.
+ * Le prologue : la France de nuit, déjà face caméra, chauffe de l'intérieur…
+ * puis détone. La sphère éclate en débris rocheux bordés de lave, une gerbe
+ * de particules incandescentes jaillit, et l'éclair de la détonation couvre
+ * le raccord vers le bureau.
  *
  * La texture (NASA Black Marble, auto-hébergée) est peu lourde : elle n'est
  * chargée qu'avec le reste de l'expérience, en lazy.
@@ -147,10 +147,8 @@ export function Earth() {
     sphere.current.visible = !exploded;
     atmo.current.visible = !exploded;
     if (!exploded) {
-      const settle = smoothstep(0.02, 0.055, raw);
-      const spin = (t * 0.045) % (Math.PI * 2);
-      const folded = Math.atan2(Math.sin(spin), Math.cos(spin));
-      sphere.current.rotation.y = folded * (1 - settle);
+      // Pas de rotation : la France reste face caméra dès le plan d'ouverture.
+      sphere.current.rotation.y = 0;
 
       // Le sol tremble de plus en plus fort à mesure que le magma monte.
       const tremor = 1 + heatAmount * Math.sin(t * 26) * 0.012;
@@ -158,13 +156,12 @@ export function Earth() {
       // Les lumières des villes virent à l'orange magma.
       sphere.current.material.color.copy(NIGHT_COLOR).lerp(MAGMA_COLOR, heatAmount);
 
-      // Le repère France : il pulse pendant la plongée puis cède la place à
-      // la chauffe (au moment où toute la planète devient le sujet).
-      const focus =
-        smoothstep(0.042, 0.06, raw) * (1 - smoothstep(BOOM.heatStart + 0.004, BOOM.start - 0.004, raw));
+      // Le repère France : visible dès l'ouverture, il pulse puis cède la
+      // place à la chauffe (au moment où toute la planète devient le sujet).
+      const focus = 1 - smoothstep(BOOM.heatStart + 0.004, BOOM.start - 0.004, raw);
       const pulse = 1 + Math.sin(t * 4) * 0.18;
-      marker.current.material.opacity = focus * 0.9;
-      marker.current.scale.setScalar(0.34 * pulse);
+      marker.current.material.opacity = focus * 0.85;
+      marker.current.scale.setScalar(0.42 * pulse);
       marker.current.quaternion.copy(camera.quaternion);
 
       atmo.current.material.opacity = 1 - heatAmount * 0.35;

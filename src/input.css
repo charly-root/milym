@@ -32,6 +32,19 @@
     background-color: #050507;
   }
 
+  /* Pendant un cran du récit, le scroll natif est coupé : un geste = un palier. */
+  html.is-story-pinned {
+    overflow: hidden;
+    overscroll-behavior: none;
+    scroll-behavior: auto;
+    height: 100%;
+  }
+
+  html.is-story-pinned body {
+    overflow: hidden;
+    height: 100%;
+  }
+
   /* Respect de prefers-reduced-motion : on neutralise les animations */
   @media (prefers-reduced-motion: reduce) {
     *,
@@ -87,6 +100,22 @@
 
   .footer-link {
     @apply focus-ring rounded text-secondary transition-colors duration-300 hover:text-purple-300;
+  }
+
+  /* Wordmark officiel : MILYM + point carré violet */
+  .wordmark-img {
+    display: block;
+    height: 1.85rem;
+    width: auto;
+  }
+
+  .wordmark-img-sm {
+    height: 1.55rem;
+  }
+
+  .wordmark-img-lg {
+    height: 2.85rem;
+    filter: drop-shadow(0 0 14px rgba(102, 103, 171, 0.45));
   }
 
   .social-icon {
@@ -896,7 +925,15 @@
 
   /* ── Mode cinématique ─────────────────────────────────────────────────── */
   .home-story.is-cinematic .home-story-track {
-    height: 1000vh;
+    height: 100dvh;
+  }
+
+  .home-story.is-cinematic.is-pinned {
+    touch-action: none;
+  }
+
+  .home-story.is-cinematic .story-chapter-bridge {
+    display: none;
   }
 
   /* Le flash qui couvre le raccord France → bureau, au-dessus du canvas et
@@ -923,7 +960,7 @@
   .home-story.is-cinematic .home-story-sticky {
     position: sticky;
     top: 0;
-    height: 100svh;
+    height: 100dvh;
     overflow: hidden;
   }
 
@@ -965,7 +1002,7 @@
     max-width: none;
     flex-direction: column;
     align-items: center;
-    padding: 0 1.25rem 5.5rem;
+    padding: 0 1.25rem calc(5.5rem + env(safe-area-inset-bottom, 0px));
     opacity: 0;
     will-change: opacity, transform;
   }
@@ -1029,9 +1066,106 @@
     pointer-events: none;
   }
 
+  .home-story.is-cinematic .story-rail-step {
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
   @media (min-width: 1024px) {
     .home-story.is-cinematic .story-rail {
       display: flex;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .home-story.is-cinematic .story-rail {
+      display: flex;
+      right: auto;
+      left: 50%;
+      top: auto;
+      bottom: calc(0.8rem + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      flex-direction: row;
+      align-items: center;
+      gap: 0.38rem;
+    }
+
+    .home-story.is-cinematic .story-rail-step {
+      justify-content: center;
+      gap: 0;
+    }
+
+    .home-story.is-cinematic .story-rail-label {
+      display: none;
+    }
+
+    .home-story.is-cinematic .story-rail-mark {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+    }
+
+    .home-story.is-cinematic .story-rail-step.is-active .story-rail-mark {
+      width: 14px;
+      height: 5px;
+    }
+
+    .home-story.is-cinematic .story-chapter {
+      align-items: stretch;
+      padding: 0 1.1rem calc(4.2rem + env(safe-area-inset-bottom, 0px));
+      text-align: left;
+    }
+
+    .home-story.is-cinematic .story-title {
+      font-size: 1.55rem;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+
+    .home-story.is-cinematic .story-title-md {
+      font-size: 1.35rem;
+    }
+
+    .home-story.is-cinematic .story-kicker {
+      margin-bottom: 0.4rem;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+    }
+
+    .home-story.is-cinematic .story-lead {
+      margin-top: 0.4rem;
+      max-width: none;
+      font-size: 0.8125rem;
+      line-height: 1.45;
+    }
+
+    .home-story.is-cinematic .home-story-copy::before {
+      height: 56%;
+    }
+
+    .home-story.is-cinematic .story-hint {
+      bottom: calc(2.3rem + env(safe-area-inset-bottom, 0px));
+      font-size: 9px;
+    }
+
+    .home-story.is-cinematic .story-hint::after {
+      height: 16px;
+      margin-top: 0.35rem;
+    }
+
+    .home-story.is-cinematic .story-cta,
+    .home-story.is-cinematic .story-ecosystem-nav {
+      width: 100%;
+      margin-top: 1.05rem;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .home-story.is-cinematic .story-cta a,
+    .home-story.is-cinematic .story-ecosystem-nav a {
+      width: 100%;
+      min-height: 2.75rem;
+      justify-content: center;
     }
   }
 

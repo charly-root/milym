@@ -2,20 +2,20 @@
 <html lang="fr" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="<%= settings.heroSubtitle || 'Milym transforme une idée en produit numérique : sites, applications, API, IA et automatisation.' %>">
   <meta name="theme-color" content="#050507">
   <meta property="og:title" content="<%= pageTitle %> — <%= site.name %>">
   <meta property="og:description" content="<%= settings.heroSubtitle || 'Milym transforme une idée en produit numérique.' %>">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="<%= site.logo %>">
+  <meta property="og:image" content="/logos/milym-wordmark.png">
   <meta name="twitter:card" content="summary">
   <title><%= pageTitle %> — <%= site.name %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/output.css">
-  <link rel="icon" href="<%= site.logo %>">
+  <link rel="icon" href="/logos/logo.svg">
   <noscript>
     <style>
       /* Personne ne matérialise les blocs : ils restent visibles */
@@ -44,9 +44,8 @@
   <header>
     <nav id="navbar" class="fixed inset-x-0 top-0 z-50 transition-all duration-500 <%= locals.homeExperience ? 'nav-home' : '' %>" aria-label="Navigation principale">
       <div class="materialize mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
-        <a href="/" class="flex items-center gap-2.5 focus-ring rounded-lg" aria-label="Retour à l'accueil">
-          <img src="<%= site.logo %>" alt="" class="h-8 w-8 object-contain" aria-hidden="true">
-          <span class="text-lg font-semibold tracking-wide text-purple-300"><%= site.name %></span>
+        <a href="/" class="focus-ring rounded-lg" aria-label="milym — retour à l'accueil">
+          <%- include('wordmark') %>
         </a>
 
         <!-- Liens desktop -->

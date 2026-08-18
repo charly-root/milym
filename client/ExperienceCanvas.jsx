@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { Scene } from "./components/3d/Scene.jsx";
 import { getDpr } from "./utils/quality.js";
 
-export function ExperienceCanvas({ quality, logoUrl, tier, frameloop }) {
+export function ExperienceCanvas({ quality, tier, frameloop }) {
   return (
     <Canvas
       frameloop={frameloop}
@@ -27,7 +27,7 @@ export function ExperienceCanvas({ quality, logoUrl, tier, frameloop }) {
     >
       <AdaptiveDpr pixelated />
       <Suspense fallback={null}>
-        <Scene quality={quality} logoUrl={logoUrl} />
+        <Scene quality={quality} />
       </Suspense>
     </Canvas>
   );

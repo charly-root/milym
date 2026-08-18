@@ -24,7 +24,7 @@ export function getQualityProfile(tier) {
       particles: 12,
       particleCount: 5000,
       particleSize: 2.5,
-      aiNodes: 18,
+      aiNodes: 24,
       shadows: false,
       antialias: false,
       transmission: false,

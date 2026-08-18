@@ -16,7 +16,6 @@ export function Experience({ root }) {
   const tier = usePerformanceTier();
   const quality = useMemo(() => getQualityProfile(tier), [tier]);
   const [frameloop, setFrameloop] = useState("always");
-  const logoUrl = root.dataset.logo || "/logos/logo.svg";
 
   useEffect(() => {
     experienceStore.tier = tier;
@@ -65,7 +64,7 @@ export function Experience({ root }) {
   return (
     <>
       <Suspense fallback={null}>
-        <ExperienceCanvas quality={quality} logoUrl={logoUrl} tier={tier} frameloop={frameloop} />
+        <ExperienceCanvas quality={quality} tier={tier} frameloop={frameloop} />
       </Suspense>
       <HoverCard />
       <CustomCursor />

@@ -62,9 +62,10 @@ function createHoleTexture() {
   canvas.height = size;
   const ctx = canvas.getContext("2d");
   const g = ctx.createRadialGradient(64, 64, 4, 64, 64, 60);
-  g.addColorStop(0, "rgba(8,6,8,1)");
-  g.addColorStop(0.28, "rgba(28,18,14,0.95)");
-  g.addColorStop(0.55, "rgba(70,40,28,0.55)");
+  g.addColorStop(0, "rgba(6,4,4,1)");
+  g.addColorStop(0.22, "rgba(12,8,8,1)");
+  g.addColorStop(0.4, "rgba(90,70,55,0.95)");
+  g.addColorStop(0.62, "rgba(40,28,22,0.85)");
   g.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, size, size);
@@ -164,7 +165,7 @@ export function TargetRange() {
       for (let i = 0; i < MAX_HOLES; i++) {
         if (i < list.length) {
           DUMMY.position.set(list[i].x, list[i].y, 0.02);
-          DUMMY.scale.setScalar(0.16);
+          DUMMY.scale.setScalar(0.22);
           DUMMY.rotation.set(0, 0, list[i].x * 4 + list[i].y);
         } else {
           DUMMY.position.set(0, 0, -2);

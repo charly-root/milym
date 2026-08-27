@@ -116,11 +116,13 @@ export function CameraRig() {
     const storyP = experienceStore.progress;
     tickCinemaAudio(raw, storyP);
 
+    const storyRoot = document.getElementById("home-story");
     if (storyP < 0.95 && experienceStore.rangeMode) {
       experienceStore.rangeMode = false;
       experienceStore.logoClicks = 0;
       experienceStore.pendingShot = null;
     }
+    storyRoot?.classList.toggle("is-range", experienceStore.rangeMode);
 
     const k =
       raw < BOOM.end + 0.03
@@ -128,6 +130,7 @@ export function CameraRig() {
         : 1 - Math.pow(0.008, Math.min(delta, 0.05));
 
     if (experienceStore.rangeMode) {
+      document.getElementById("home-story")?.classList.add("is-range");
       const tx = STAGE.center[0];
       const ty = STAGE.center[1] + 0.22;
       const tz = STAGE.center[2] + 0.42;

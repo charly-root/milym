@@ -1059,6 +1059,13 @@
     pointer-events: auto;
   }
 
+  .home-story.is-cinematic.is-range .home-story-copy,
+  .home-story.is-cinematic.is-range .story-rail,
+  .home-story.is-cinematic.is-range .story-hint {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
   /* ── Repère de lecture ────────────────────────────────────────────────── */
   .home-story.is-cinematic .story-rail {
     position: absolute;

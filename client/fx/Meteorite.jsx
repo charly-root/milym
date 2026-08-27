@@ -9,7 +9,7 @@ import { lerp, smoothstep } from "../utils/math.js";
  * Une météorite enflammée qui fonce sur la Terre. Elle part loin derrière la
  * caméra d'ouverture et percute au moment de la détonation.
  */
-const START = new THREE.Vector3(8.6, 5.8, 34);
+const START = new THREE.Vector3(7.2, 4.8, 38);
 const IMPACT = new THREE.Vector3(
   EARTH.center[0] + 0.15,
   EARTH.center[1] + 0.35,
@@ -53,8 +53,8 @@ export function Meteorite() {
     if (!visible) return;
 
     const u = smoothstep(METEOR.appear, METEOR.strike, raw);
-    // Accélération : elle rampe, puis plonge.
-    const rush = u * u * u;
+    // Accélération : elle reste lisible longtemps, puis plonge.
+    const rush = u * u;
     const x = lerp(START.x, IMPACT.x, rush);
     const y = lerp(START.y, IMPACT.y, rush);
     const z = lerp(START.z, IMPACT.z, rush);
@@ -62,7 +62,7 @@ export function Meteorite() {
     rock.current.position.set(x, y, z);
     rock.current.rotation.x += 0.08;
     rock.current.rotation.z += 0.05;
-    const size = lerp(0.22, 0.55, rush);
+    const size = lerp(0.42, 0.95, rush);
     rock.current.scale.setScalar(size);
 
     glow.current.position.set(x, y, z);
@@ -78,7 +78,7 @@ export function Meteorite() {
         lerp(START.y, IMPACT.y, tu) + Math.cos(t * 7 + seeds[i] * 4) * 0.08,
         lerp(START.z, IMPACT.z, tu)
       );
-      DUMMY.scale.setScalar(0.08 + (1 - back) * 0.18);
+      DUMMY.scale.setScalar(0.12 + (1 - back) * 0.28);
       DUMMY.updateMatrix();
       trail.current.setMatrixAt(i, DUMMY.matrix);
     }

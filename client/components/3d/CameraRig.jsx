@@ -28,12 +28,12 @@ const impact = [
  * champ, la caméra zoome jusqu'à l'impact, puis le souffle la rejette.
  */
 const PROLOGUE_KEYFRAMES = [
-  { p: 0.0, pos: [2.4, 4.6, 46], look: EARTH.center, fov: 28 },
-  { p: 0.028, pos: [1.8, 3.6, 40], look: EARTH.center, fov: 27 },
-  { p: 0.048, pos: [1.1, 2.6, 34], look: impact, fov: 26 },
-  { p: 0.062, pos: [0.6, 1.9, 28.6], look: impact, fov: 22 },
-  { p: BOOM.start, pos: [0.35, 1.55, 25.4], look: impact, fov: 18 },
-  { p: 0.0935, pos: [1.2, 3.2, 34], look: EARTH.center, fov: 46 }
+  { p: 0.0, pos: [3.2, 5.4, 54], look: EARTH.center, fov: 26 },
+  { p: 0.022, pos: [2.0, 3.8, 42], look: EARTH.center, fov: 24 },
+  { p: 0.042, pos: [0.9, 2.4, 32], look: impact, fov: 22 },
+  { p: 0.058, pos: [0.45, 1.75, 27.2], look: impact, fov: 18 },
+  { p: BOOM.start, pos: [0.22, 1.48, 24.6], look: impact, fov: 14 },
+  { p: 0.0935, pos: [1.4, 3.4, 36], look: EARTH.center, fov: 48 }
 ];
 
 /** Le récit, en progrès récit (0 → 1) : remappé après le prologue. */
@@ -122,7 +122,10 @@ export function CameraRig() {
       experienceStore.pendingShot = null;
     }
 
-    const k = 1 - Math.pow(0.008, Math.min(delta, 0.05));
+    const k =
+      raw < BOOM.end + 0.03
+        ? 1 - Math.pow(0.0000001, Math.min(delta, 0.05))
+        : 1 - Math.pow(0.008, Math.min(delta, 0.05));
 
     if (experienceStore.rangeMode) {
       const tx = STAGE.center[0];

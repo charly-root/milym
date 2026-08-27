@@ -17,7 +17,7 @@ export function ExperienceCanvas({ quality, tier, frameloop }) {
         stencil: false,
         depth: true
       }}
-      camera={{ fov: 28, near: 0.1, far: 90, position: [2.4, 4.6, 46] }}
+      camera={{ fov: 26, near: 0.1, far: 110, position: [3.2, 5.4, 54] }}
       shadows={quality.shadows}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;

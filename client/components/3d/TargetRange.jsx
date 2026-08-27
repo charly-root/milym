@@ -6,10 +6,8 @@ import { STAGE } from "../../stage.js";
 import { lerp } from "../../utils/math.js";
 import { drawWordmark } from "../../brand/wordmark.js";
 
-const DUMMY = new THREE.Object3D();
 const MID = new THREE.Vector3();
 const DIR = new THREE.Vector3();
-const MAX_HOLES = 28;
 const TARGET_SIZE = 1.55;
 
 function createTargetTexture() {
@@ -52,35 +50,33 @@ function createTargetTexture() {
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 8;
-  return texture;
+  return { texture, ctx, canvas, size };
 }
 
-function createHoleTexture() {
-  const size = 128;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  const g = ctx.createRadialGradient(64, 64, 4, 64, 64, 60);
-  g.addColorStop(0, "rgba(6,4,4,1)");
-  g.addColorStop(0.22, "rgba(12,8,8,1)");
-  g.addColorStop(0.4, "rgba(90,70,55,0.95)");
-  g.addColorStop(0.62, "rgba(40,28,22,0.85)");
+function stampHole(ctx, size, ndcX, ndcY) {
+  const x = size * 0.5 + ndcX * size * 0.44;
+  const y = size * 0.5 - ndcY * size * 0.44;
+  const r = 22 + Math.random() * 12;
+  ctx.save();
+  const g = ctx.createRadialGradient(x, y, 1, x, y, r);
+  g.addColorStop(0, "#050303");
+  g.addColorStop(0.28, "#120c0a");
+  g.addColorStop(0.55, "rgba(42,28,20,0.95)");
   g.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = g;
-  ctx.fillRect(0, 0, size, size);
-  ctx.strokeStyle = "rgba(18,10,8,0.7)";
-  ctx.lineWidth = 2;
-  for (let i = 0; i < 7; i++) {
-    const a = (i / 7) * Math.PI * 2 + 0.2;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(8,5,4,0.95)";
+  ctx.lineWidth = 2.5;
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2 + Math.random() * 0.4;
     ctx.beginPath();
-    ctx.moveTo(64 + Math.cos(a) * 10, 64 + Math.sin(a) * 10);
-    ctx.lineTo(64 + Math.cos(a) * 38, 64 + Math.sin(a) * 38);
+    ctx.moveTo(x + Math.cos(a) * 5, y + Math.sin(a) * 5);
+    ctx.lineTo(x + Math.cos(a) * (r + 8), y + Math.sin(a) * (r + 8));
     ctx.stroke();
   }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
+  ctx.restore();
 }
 
 function createFlashTexture() {
@@ -108,7 +104,6 @@ function createFlashTexture() {
 export function TargetRange() {
   const root = useRef();
   const target = useRef();
-  const holes = useRef();
   const tracer = useRef();
   const bullet = useRef();
   const gun = useRef();
@@ -118,13 +113,11 @@ export function TargetRange() {
   const maps = useMemo(
     () => ({
       target: createTargetTexture(),
-      hole: createHoleTexture(),
       flash: createFlashTexture()
     }),
     []
   );
 
-  const holeList = useRef([]);
   const lastShot = useRef(0);
   const tracerT = useRef(1);
   const from = useRef(new THREE.Vector3());
@@ -146,35 +139,16 @@ export function TargetRange() {
     if (on && experienceStore.pendingShot && experienceStore.pendingShot.id !== lastShot.current) {
       const shot = experienceStore.pendingShot;
       lastShot.current = shot.id;
-      const x = THREE.MathUtils.clamp(shot.x * 0.58, -0.7, 0.7);
-      const y = THREE.MathUtils.clamp(shot.y * 0.58, -0.7, 0.7);
-      holeList.current.push({ x, y, born: clock.elapsedTime });
-      if (holeList.current.length > MAX_HOLES) holeList.current.shift();
+      stampHole(maps.target.ctx, maps.target.size, shot.x, shot.y);
+      maps.target.texture.needsUpdate = true;
       from.current.set(0.18, -0.22, -0.42).applyMatrix4(camera.matrixWorld);
       to.current.set(
-        STAGE.center[0] + x,
-        STAGE.center[1] + 0.22 + y,
+        STAGE.center[0] + shot.x * 0.55,
+        STAGE.center[1] + 0.22 + shot.y * 0.55,
         STAGE.center[2] + 0.42
       );
       tracerT.current = 0;
       if (flash.current) flash.current.material.opacity = 1;
-    }
-
-    if (holes.current) {
-      const list = holeList.current;
-      for (let i = 0; i < MAX_HOLES; i++) {
-        if (i < list.length) {
-          DUMMY.position.set(list[i].x, list[i].y, 0.02);
-          DUMMY.scale.setScalar(0.22);
-          DUMMY.rotation.set(0, 0, list[i].x * 4 + list[i].y);
-        } else {
-          DUMMY.position.set(0, 0, -2);
-          DUMMY.scale.setScalar(0.0001);
-        }
-        DUMMY.updateMatrix();
-        holes.current.setMatrixAt(i, DUMMY.matrix);
-      }
-      holes.current.instanceMatrix.needsUpdate = true;
     }
 
     tracerT.current = Math.min(1, tracerT.current + delta * 9);
@@ -225,12 +199,8 @@ export function TargetRange() {
       <group position={[STAGE.center[0], STAGE.center[1] + 0.22, STAGE.center[2] + 0.42]}>
         <mesh ref={target}>
           <circleGeometry args={[TARGET_SIZE / 2, 64]} />
-          <meshBasicMaterial map={maps.target} transparent opacity={0} />
+          <meshBasicMaterial map={maps.target.texture} transparent opacity={0} />
         </mesh>
-        <instancedMesh ref={holes} args={[undefined, undefined, MAX_HOLES]} frustumCulled={false}>
-          <circleGeometry args={[0.5, 16]} />
-          <meshBasicMaterial map={maps.hole} transparent depthWrite={false} />
-        </instancedMesh>
       </group>
 
       <mesh position={[STAGE.center[0], STAGE.center[1] - 0.62, STAGE.center[2] + 0.42]}>

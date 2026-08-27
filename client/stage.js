@@ -106,10 +106,16 @@ export const EARTH = {
  * flash DOM pour que tout détone à la même frame.
  */
 export const BOOM = {
-  heatStart: 0.058,
-  start: 0.074,
-  peak: 0.088,
+  heatStart: 0.05,
+  start: 0.072,
+  peak: 0.086,
   end: 0.108
+};
+
+/** La météorite : visible dès l'ouverture, elle percute au `BOOM.start`. */
+export const METEOR = {
+  appear: 0.0,
+  strike: 0.072
 };
 
 /** Repères géométriques communs à toutes les scènes. */

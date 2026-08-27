@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { experienceStore } from "../../store.js";
 import { BOOM, EARTH, PROLOGUE, STAGE, portraitAmount } from "../../stage.js";
 import { sampleKeyframes, lerp, smoothstep } from "../../utils/math.js";
+import { tickCinemaAudio } from "../../fx/cinemaSound.js";
 
 /**
  * La caméra joue la mise en scène : d'abord le prologue — la France de nuit
@@ -16,32 +17,33 @@ import { sampleKeyframes, lerp, smoothstep } from "../../utils/math.js";
  * Le roulis reste sous trois degrés : assez pour donner du mouvement, jamais
  * assez pour donner le mal de mer.
  */
-const FRANCE = EARTH.france.map((v, i) => EARTH.center[i] + v * EARTH.radius);
-const approach = (d) => EARTH.france.map((v, i) => EARTH.center[i] + v * (EARTH.radius + d));
+const impact = [
+  EARTH.center[0] + 0.15,
+  EARTH.center[1] + 0.35,
+  EARTH.center[2] + EARTH.radius * 0.92
+];
 
 /**
- * Prologue, en progrès brut : la France déjà face caméra, la plongée, puis la
- * détonation. La caméra est rejetée en arrière par le souffle (recul +
- * ouverture de focale) pour laisser l'explosion remplir le cadre.
+ * Prologue : d'abord très loin, la Terre tourne. La météorite entre dans le
+ * champ, la caméra zoome jusqu'à l'impact, puis le souffle la rejette.
  */
 const PROLOGUE_KEYFRAMES = [
-  { p: 0.0, pos: approach(7.6), look: EARTH.center, fov: 36 },
-  { p: 0.045, pos: approach(5.5), look: FRANCE, fov: 34 },
-  { p: 0.062, pos: approach(4.4), look: FRANCE, fov: 33 },
-  { p: BOOM.start, pos: approach(2.4), look: FRANCE, fov: 28 },
-  // Rejetée par le souffle — mais pas trop loin : les débris doivent frôler
-  // l'objectif pour que l'explosion se vive de l'intérieur.
-  { p: 0.0935, pos: approach(6.2), look: EARTH.center, fov: 44 }
+  { p: 0.0, pos: [2.4, 4.6, 46], look: EARTH.center, fov: 28 },
+  { p: 0.028, pos: [1.8, 3.6, 40], look: EARTH.center, fov: 27 },
+  { p: 0.048, pos: [1.1, 2.6, 34], look: impact, fov: 26 },
+  { p: 0.062, pos: [0.6, 1.9, 28.6], look: impact, fov: 22 },
+  { p: BOOM.start, pos: [0.35, 1.55, 25.4], look: impact, fov: 18 },
+  { p: 0.0935, pos: [1.2, 3.2, 34], look: EARTH.center, fov: 46 }
 ];
 
 /** Le récit, en progrès récit (0 → 1) : remappé après le prologue. */
 const STORY_KEYFRAMES = [
-  { p: 0.0, pos: [0.85, 2.5, 2.0], look: [0.0, 0.05, 0.02], fov: 38 },
-  { p: 0.06, pos: [0.3, 1.85, 1.5], look: [0.0, 0.05, 0.0], fov: 34 },
-  { p: 0.13, pos: [0.55, 1.05, 2.0], look: [0.0, 0.55, 0.0], fov: 37, roll: -1.2 },
-  { p: 0.22, pos: [0.0, 1.3, 2.95], look: [0.0, 1.14, 0.0], fov: 33 },
-  { p: 0.275, pos: [0.0, 1.18, 2.35], look: [0.0, 1.15, 0.0], fov: 30 },
-  { p: 0.34, pos: [0.0, 1.2, 3.0], look: [0.0, 1.16, 0.0], fov: 33 },
+  { p: 0.0, pos: [0.7, 2.35, 2.15], look: [0.0, 0.08, 0.04], fov: 36 },
+  { p: 0.08, pos: [0.18, 1.48, 1.58], look: [0.0, 0.28, 0.02], fov: 31 },
+  { p: 0.145, pos: [0.04, 1.18, 2.05], look: [0.0, 0.78, 0.0], fov: 33, roll: -1.1 },
+  { p: 0.22, pos: [0.0, 1.26, 2.55], look: [0.0, 1.16, 0.0], fov: 30 },
+  { p: 0.275, pos: [0.0, 1.14, 1.95], look: [0.0, 1.15, 0.0], fov: 26 },
+  { p: 0.34, pos: [0.0, 1.2, 2.7], look: [0.0, 1.16, 0.0], fov: 32 },
   { p: 0.46, pos: [0.35, 1.25, 2.7], look: [0.0, 1.16, 0.0], fov: 31, roll: 0.8 },
   // Trois-quarts un peu au-dessus : on lit les six plaques, pas un mur de verre.
   { p: 0.55, pos: [3.15, 2.18, 2.95], look: [0.05, 1.12, -1.35], fov: 32, roll: 0.6 },
@@ -112,6 +114,35 @@ export function CameraRig() {
   useFrame(({ clock }, delta) => {
     const raw = experienceStore.rawProgress;
     const storyP = experienceStore.progress;
+    tickCinemaAudio(raw, storyP);
+
+    if (storyP < 0.95 && experienceStore.rangeMode) {
+      experienceStore.rangeMode = false;
+      experienceStore.logoClicks = 0;
+      experienceStore.pendingShot = null;
+    }
+
+    const k = 1 - Math.pow(0.008, Math.min(delta, 0.05));
+
+    if (experienceStore.rangeMode) {
+      const tx = STAGE.center[0];
+      const ty = STAGE.center[1] + 0.22;
+      const tz = STAGE.center[2] + 0.42;
+      look.current.x = lerp(look.current.x, tx, k);
+      look.current.y = lerp(look.current.y, ty, k);
+      look.current.z = lerp(look.current.z, tz, k);
+      camera.position.x = lerp(camera.position.x, tx + 0.12, k);
+      camera.position.y = lerp(camera.position.y, ty + 0.04, k);
+      camera.position.z = lerp(camera.position.z, tz + 2.35, k);
+      camera.lookAt(look.current.x, look.current.y, look.current.z);
+      const fov = 38;
+      if (Math.abs(camera.fov - fov) > 0.01) {
+        camera.fov = lerp(camera.fov, fov, k);
+        camera.updateProjectionMatrix();
+      }
+      return;
+    }
+
     const frame = sampleKeyframes(KEYFRAMES, raw);
     const fit = fitToViewport(camera.aspect, frame.fov, storyP);
     experienceStore.portrait = fit.amount > 0.04;
@@ -120,7 +151,6 @@ export function CameraRig() {
     const parallax = experienceStore.tier === "mobile" ? 0 : PARALLAX;
     const px = experienceStore.pointer.x * parallax;
     const py = experienceStore.pointer.y * parallax * 0.5;
-    const k = 1 - Math.pow(0.008, Math.min(delta, 0.05));
 
     let posX = frame.pos[0];
     let posY = frame.pos[1];

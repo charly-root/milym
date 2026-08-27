@@ -21,6 +21,10 @@ export function SparkTrails({ quality }) {
 
   useFrame(({ clock }) => {
     const p = experienceStore.progress;
+    if (experienceStore.rangeMode) {
+      if (mesh.current) mesh.current.visible = false;
+      return;
+    }
     const layers = between(p, 0.49, 0.6);
     const backend = between(p, 0.61, 0.72);
     const data = between(p, 0.69, 0.785);

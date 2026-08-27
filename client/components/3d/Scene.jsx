@@ -15,6 +15,9 @@ import { SparkTrails } from "../../fx/SparkTrails.jsx";
 import { ScanBeam } from "../../fx/ScanBeam.jsx";
 import { Shockwave } from "../../fx/Shockwave.jsx";
 import { Earth } from "../../fx/Earth.jsx";
+import { Meteorite } from "../../fx/Meteorite.jsx";
+import { StarField } from "../../fx/StarField.jsx";
+import { TargetRange } from "./TargetRange.jsx";
 import { Effects } from "../../fx/Effects.jsx";
 
 /**
@@ -34,7 +37,10 @@ export function Scene({ quality }) {
       <Lights quality={quality} />
 
       {/* Prologue : la France de nuit vue de l'espace, puis la plongée. */}
+      <StarField />
       <Earth />
+      <Meteorite />
+      <TargetRange />
 
       <Desk quality={quality} />
       <PaperScreen quality={quality} />
@@ -50,6 +56,7 @@ export function Scene({ quality }) {
       <ParticleField quality={quality} />
       <SparkTrails quality={quality} />
       {/* Deux passes de numérisation : la feuille, puis l'interface finale. */}
+      <ScanBeam range={[0.175, 0.255]} />
       <ScanBeam range={[0.235, 0.315]} />
       <ScanBeam range={[0.4, 0.455]} />
       <ScanBeam range={[0.5, 0.56]} />

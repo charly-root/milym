@@ -1,11 +1,8 @@
 <%
   // Rend une question du tunnel depuis sa définition (voir lib/funnel.js).
-  // Les tarifs sont recopiés dans des attributs data-* : public/js/funnel.js
-  // les lit pour afficher l'estimation en direct sans dupliquer la grille.
   const previous = values[q.key];
   const isChecked = (v) => (Array.isArray(previous) ? previous.includes(v) : previous === v);
   const error = errors[q.key];
-  const priceLabel = (p) => (p && (p[0] || p[1]) ? `+ ${euro(p[0])} à ${euro(p[1])}` : "");
   const showFor = q.showFor.join(" ");
   const cfg = q.config;
 %>
@@ -23,7 +20,6 @@
           <label class="funnel-card">
             <input type="radio" name="<%= q.key %>" value="<%= o.value %>" class="sr-only"
                    data-label="<%= o.label %>"
-                   data-min="<%= o.price[0] %>" data-max="<%= o.price[1] %>"
                    <%= isChecked(o.value) ? "checked" : "" %>>
             <span class="funnel-card-icon"><%- include('icon', { name: o.icon, classes: 'h-7 w-7' }) %></span>
             <span class="funnel-card-mark" aria-hidden="true">
@@ -33,7 +29,6 @@
             </span>
             <span class="funnel-card-title"><%= o.label %></span>
             <% if (o.help) { %><span class="funnel-card-help"><%= o.help %></span><% } %>
-            <span class="funnel-card-price">à partir de <%= euro(o.price[0]) %></span>
           </label>
         <% }) %>
       </div>
@@ -50,24 +45,15 @@
       <% if (q.help) { %><p class="funnel-help"><%= q.help %></p><% } %>
       <div class="mt-4 grid gap-3 <%= q.options.length > 4 ? 'sm:grid-cols-2' : '' %>">
         <% q.options.forEach(o => { %>
-          <%
-            const monthly = o.monthly[0] || o.monthly[1]
-              ? `${euro(o.monthly[0])} à ${euro(o.monthly[1])} / mois`
-              : priceLabel(o.price);
-          %>
           <label class="funnel-option">
             <input type="<%= q.type %>" name="<%= q.key %>" value="<%= o.value %>" class="sr-only"
                    data-label="<%= o.label %>"
-                   data-min="<%= o.price[0] %>" data-max="<%= o.price[1] %>"
-                   data-factor="<%= o.factor %>"
-                   data-monthly-min="<%= o.monthly[0] %>" data-monthly-max="<%= o.monthly[1] %>"
                    <%= isChecked(o.value) ? "checked" : "" %>>
             <span class="funnel-option-icon" aria-hidden="true"><%- include('icon', { name: o.icon, classes: 'h-5 w-5' }) %></span>
             <span class="min-w-0 flex-1">
               <span class="block text-sm text-primary"><%= o.label %></span>
               <% if (o.help) { %><span class="mt-0.5 block text-xs text-secondary"><%= o.help %></span><% } %>
             </span>
-            <% if (monthly) { %><span class="funnel-option-price"><%= monthly %></span><% } %>
             <span class="funnel-option-mark" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3.5" stroke="currentColor" class="h-3 w-3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
@@ -85,9 +71,7 @@
       <button type="button" class="funnel-stepper-btn" data-step-down aria-label="Diminuer">&minus;</button>
       <input type="number" id="q-<%= q.key %>" name="<%= q.key %>"
              min="<%= cfg.min || 0 %>" max="<%= cfg.max || 999 %>" step="1"
-             value="<%= previous === undefined ? (cfg.default || cfg.min || 0) : previous %>"
-             data-included="<%= cfg.included || 0 %>"
-             data-unit-min="<%= q.perUnit[0] %>" data-unit-max="<%= q.perUnit[1] %>">
+             value="<%= previous === undefined ? (cfg.default || cfg.min || 0) : previous %>">
       <button type="button" class="funnel-stepper-btn" data-step-up aria-label="Augmenter">+</button>
     </div>
 

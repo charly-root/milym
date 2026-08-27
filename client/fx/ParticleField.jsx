@@ -211,6 +211,11 @@ export function ParticleField({ quality }) {
 
   useFrame(({ clock, gl, size }, delta) => {
     const p = experienceStore.progress;
+    if (experienceStore.rangeMode) {
+      if (points.current) points.current.visible = false;
+      return;
+    }
+    if (points.current) points.current.visible = true;
     const u = material.uniforms;
     u.uTime.value = clock.elapsedTime;
     u.uPixelRatio.value = gl.getPixelRatio();

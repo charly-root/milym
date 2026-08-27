@@ -147,6 +147,35 @@ if (contactCount === 0) {
 {
   const insert = db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)");
   for (const [key, value] of Object.entries(seedSettings)) insert.run(key, value);
+
+  // Anciens textes du tunnel qui affichaient encore une estimation chiffrée
+  const currentSettings = Object.fromEntries(
+    db.prepare("SELECT key, value FROM settings").all().map((row) => [row.key, row.value])
+  );
+  const retiredCopy = {
+    funnelIntro:
+      "Quelques questions pour cerner votre besoin, et vous repartez avec une estimation de budget et de délai. Comptez trois minutes, sans engagement.",
+    funnelResultLabel: "Estimation",
+    funnelResultTitle: "Votre estimation",
+    funnelResultIntro: "Demande reçue, merci. Voici la fourchette calculée à partir de vos réponses.",
+    funnelDisclaimer:
+      "Cette estimation est indicative et ne vaut pas devis. Je reviens vers vous sous 48 heures avec une proposition chiffrée précise après un échange."
+  };
+  const updateSetting = db.prepare("UPDATE settings SET value = ? WHERE key = ?");
+  for (const [key, previous] of Object.entries(retiredCopy)) {
+    if (currentSettings[key] === previous) updateSetting.run(seedSettings[key], key);
+  }
+
+  const retiredSteps = [
+    ["Plus vous êtes précis, plus l'estimation sera juste.", "Plus vous êtes précis, plus je pourrai cibler la proposition."],
+    ["Les derniers éléments qui pèsent sur le budget.", "Les derniers éléments qui cadrent le lancement."],
+    ["Où vous envoyer l'estimation ?", "Où vous recontacter ?"]
+  ];
+  const updateStepDescription = db.prepare("UPDATE funnel_steps SET description = ? WHERE description = ?");
+  const updateStepTitle = db.prepare("UPDATE funnel_steps SET title = ? WHERE title = ?");
+  updateStepDescription.run(retiredSteps[0][1], retiredSteps[0][0]);
+  updateStepDescription.run(retiredSteps[1][1], retiredSteps[1][0]);
+  updateStepTitle.run(retiredSteps[2][1], retiredSteps[2][0]);
 }
 
 // Contenu du tunnel : posé une seule fois, puis géré depuis /admin/tunnel

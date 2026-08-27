@@ -149,8 +149,8 @@ export function Earth() {
     sphere.current.visible = !exploded;
     atmo.current.visible = !exploded;
     if (!exploded) {
-      // Pas de rotation : la France reste face caméra dès le plan d'ouverture.
-      sphere.current.rotation.y = 0;
+      // Rotation lente : on voit les continents défiler avant l'impact.
+      sphere.current.rotation.y = t * 0.11;
 
       // Le sol tremble de plus en plus fort à mesure que le magma monte.
       const tremor = 1 + heatAmount * Math.sin(t * 26) * 0.012;

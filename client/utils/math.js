@@ -6,6 +6,14 @@ export function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
+/** Décélération avec un léger dépassement, pour un geste plus cinématique. */
+export function easeOutBack(t) {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  const x = clamp(t);
+  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+}
+
 export function inverseLerp(a, b, value) {
   if (Math.abs(b - a) < 1e-6) return 0;
   return clamp((value - a) / (b - a));

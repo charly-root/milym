@@ -6,6 +6,7 @@ import { usePerformanceTier } from "./hooks/usePerformanceTier.js";
 import { useReducedMotion } from "./hooks/useReducedMotion.js";
 import { getQualityProfile } from "./utils/quality.js";
 import { experienceStore } from "./store.js";
+import { playGunshot, playRangeOpen, unlockCinemaAudio } from "./fx/cinemaSound.js";
 
 const ExperienceCanvas = lazy(() =>
   import("./ExperienceCanvas.jsx").then((mod) => ({ default: mod.ExperienceCanvas }))
@@ -50,13 +51,47 @@ export function Experience({ root }) {
   }, [root]);
 
   useEffect(() => {
+    const unlockOnce = () => unlockCinemaAudio();
     const onPointer = (event) => {
       experienceStore.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
       experienceStore.pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
       experienceStore.pointerActive = true;
     };
+    const onPointerDown = (event) => {
+      unlockOnce();
+      if (event.target.closest("a, button, input, textarea, select, label, [data-rail-step]")) return;
+      if (experienceStore.reducedMotion) return;
+
+      if (experienceStore.rangeMode) {
+        experienceStore.shots += 1;
+        experienceStore.pendingShot = {
+          id: experienceStore.shots,
+          x: experienceStore.pointer.x,
+          y: experienceStore.pointer.y
+        };
+        playGunshot();
+        return;
+      }
+
+      if (experienceStore.progress > 0.962) {
+        experienceStore.logoClicks += 1;
+        if (experienceStore.logoClicks >= 5) {
+          experienceStore.rangeMode = true;
+          experienceStore.shots = 0;
+          playRangeOpen();
+        }
+      }
+    };
     window.addEventListener("pointermove", onPointer, { passive: true });
-    return () => window.removeEventListener("pointermove", onPointer);
+    window.addEventListener("pointerdown", onPointerDown, { passive: true });
+    window.addEventListener("wheel", unlockOnce, { once: true, passive: true });
+    window.addEventListener("keydown", unlockOnce, { once: true });
+    return () => {
+      window.removeEventListener("pointermove", onPointer);
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("wheel", unlockOnce);
+      window.removeEventListener("keydown", unlockOnce);
+    };
   }, []);
 
   if (reduced) return null;

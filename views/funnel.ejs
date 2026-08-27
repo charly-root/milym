@@ -15,7 +15,7 @@
 
   <noscript>
     <p class="mt-10 rounded-xl border border-purple-500/40 bg-purple-650/10 p-5 text-sm text-secondary">
-      Le parcours guidé et l'estimation en direct ont besoin de JavaScript. Le questionnaire
+      Le parcours guidé a besoin de JavaScript. Le questionnaire
       reste utilisable d'un seul tenant ci-dessous : répondez à ce qui vous concerne, puis
       envoyez. Vous pouvez aussi m'écrire depuis la
       <a href="/contact" class="text-purple-300 underline decoration-purple-650/50 underline-offset-2">page contact</a>.
@@ -66,7 +66,7 @@
       </section>
     <% }) %>
 
-    <!-- Estimation : remplie par public/js/funnel.js avec les chiffres du serveur -->
+    <!-- Confirmation : remplie après l'envoi, sans montants affichés -->
     <section class="funnel-step" data-step="<%= steps.length %>" id="funnel-result" aria-live="polite">
       <p class="text-xs uppercase tracking-widest text-purple-300/70">
         Étape <%= milestones.length %> sur <%= milestones.length %>
@@ -80,23 +80,12 @@
         <div class="relative z-10">
           <div class="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p class="text-xs uppercase tracking-widest text-secondary">Budget de réalisation</p>
-              <p class="mt-2 text-3xl font-bold text-purple-300 sm:text-4xl" id="quote-range">—</p>
-              <p class="mt-1 text-xs text-secondary">Montants hors taxes, à affiner ensemble.</p>
+              <p class="text-xs uppercase tracking-widest text-secondary">Demande envoyée</p>
+              <p class="mt-2 text-2xl font-bold text-purple-300 sm:text-3xl" id="quote-status">Merci, c'est bien reçu.</p>
+              <p class="mt-1 text-xs text-secondary">Je reviens vers vous sous 48 heures avec une proposition précise.</p>
             </div>
             <div class="flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-500/40 bg-purple-650/20 text-purple-200" aria-hidden="true">
-              <%- include('partials/icon', { name: 'euro', classes: 'h-7 w-7' }) %>
-            </div>
-          </div>
-
-          <!-- Situe la fourchette sur l'échelle de mes interventions -->
-          <div class="mt-7">
-            <div class="funnel-gauge">
-              <div class="funnel-gauge-fill" id="quote-gauge"></div>
-            </div>
-            <div class="mt-2 flex justify-between text-[10px] uppercase tracking-widest text-secondary/70">
-              <span>Projet simple</span>
-              <span>Projet d'envergure</span>
+              <%- include('partials/icon', { name: 'etincelles', classes: 'h-7 w-7' }) %>
             </div>
           </div>
 
@@ -106,23 +95,20 @@
                 <%- include('partials/icon', { name: 'calendrier', classes: 'h-5 w-5' }) %>
               </span>
               <div>
-                <dt class="text-xs uppercase tracking-widest text-secondary">Délai estimé</dt>
-                <dd class="mt-0.5 font-semibold text-primary" id="quote-weeks">—</dd>
+                <dt class="text-xs uppercase tracking-widest text-secondary">Délai indicatif</dt>
+                <dd class="mt-0.5 font-semibold text-primary" id="quote-weeks">À préciser ensemble</dd>
               </div>
             </div>
             <div class="flex items-center gap-3 rounded-xl border border-purple-650/20 bg-background/40 p-4">
               <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-purple-650/25 bg-purple-650/10 text-purple-400" aria-hidden="true">
-                <%- include('partials/icon', { name: 'cle', classes: 'h-5 w-5' }) %>
+                <%- include('partials/icon', { name: 'discussion', classes: 'h-5 w-5' }) %>
               </span>
               <div>
-                <dt class="text-xs uppercase tracking-widest text-secondary">Maintenance</dt>
-                <dd class="mt-0.5 font-semibold text-primary" id="quote-monthly">—</dd>
+                <dt class="text-xs uppercase tracking-widest text-secondary">Prochaine étape</dt>
+                <dd class="mt-0.5 font-semibold text-primary">Un échange pour cadrer le projet</dd>
               </div>
             </div>
           </dl>
-
-          <h3 class="mt-8 text-sm font-semibold text-primary">Ce qui compose ce montant</h3>
-          <ul class="mt-4 flex flex-col gap-3.5" id="quote-breakdown"></ul>
 
           <p class="mt-8 text-xs leading-relaxed text-secondary"><%= settings.funnelDisclaimer %></p>
 
@@ -139,19 +125,19 @@
     <!-- Le bouton d'envoi de la barre de pilotage étant masqué sans JavaScript,
          celui-ci n'existe que dans ce cas -->
     <noscript>
-      <button type="submit" class="btn-primary mt-10">Envoyer et voir l'estimation</button>
+      <button type="submit" class="btn-primary mt-10">Envoyer ma demande</button>
     </noscript>
 
-    <!-- Barre de pilotage : estimation en direct et navigation entre les étapes -->
+    <!-- Barre de pilotage : navigation entre les étapes -->
     <div class="funnel-bar funnel-chrome">
       <div class="min-w-0">
-        <p class="text-[10px] uppercase tracking-widest text-secondary">Estimation en cours</p>
+        <p class="text-[10px] uppercase tracking-widest text-secondary">Votre projet</p>
         <p class="truncate font-semibold text-purple-300" id="funnel-live">Choisissez un type de projet</p>
       </div>
       <div class="flex shrink-0 items-center gap-3">
         <button type="button" class="btn-ghost btn-sm" id="funnel-prev" hidden>Précédent</button>
         <button type="button" class="btn-primary btn-sm" id="funnel-next">Continuer</button>
-        <button type="submit" class="btn-primary btn-sm" id="funnel-submit" hidden>Voir mon estimation</button>
+        <button type="submit" class="btn-primary btn-sm" id="funnel-submit" hidden>Envoyer ma demande</button>
       </div>
     </div>
   </form>

@@ -135,12 +135,12 @@ const settings = {
   funnelCtaLabel: "Créer mon projet",
   funnelTitle: "Créer mon projet",
   funnelIntro:
-    "Quelques questions pour cerner votre besoin, et vous repartez avec une estimation de budget et de délai. Comptez trois minutes, sans engagement.",
-  funnelResultLabel: "Estimation",
-  funnelResultTitle: "Votre estimation",
-  funnelResultIntro: "Demande reçue, merci. Voici la fourchette calculée à partir de vos réponses.",
+    "Quelques questions pour cerner votre besoin. Comptez trois minutes, sans engagement : je reviens vers vous avec une proposition.",
+  funnelResultLabel: "Envoi",
+  funnelResultTitle: "Demande envoyée",
+  funnelResultIntro: "Merci. Je reviens vers vous sous 48 heures pour cadrer le projet ensemble.",
   funnelDisclaimer:
-    "Cette estimation est indicative et ne vaut pas devis. Je reviens vers vous sous 48 heures avec une proposition chiffrée précise après un échange.",
+    "Cette demande ne constitue pas un devis. Après un échange, je vous enverrai une proposition précise.",
   // Coefficients encadrant chaque prix de référence pour former la fourchette
   funnelSpreadLow: "0.85",
   funnelSpreadHigh: "1.35",

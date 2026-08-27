@@ -41,6 +41,10 @@ export function FinalProduct() {
   useFrame(() => {
     const p = experienceStore.progress;
     if (!group.current) return;
+    if (experienceStore.rangeMode) {
+      group.current.visible = false;
+      return;
+    }
 
     // Les écrans n'entrent qu'une fois la caméra posée et la scène vidée
     // (noyau et écosystème partis) : l'enchaînement était le point bugué.

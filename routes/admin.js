@@ -836,9 +836,9 @@ const FUNNEL_TEXT_FIELDS = [
   ["funnelTitle", "Titre de la page", 80, 1],
   ["funnelIntro", "Texte d'introduction", 400, 3],
   ["funnelResultLabel", "Nom du dernier jalon", 24, 1],
-  ["funnelResultTitle", "Titre de l'estimation", 80, 1],
-  ["funnelResultIntro", "Texte au-dessus de l'estimation", 300, 2],
-  ["funnelDisclaimer", "Mention sous l'estimation", 500, 3]
+  ["funnelResultTitle", "Titre de confirmation", 80, 1],
+  ["funnelResultIntro", "Texte au-dessus de la confirmation", 300, 2],
+  ["funnelDisclaimer", "Mention sous la confirmation", 500, 3]
 ];
 
 // [clé, libellé, précision]

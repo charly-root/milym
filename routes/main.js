@@ -10,13 +10,13 @@ const router = express.Router();
 // Limite : 5 envois de formulaire par IP toutes les 15 minutes
 const contactLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 3,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     ok: false,
-    errors: { global: "Trop de tentatives. Réessayez dans quelques minutes." }
-  }
+    errors: { global: "Trop de tentatives. Réessayez dans quelques minutes." },
+  },
 });
 
 // ── Pages ───────────────────────────────────────────────────────────────────
@@ -24,7 +24,7 @@ router.get("/", (req, res) => {
   res.render("index", {
     pageTitle: "Créateur de projets numériques",
     hideNav: false,
-    homeExperience: true
+    homeExperience: true,
   });
 });
 
@@ -32,7 +32,7 @@ router.get("/projets", (req, res) => {
   res.render("projects", {
     pageTitle: "Mes projets",
     projects: projectQueries.all(),
-    categories
+    categories,
   });
 });
 
@@ -43,12 +43,16 @@ router.get("/contact", (req, res) => {
 // ── Tunnel « Créer mon projet » ─────────────────────────────────────────────
 // Le questionnaire est rechargé depuis la base à chaque requête : une
 // modification faite dans /admin/tunnel est visible sans redémarrage.
-function renderFunnel(res, definition, { errors = {}, values = {}, status = 200 } = {}) {
+function renderFunnel(
+  res,
+  definition,
+  { errors = {}, values = {}, status = 200 } = {},
+) {
   res.status(status).render("funnel", {
     pageTitle: res.locals.settings.funnelTitle,
     steps: definition.steps,
     errors,
-    values
+    values,
   });
 }
 
@@ -63,7 +67,11 @@ router.post("/creer-mon-projet", contactLimiter, (req, res) => {
 
   if (Object.keys(errors).length > 0) {
     if (wantsJson) return res.status(400).json({ ok: false, errors });
-    return renderFunnel(res, definition, { errors, values: req.body, status: 400 });
+    return renderFunnel(res, definition, {
+      errors,
+      values: req.body,
+      status: 400,
+    });
   }
 
   // L'estimation est toujours recalculée ici : celle affichée pendant le
@@ -71,8 +79,13 @@ router.post("/creer-mon-projet", contactLimiter, (req, res) => {
   const quote = funnel.estimate(data, definition);
   if (!quote) {
     const typeError = { type: "Choisissez un type de projet." };
-    if (wantsJson) return res.status(400).json({ ok: false, errors: typeError });
-    return renderFunnel(res, definition, { errors: typeError, values: req.body, status: 400 });
+    if (wantsJson)
+      return res.status(400).json({ ok: false, errors: typeError });
+    return renderFunnel(res, definition, {
+      errors: typeError,
+      values: req.body,
+      status: 400,
+    });
   }
 
   leadQueries.create({
@@ -86,11 +99,11 @@ router.post("/creer-mon-projet", contactLimiter, (req, res) => {
     estimateMin: quote.min,
     estimateMax: quote.max,
     monthlyMin: quote.monthly[0],
-    monthlyMax: quote.monthly[1]
+    monthlyMax: quote.monthly[1],
   });
 
   console.log(
-    `Nouvelle demande ${data.type} de ${data.name} <${data.email}> : ${quote.min}–${quote.max} €`
+    `Nouvelle demande ${data.type} de ${data.name} <${data.email}> : ${quote.min}–${quote.max} €`,
   );
 
   if (wantsJson) return res.json({ ok: true, quote });
@@ -132,7 +145,9 @@ router.post("/contact", contactLimiter, (req, res) => {
 
   // Le message est enregistré en base et consultable depuis /admin/messages
   messageQueries.create(data);
-  console.log(`Nouveau message de ${data.name} <${data.email}> : ${data.subject}`);
+  console.log(
+    `Nouveau message de ${data.name} <${data.email}> : ${data.subject}`,
+  );
 
   res.json({ ok: true, message: "Message envoyé. Merci !" });
 });

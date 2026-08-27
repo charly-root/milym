@@ -14,8 +14,12 @@ export function getPerformanceTier() {
 }
 
 export function getDpr(tier) {
-  const cap = tier === "desktop" ? 1.75 : tier === "laptop" ? 1.5 : 1.15;
-  return Math.min(window.devicePixelRatio || 1, cap);
+  const native = window.devicePixelRatio || 1;
+  if (tier === "desktop") return [1.25, Math.min(native, 2)];
+  if (tier === "laptop") return [1.15, Math.min(native, 1.75)];
+  // Téléphone retina (2×–3×) : rester à 2×. Un plafond à ~1,15 étirait un
+  // tampon trop petit et rendait toute la scène floue.
+  return Math.min(Math.max(native, 1), 2);
 }
 
 export function getQualityProfile(tier) {
@@ -23,10 +27,10 @@ export function getQualityProfile(tier) {
     return {
       particles: 12,
       particleCount: 5000,
-      particleSize: 2.5,
+      particleSize: 2.7,
       aiNodes: 24,
       shadows: false,
-      antialias: false,
+      antialias: true,
       transmission: false,
       extraLights: false,
       contactShadows: false,

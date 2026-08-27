@@ -80,7 +80,9 @@ export function Earth() {
 
   const night = useLoader(THREE.TextureLoader, "/textures/earth-night.jpg");
   night.colorSpace = THREE.SRGBColorSpace;
-  night.anisotropy = 4;
+  night.anisotropy = 8;
+  night.minFilter = THREE.LinearMipmapLinearFilter;
+  night.magFilter = THREE.LinearFilter;
 
   const atmosphere = useMemo(createRimTexture, []);
   const beacon = useMemo(() => createGlowTexture("rgba(255,250,255,1)", "rgba(196,166,255,0.5)"), []);

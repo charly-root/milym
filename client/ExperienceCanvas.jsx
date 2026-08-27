@@ -25,7 +25,7 @@ export function ExperienceCanvas({ quality, tier, frameloop }) {
         gl.setClearColor("#050507", 1);
       }}
     >
-      <AdaptiveDpr pixelated />
+      {tier !== "mobile" && <AdaptiveDpr />}
       <Suspense fallback={null}>
         <Scene quality={quality} />
       </Suspense>

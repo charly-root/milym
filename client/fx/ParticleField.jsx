@@ -100,7 +100,8 @@ const VERTEX = /* glsl */ `
     // En transit ou repoussée par le curseur, la particule brille plus fort.
     vec3 base = mix(uColor, uDotColor, mark);
     vColor = base * (0.85 + aSeed.w * 0.75) * (1.0 + transit * 1.25 + push * 2.2);
-    gl_PointSize = uSize * (0.55 + aSeed.w * 1.2) * (1.0 + transit * 1.2) * uPixelRatio * (2.6 / max(0.4, -mv.z));
+    float atten = 2.15 / max(0.75, -mv.z);
+    gl_PointSize = min(20.0, uSize * (0.5 + aSeed.w * 1.05) * (1.0 + transit * 0.85) * uPixelRatio * atten);
   }
 `;
 

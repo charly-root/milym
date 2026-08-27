@@ -60,35 +60,35 @@ export function SparkTrails({ quality }) {
           y = cy + (s2 - 0.5) * STAGE.screen.height;
           z = -layer * STAGE.layerGap;
         }
-        scale = 0.026 + s2 * 0.02;
+        scale = 0.016 + s2 * 0.012;
       } else if (backend >= data && backend > 0.04) {
         if (portrait) {
           x = cx + Math.sin(u * Math.PI * 2 + s0 * 6) * 0.28;
-          y = cy + 0.92 - u * 1.84;
+          y = cy + 1.18 - u * 2.36;
           z = STAGE.backendZ + (s2 - 0.5) * 0.2;
         } else {
           x = cx - 1.2 + u * 2.4;
           y = cy + Math.sin(u * Math.PI * 2 + s0 * 8) * 0.12;
           z = STAGE.backendZ + (s2 - 0.5) * 0.18;
         }
-        scale = 0.03 + s1 * 0.018;
+        scale = 0.018 + s1 * 0.01;
       } else if (data > 0.04) {
         const angle = u * Math.PI * 2 + s0 * 6.28;
         const r = 0.28 + s1 * 0.42;
         if (portrait) {
           x = cx + Math.cos(angle) * r;
-          y = cy - 0.88 + (s2 - 0.5) * 0.5;
+          y = cy - 1.12 + (s2 - 0.5) * 0.5;
           z = STAGE.databaseZ + Math.sin(angle) * r;
         } else {
           x = cx + 0.7 + Math.cos(angle) * r;
           y = cy + (s2 - 0.5) * 0.7;
           z = STAGE.databaseZ + Math.sin(angle) * r;
         }
-        scale = 0.028 + s2 * 0.02;
+        scale = 0.016 + s2 * 0.012;
       }
 
       dummy.position.set(x, y, z);
-      dummy.scale.setScalar(scale * (0.75 + visible * 0.5));
+      dummy.scale.setScalar(scale * (0.85 + visible * 0.25));
       dummy.updateMatrix();
       inst.setMatrixAt(i, dummy.matrix);
     }

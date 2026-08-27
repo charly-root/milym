@@ -44,7 +44,7 @@ const STORY_KEYFRAMES = [
   { p: 0.34, pos: [0.0, 1.2, 3.0], look: [0.0, 1.16, 0.0], fov: 33 },
   { p: 0.46, pos: [0.35, 1.25, 2.7], look: [0.0, 1.16, 0.0], fov: 31, roll: 0.8 },
   // Trois-quarts un peu au-dessus : on lit les six plaques, pas un mur de verre.
-  { p: 0.55, pos: [2.45, 1.92, 2.35], look: [0.0, 1.14, -1.05], fov: 36, roll: 1.4 },
+  { p: 0.55, pos: [2.85, 2.08, 2.7], look: [0.0, 1.12, -1.2], fov: 33, roll: 0.8 },
   // On revient face au plateau : un seul sujet au centre, du backend à l'IA.
   { p: 0.61, pos: [0.0, 1.4, 3.45], look: [0.0, 1.2, -1.45], fov: 34 },
   { p: 0.66, pos: [0.0, 1.38, 3.35], look: [0.0, 1.18, -1.45], fov: 33 },
@@ -72,7 +72,6 @@ const PARALLAX = 0.1;
 /** Les cadrages ci-dessus sont réglés pour un écran large. */
 const REFERENCE_ASPECT = 16 / 9;
 const MAX_FOV = 58;
-const MAX_FOV_PORTRAIT = 66;
 const DEG = Math.PI / 180;
 
 /**
@@ -86,24 +85,21 @@ function fitToViewport(aspect, fov, storyP) {
   const amount = portraitAmount(aspect);
   const portrait = amount > 0;
   const share = Math.sqrt(need);
-  const maxFov = portrait ? MAX_FOV_PORTRAIT : MAX_FOV;
-  const halfTangent = Math.tan((fov * DEG) / 2);
-  let widened = (2 * Math.atan(halfTangent * share)) / DEG;
   const stack = storyP > 0.47 && storyP < 0.86;
-  const pull = portrait ? (stack ? 1.02 : 0.9) : 1;
-  let distance = share * pull;
+  const maxFov = portrait ? (stack ? 46 : 58) : MAX_FOV;
+  const halfTangent = Math.tan((fov * DEG) / 2);
+  const widthShare = stack && portrait ? Math.min(share, 1.12) : share;
+  let widened = (2 * Math.atan(halfTangent * widthShare)) / DEG;
+  const pull = portrait ? (stack ? 0.84 : 0.9) : 1;
+  let distance = (stack && portrait ? 1 : share) * pull;
 
   if (widened > maxFov) {
     const capped = Math.tan((maxFov * DEG) / 2) / halfTangent;
-    distance = (need / capped) * pull;
+    distance = (stack && portrait ? 1 : need / capped) * pull;
     widened = maxFov;
   }
 
-  const drop = portrait
-    ? stack
-      ? 0.1
-      : 0.05
-    : Math.min(need - 1, 1.4) * 0.26;
+  const drop = portrait ? (stack ? 0.06 : 0.04) : Math.min(need - 1, 1.4) * 0.26;
 
   return { fov: widened, distance, drop, amount, stack };
 }
@@ -135,12 +131,12 @@ export function CameraRig() {
 
     if (fit.amount > 0 && fit.stack) {
       const a = fit.amount;
-      posX = lerp(posX, posX * 0.1, a);
-      posY = lerp(posY, STAGE.center[1] + 0.18, a * 0.5);
-      posZ = lerp(posZ, Math.max(posZ, 4.25), a);
+      posX = lerp(posX, posX * 0.08, a);
+      posY = lerp(posY, STAGE.center[1] + 0.12, a * 0.4);
+      posZ = lerp(posZ, 3.15, a);
       lookX = lerp(lookX, 0, a);
-      lookY = lerp(lookY, STAGE.center[1] + 0.04, a * 0.55);
-      lookZ = lerp(lookZ, -0.5, a * 0.45);
+      lookY = lerp(lookY, STAGE.center[1], a * 0.6);
+      lookZ = lerp(lookZ, -0.35, a * 0.5);
     } else if (fit.amount > 0) {
       lookY += fit.amount * 0.08;
     }

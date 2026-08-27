@@ -17,7 +17,7 @@ const MODULES = [
 ];
 
 const BOX = [0.86, 0.5, 0.56];
-const PORTRAIT_Y = [0.92, 0, -0.92];
+const PORTRAIT_Y = [1.18, 0, -1.18];
 
 export function BackendModules({ quality }) {
   const group = useRef();
@@ -50,7 +50,7 @@ export function BackendModules({ quality }) {
     const portrait = experienceStore.portrait;
     group.current.position.z = lerp(STAGE.backendZ, 0, collapse);
     group.current.position.y = STAGE.center[1];
-    group.current.scale.setScalar((portrait ? 0.92 : 1) * (1 - collapse * 0.35));
+    group.current.scale.setScalar(1 - collapse * 0.35);
 
     const t = clock.elapsedTime;
     group.current.children.forEach((module) => {
@@ -73,7 +73,7 @@ export function BackendModules({ quality }) {
     });
 
     if (title.current) {
-      title.current.position.set(0, portrait ? 1.42 : 0.86, 0.1);
+      title.current.position.set(0, portrait ? 1.72 : 0.86, 0.1);
       faceCamera(title.current, camera);
     }
 

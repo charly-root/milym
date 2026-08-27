@@ -1170,6 +1170,41 @@
     }
   }
 
+  /* Portrait : la scène 3D occupe haut et bas. Le texte se superpose, le
+     dégradé ne recouvre plus la moitié de l'écran. */
+  @media (orientation: portrait) and (max-width: 1023px) {
+    .home-story.is-cinematic .home-story-copy::before {
+      height: 28%;
+      background: linear-gradient(
+        to top,
+        rgba(5, 5, 7, 0.88),
+        rgba(5, 5, 7, 0.42) 42%,
+        transparent
+      );
+    }
+
+    .home-story.is-cinematic .story-chapter {
+      padding: 0 1rem calc(3.1rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    .home-story.is-cinematic .story-title {
+      font-size: 1.38rem;
+    }
+
+    .home-story.is-cinematic .story-lead {
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    .home-story.is-cinematic .story-hint {
+      bottom: calc(2.05rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    .home-story.is-cinematic .story-rail {
+      bottom: calc(0.55rem + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
   .story-rail-step {
     @apply flex items-center justify-end gap-3;
   }

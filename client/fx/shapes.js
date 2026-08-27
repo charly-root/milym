@@ -23,7 +23,7 @@ export function dust(count) {
   const out = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     out[i * 3] = gauss() * 2.6;
-    out[i * 3 + 1] = 0.1 + Math.random() * 2.4;
+    out[i * 3 + 1] = 0.05 + Math.random() * 3.1;
     out[i * 3 + 2] = gauss() * 2.2;
   }
   return out;
@@ -93,27 +93,83 @@ export function halo(count) {
   return out;
 }
 
-/** Les six plaques de la vue éclatée, surtout leurs arêtes. */
+/** Les six plaques de la vue éclatée, arêtes, faces et colonnes de liaison. */
 export function layers(count) {
   const out = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const layer = Math.floor(Math.random() * STAGE.layerCount);
     const z = CZ - layer * STAGE.layerGap;
+    const roll = Math.random();
     let x;
     let y;
-    if (Math.random() < 0.68) {
+    if (roll < 0.55) {
       const border = Math.random() * 2 * (SW + SH);
       if (border < SW) [x, y] = [border - SW / 2, -SH / 2];
       else if (border < SW * 2) [x, y] = [border - SW * 1.5, SH / 2];
       else if (border < SW * 2 + SH) [x, y] = [-SW / 2, border - SW * 2 - SH / 2];
       else [x, y] = [SW / 2, border - SW * 2 - SH * 1.5];
-    } else {
+      out[i * 3] = CX + x + gauss() * 0.012;
+      out[i * 3 + 1] = CY + y + gauss() * 0.012;
+      out[i * 3 + 2] = z + gauss() * 0.015;
+    } else if (roll < 0.78) {
       x = (Math.random() - 0.5) * SW;
       y = (Math.random() - 0.5) * SH;
+      out[i * 3] = CX + x + gauss() * 0.01;
+      out[i * 3 + 1] = CY + y + gauss() * 0.01;
+      out[i * 3 + 2] = z + gauss() * 0.012;
+    } else {
+      const along = Math.random();
+      out[i * 3] = CX + ((i % 4) - 1.5) * 0.42;
+      out[i * 3 + 1] = CY + ((i % 3) - 1) * 0.28;
+      out[i * 3 + 2] = CZ - along * (STAGE.layerCount - 1) * STAGE.layerGap;
     }
-    out[i * 3] = CX + x + gauss() * 0.012;
-    out[i * 3 + 1] = CY + y + gauss() * 0.012;
-    out[i * 3 + 2] = z + gauss() * 0.015;
+  }
+  return out;
+}
+
+/** Trois baies serveur, plus le bus qui les relie. */
+export function servers(count) {
+  const out = new Float32Array(count * 3);
+  const boxes = [
+    [-1.12, 0.43, 0.25, 0.28],
+    [0, 0.43, 0.25, 0.28],
+    [1.12, 0.43, 0.25, 0.28]
+  ];
+  for (let i = 0; i < count; i++) {
+    const roll = Math.random();
+    if (roll < 0.72) {
+      const box = boxes[i % 3];
+      out[i * 3] = CX + box[0] + gauss() * box[1];
+      out[i * 3 + 1] = CY + gauss() * box[2];
+      out[i * 3 + 2] = STAGE.backendZ + gauss() * box[3];
+    } else {
+      const t = Math.random();
+      out[i * 3] = CX - 1.12 + t * 2.24;
+      out[i * 3 + 1] = CY + gauss() * 0.05;
+      out[i * 3 + 2] = STAGE.backendZ + gauss() * 0.04;
+    }
+  }
+  return out;
+}
+
+/** Grille de table à gauche, anneaux de disques à droite. */
+export function database(count) {
+  const out = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    if (Math.random() < 0.42) {
+      const col = Math.floor(Math.random() * 3);
+      const row = Math.floor(Math.random() * 5);
+      out[i * 3] = CX - 1.2 + col * 0.24 + gauss() * 0.04;
+      out[i * 3 + 1] = CY + 0.32 - row * 0.18 + gauss() * 0.03;
+      out[i * 3 + 2] = STAGE.databaseZ + 0.12 + gauss() * 0.03;
+    } else {
+      const platter = Math.floor(Math.random() * 5);
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 0.32 + platter * 0.05 + Math.abs(gauss()) * 0.04;
+      out[i * 3] = CX + 0.7 + Math.cos(angle) * radius;
+      out[i * 3 + 1] = CY - 0.42 + platter * 0.21 + gauss() * 0.02;
+      out[i * 3 + 2] = STAGE.databaseZ + Math.sin(angle) * radius;
+    }
   }
   return out;
 }

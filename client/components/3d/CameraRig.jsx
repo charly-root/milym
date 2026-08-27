@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { experienceStore } from "../../store.js";
-import { BOOM, EARTH, PROLOGUE } from "../../stage.js";
+import { BOOM, EARTH, PROLOGUE, STAGE, portraitAmount } from "../../stage.js";
 import { sampleKeyframes, lerp, smoothstep } from "../../utils/math.js";
 
 /**
@@ -43,14 +43,13 @@ const STORY_KEYFRAMES = [
   { p: 0.275, pos: [0.0, 1.18, 2.35], look: [0.0, 1.15, 0.0], fov: 30 },
   { p: 0.34, pos: [0.0, 1.2, 3.0], look: [0.0, 1.16, 0.0], fov: 33 },
   { p: 0.46, pos: [0.35, 1.25, 2.7], look: [0.0, 1.16, 0.0], fov: 31, roll: 0.8 },
-  // La travée reste à l'extérieur de la pile : entrer dedans transformait
-  // les plaques en murs de verre qui masquaient l'API et la base de données.
-  { p: 0.55, pos: [2.9, 1.7, 1.5], look: [0.0, 1.14, -0.8], fov: 40, roll: 2.4 },
+  // Trois-quarts un peu au-dessus : on lit les six plaques, pas un mur de verre.
+  { p: 0.55, pos: [3.15, 2.18, 2.95], look: [0.05, 1.12, -1.35], fov: 32, roll: 0.6 },
   // On revient face au plateau : un seul sujet au centre, du backend à l'IA.
-  { p: 0.61, pos: [0.0, 1.34, 3.15], look: [0.0, 1.15, -1.45], fov: 36 },
-  { p: 0.66, pos: [0.0, 1.32, 3.05], look: [0.0, 1.15, -1.45], fov: 34 },
+  { p: 0.61, pos: [0.0, 1.4, 3.45], look: [0.0, 1.2, -1.45], fov: 34 },
+  { p: 0.66, pos: [0.0, 1.38, 3.35], look: [0.0, 1.18, -1.45], fov: 33 },
   // Données : 3/4 un peu au-dessus, pour lire la table et la pile de disques.
-  { p: 0.73, pos: [1.75, 1.98, 2.4], look: [0.0, 1.02, -1.45], fov: 34 },
+  { p: 0.73, pos: [1.55, 1.92, 2.65], look: [0.0, 1.08, -1.45], fov: 34 },
   { p: 0.79, pos: [0.0, 1.38, 3.25], look: [0.0, 1.22, -1.45], fov: 34 },
   // L'IA s'implose sur place, le noyau naît au même point, puis avance au centre.
   { p: 0.84, pos: [0.0, 1.4, 3.55], look: [0.0, 1.18, -1.45], fov: 35 },
@@ -77,27 +76,32 @@ const DEG = Math.PI / 180;
 
 /**
  * Sur un écran étroit, la même focale coupe le sujet sur les côtés. On répartit
- * la correction entre l'ouverture et le recul : tout en focale déformerait la
- * perspective, tout en recul réduirait le sujet à un timbre-poste.
+ * la correction entre l'ouverture et le recul. En portrait, on ouvre surtout
+ * la verticale et on évite de tasser la scène dans le haut du cadre : les
+ * couches, le backend et la base doivent occuper haut et bas.
  */
-function fitToViewport(aspect, fov) {
+function fitToViewport(aspect, fov, storyP) {
   const need = Math.max(1, REFERENCE_ASPECT / aspect);
-  const portrait = aspect < 0.86;
+  const amount = portraitAmount(aspect);
+  const portrait = amount > 0;
   const share = Math.sqrt(need);
+  const stack = storyP > 0.47 && storyP < 0.86;
+  const maxFov = portrait ? (stack ? 44 : 56) : MAX_FOV;
   const halfTangent = Math.tan((fov * DEG) / 2);
-  let widened = (2 * Math.atan(halfTangent * share)) / DEG;
-  let distance = share * (portrait ? 1.22 : 1);
+  const widthShare = stack && portrait ? Math.min(share, 1.12) : share;
+  let widened = (2 * Math.atan(halfTangent * widthShare)) / DEG;
+  const pull = portrait ? (stack ? 0.84 : 0.9) : 1;
+  let distance = (stack && portrait ? 1 : share) * pull;
 
-  if (widened > MAX_FOV) {
-    const capped = Math.tan((MAX_FOV * DEG) / 2) / halfTangent;
-    distance = (need / capped) * (portrait ? 1.22 : 1);
-    widened = MAX_FOV;
+  if (widened > maxFov) {
+    const capped = Math.tan((maxFov * DEG) / 2) / halfTangent;
+    distance = (stack && portrait ? 1 : need / capped) * pull;
+    widened = maxFov;
   }
 
-  // Sur un téléphone, le texte occupe le bas : on baisse le point visé pour
-  // que la scène 3D reste dans la moitié haute du cadre.
-  const drop = Math.min(need - 1, 1.4) * (portrait ? 0.52 : 0.3) + (portrait ? 0.42 : 0);
-  return { fov: widened, distance, drop };
+  const drop = portrait ? (stack ? 0.06 : 0.04) : Math.min(need - 1, 1.4) * 0.26;
+
+  return { fov: widened, distance, drop, amount, stack };
 }
 
 export function CameraRig() {
@@ -107,24 +111,47 @@ export function CameraRig() {
 
   useFrame(({ clock }, delta) => {
     const raw = experienceStore.rawProgress;
+    const storyP = experienceStore.progress;
     const frame = sampleKeyframes(KEYFRAMES, raw);
-    const fit = fitToViewport(camera.aspect, frame.fov);
+    const fit = fitToViewport(camera.aspect, frame.fov, storyP);
+    experienceStore.portrait = fit.amount > 0.04;
+    experienceStore.spreadY = 1 + fit.amount * 0.72;
+
     const parallax = experienceStore.tier === "mobile" ? 0 : PARALLAX;
     const px = experienceStore.pointer.x * parallax;
     const py = experienceStore.pointer.y * parallax * 0.5;
     const k = 1 - Math.pow(0.008, Math.min(delta, 0.05));
 
-    const targetX = frame.look[0] + px * 0.2;
-    const targetY = frame.look[1] - py * 0.12 - fit.drop;
-    const targetZ = frame.look[2];
+    let posX = frame.pos[0];
+    let posY = frame.pos[1];
+    let posZ = frame.pos[2];
+    let lookX = frame.look[0];
+    let lookY = frame.look[1];
+    let lookZ = frame.look[2];
+
+    if (fit.amount > 0 && fit.stack) {
+      const a = fit.amount;
+      posX = lerp(posX, posX * 0.08, a);
+      posY = lerp(posY, STAGE.center[1] + 0.12, a * 0.4);
+      posZ = lerp(posZ, 2.85, a);
+      lookX = lerp(lookX, 0, a);
+      lookY = lerp(lookY, STAGE.center[1], a * 0.6);
+      lookZ = lerp(lookZ, -0.35, a * 0.5);
+    } else if (fit.amount > 0) {
+      lookY += fit.amount * 0.08;
+    }
+
+    const targetX = lookX + px * 0.2;
+    const targetY = lookY - py * 0.12 - fit.drop;
+    const targetZ = lookZ;
 
     look.current.x = lerp(look.current.x, targetX, k);
     look.current.y = lerp(look.current.y, targetY, k);
     look.current.z = lerp(look.current.z, targetZ, k);
 
-    camera.position.x = lerp(camera.position.x, targetX + (frame.pos[0] + px - targetX) * fit.distance, k);
-    camera.position.y = lerp(camera.position.y, targetY + (frame.pos[1] + py - targetY) * fit.distance, k);
-    camera.position.z = lerp(camera.position.z, targetZ + (frame.pos[2] - targetZ) * fit.distance, k);
+    camera.position.x = lerp(camera.position.x, targetX + (posX + px - targetX) * fit.distance, k);
+    camera.position.y = lerp(camera.position.y, targetY + (posY + py - targetY) * fit.distance, k);
+    camera.position.z = lerp(camera.position.z, targetZ + (posZ - targetZ) * fit.distance, k);
 
     // La secousse de la détonation : un tremblement multi-fréquence appliqué
     // à la position avant le lookAt — la caméra vibre, le cadre reste tenu.

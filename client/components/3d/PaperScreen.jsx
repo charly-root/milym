@@ -111,6 +111,9 @@ export function PaperScreen({ quality }) {
       screenLight.current.intensity = between(p, 0.3, 0.45) * alive * 0.9;
     }
 
+    const portrait = experienceStore.portrait;
+    group.scale.setScalar(portrait ? 1.1 : 1);
+
     updateBlocks(blocks.current, p, alive);
   });
 

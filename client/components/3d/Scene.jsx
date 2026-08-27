@@ -11,6 +11,7 @@ import { DigitalCore } from "./DigitalCore.jsx";
 import { MilymEcosystem } from "./MilymEcosystem.jsx";
 import { FinalProduct } from "./FinalProduct.jsx";
 import { ParticleField } from "../../fx/ParticleField.jsx";
+import { SparkTrails } from "../../fx/SparkTrails.jsx";
 import { ScanBeam } from "../../fx/ScanBeam.jsx";
 import { Shockwave } from "../../fx/Shockwave.jsx";
 import { Earth } from "../../fx/Earth.jsx";
@@ -47,9 +48,11 @@ export function Scene({ quality }) {
       <FinalProduct />
 
       <ParticleField quality={quality} />
+      <SparkTrails quality={quality} />
       {/* Deux passes de numérisation : la feuille, puis l'interface finale. */}
       <ScanBeam range={[0.235, 0.315]} />
       <ScanBeam range={[0.4, 0.455]} />
+      <ScanBeam range={[0.5, 0.56]} />
       <Shockwave />
 
       <Effects enabled={quality.postprocessing} />

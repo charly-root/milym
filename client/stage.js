@@ -63,6 +63,15 @@ export const SNAP_CHAPTERS = [
  */
 export const PROLOGUE = 0.1;
 
+/** En dessous, l'écran est traité comme un téléphone en portrait. */
+export const PORTRAIT_ASPECT = 0.86;
+
+/** 0 en paysage, 1 sur un écran très étroit. */
+export function portraitAmount(aspect) {
+  if (!(aspect > 0) || aspect >= PORTRAIT_ASPECT) return 0;
+  return Math.min(1, (PORTRAIT_ASPECT - aspect) / 0.38);
+}
+
 export function storyProgress(raw) {
   return Math.min(1, Math.max(0, (raw - PROLOGUE) / (1 - PROLOGUE)));
 }
@@ -111,8 +120,10 @@ export const STAGE = {
   deskPosition: [0, 0.03, 0.06],
   paper: { width: 1.06, height: 1.5 },
   screen: { width: 1.78, height: 1.0 },
-  /** Écart entre deux plaques de la vue éclatée. */
-  layerGap: 0.34,
+  /** Écart entre deux plaques de la vue éclatée (profondeur, paysage). */
+  layerGap: 0.62,
+  /** Écart vertical entre deux plaques en portrait. */
+  layerGapY: 0.48,
   layerCount: 6,
   /** Backend, données et IA se relaient au même endroit : un sujet à la fois. */
   backendZ: -1.45,

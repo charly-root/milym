@@ -13,13 +13,15 @@ export function Lights({ quality }) {
   const lamp = useRef();
   const studio = useRef();
   const fill = useRef();
+  const rim = useRef();
 
   useFrame(() => {
     const digital = between(experienceStore.progress, 0.14, 0.32);
-    const machine = between(experienceStore.progress, 0.62, 0.8);
+    const machine = between(experienceStore.progress, 0.48, 0.8);
     if (lamp.current) lamp.current.intensity = lerp(6.5, 0.1, digital);
-    if (studio.current) studio.current.intensity = lerp(0.15, 4.6, digital) + machine * 1.6;
-    if (fill.current) fill.current.intensity = lerp(0.12, 0.7, digital) + machine * 0.4;
+    if (studio.current) studio.current.intensity = lerp(0.15, 4.6, digital) + machine * 2.2;
+    if (fill.current) fill.current.intensity = lerp(0.12, 0.7, digital) + machine * 0.7;
+    if (rim.current) rim.current.intensity = machine * 3.4;
   });
 
   return (
@@ -54,6 +56,14 @@ export function Lights({ quality }) {
         color="#64748b"
         intensity={0.12}
         distance={14}
+      />
+
+      <pointLight
+        ref={rim}
+        position={[0.2, STAGE.center[1] + 0.15, -3.1]}
+        color="#e9d5ff"
+        intensity={0}
+        distance={11}
       />
     </>
   );

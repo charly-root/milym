@@ -13,5 +13,9 @@ export const experienceStore = {
   hoverDescription: "",
   hoverStack: "",
   tier: "desktop",
-  reducedMotion: false
+  reducedMotion: false,
+  /** Écran plus haut que large : la scène s'étire en hauteur. */
+  portrait: false,
+  /** Facteur d'étalement vertical (1 = paysage, jusqu'à ~1.7 en portrait). */
+  spreadY: 1
 };

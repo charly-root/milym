@@ -25,9 +25,9 @@ export function getDpr(tier) {
 export function getQualityProfile(tier) {
   if (tier === "mobile") {
     return {
-      particles: 12,
-      particleCount: 5000,
-      particleSize: 2.7,
+      particles: 18,
+      particleCount: 9000,
+      particleSize: 3.05,
       aiNodes: 24,
       shadows: false,
       antialias: true,
@@ -40,9 +40,9 @@ export function getQualityProfile(tier) {
 
   if (tier === "laptop") {
     return {
-      particles: 36,
-      particleCount: 12000,
-      particleSize: 2.9,
+      particles: 48,
+      particleCount: 16000,
+      particleSize: 3.05,
       aiNodes: 32,
       shadows: false,
       antialias: true,
@@ -54,9 +54,9 @@ export function getQualityProfile(tier) {
   }
 
   return {
-    particles: 72,
-    particleCount: 22000,
-    particleSize: 3.1,
+    particles: 90,
+    particleCount: 28000,
+    particleSize: 3.25,
     aiNodes: 48,
     shadows: true,
     antialias: true,

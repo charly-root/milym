@@ -145,13 +145,10 @@ export function TargetRange() {
     if (on && experienceStore.pendingShot && experienceStore.pendingShot.id !== lastShot.current) {
       const shot = experienceStore.pendingShot;
       lastShot.current = shot.id;
-      const x = shot.x * 0.62;
-      const y = shot.y * 0.62;
-      const inside = x * x + y * y < 0.72 * 0.72;
-      if (inside) {
-        holeList.current.push({ x, y, born: clock.elapsedTime });
-        if (holeList.current.length > MAX_HOLES) holeList.current.shift();
-      }
+      const x = THREE.MathUtils.clamp(shot.x * 0.58, -0.7, 0.7);
+      const y = THREE.MathUtils.clamp(shot.y * 0.58, -0.7, 0.7);
+      holeList.current.push({ x, y, born: clock.elapsedTime });
+      if (holeList.current.length > MAX_HOLES) holeList.current.shift();
       from.current.set(0.18, -0.22, -0.42).applyMatrix4(camera.matrixWorld);
       to.current.set(
         STAGE.center[0] + x,
@@ -166,8 +163,8 @@ export function TargetRange() {
       const list = holeList.current;
       for (let i = 0; i < MAX_HOLES; i++) {
         if (i < list.length) {
-          DUMMY.position.set(list[i].x, list[i].y, 0.012);
-          DUMMY.scale.setScalar(0.085);
+          DUMMY.position.set(list[i].x, list[i].y, 0.02);
+          DUMMY.scale.setScalar(0.16);
           DUMMY.rotation.set(0, 0, list[i].x * 4 + list[i].y);
         } else {
           DUMMY.position.set(0, 0, -2);
@@ -224,14 +221,16 @@ export function TargetRange() {
 
   return (
     <group ref={root} visible={false}>
-      <mesh ref={target} position={[STAGE.center[0], STAGE.center[1] + 0.22, STAGE.center[2] + 0.42]}>
-        <circleGeometry args={[TARGET_SIZE / 2, 64]} />
-        <meshBasicMaterial map={maps.target} transparent opacity={0} />
+      <group position={[STAGE.center[0], STAGE.center[1] + 0.22, STAGE.center[2] + 0.42]}>
+        <mesh ref={target}>
+          <circleGeometry args={[TARGET_SIZE / 2, 64]} />
+          <meshBasicMaterial map={maps.target} transparent opacity={0} />
+        </mesh>
         <instancedMesh ref={holes} args={[undefined, undefined, MAX_HOLES]} frustumCulled={false}>
-          <planeGeometry args={[1, 1]} />
+          <circleGeometry args={[0.5, 16]} />
           <meshBasicMaterial map={maps.hole} transparent depthWrite={false} />
         </instancedMesh>
-      </mesh>
+      </group>
 
       <mesh position={[STAGE.center[0], STAGE.center[1] - 0.62, STAGE.center[2] + 0.42]}>
         <cylinderGeometry args={[0.035, 0.045, 1.1, 8]} />

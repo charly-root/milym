@@ -58,6 +58,8 @@ export function Experience({ root }) {
       experienceStore.pointerActive = true;
     };
     const onPointerDown = (event) => {
+      experienceStore.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+      experienceStore.pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
       unlockOnce();
       if (event.target.closest("a, button, input, textarea, select, label, [data-rail-step]")) return;
       if (experienceStore.reducedMotion) return;

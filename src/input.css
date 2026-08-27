@@ -83,6 +83,11 @@
     @apply px-5 py-2 text-xs;
   }
 
+  .btn-primary[hidden],
+  .btn-ghost[hidden] {
+    display: none;
+  }
+
   .btn-danger {
     @apply focus-ring inline-flex items-center justify-center rounded-xl border border-red-500/40
       bg-red-500/5 px-7 py-3 text-sm font-semibold text-red-400 transition-all duration-300

@@ -64,7 +64,7 @@ export function SparkTrails({ quality }) {
       } else if (backend >= data && backend > 0.04) {
         if (portrait) {
           x = cx + Math.sin(u * Math.PI * 2 + s0 * 6) * 0.28;
-          y = cy + 1.18 - u * 2.36;
+          y = cy + 0.86 - u * 1.72;
           z = STAGE.backendZ + (s2 - 0.5) * 0.2;
         } else {
           x = cx - 1.2 + u * 2.4;
@@ -77,7 +77,7 @@ export function SparkTrails({ quality }) {
         const r = 0.28 + s1 * 0.42;
         if (portrait) {
           x = cx + Math.cos(angle) * r;
-          y = cy - 1.12 + (s2 - 0.5) * 0.5;
+          y = cy - 0.82 + (s2 - 0.5) * 0.45;
           z = STAGE.databaseZ + Math.sin(angle) * r;
         } else {
           x = cx + 0.7 + Math.cos(angle) * r;

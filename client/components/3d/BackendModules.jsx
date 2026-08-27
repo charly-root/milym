@@ -17,7 +17,7 @@ const MODULES = [
 ];
 
 const BOX = [0.86, 0.5, 0.56];
-const PORTRAIT_Y = [1.18, 0, -1.18];
+const PORTRAIT_Y = [0.86, 0, -0.86];
 
 export function BackendModules({ quality }) {
   const group = useRef();
@@ -73,7 +73,7 @@ export function BackendModules({ quality }) {
     });
 
     if (title.current) {
-      title.current.position.set(0, portrait ? 1.72 : 0.86, 0.1);
+      title.current.position.set(0, portrait ? 1.32 : 0.86, 0.1);
       faceCamera(title.current, camera);
     }
 

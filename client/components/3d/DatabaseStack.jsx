@@ -66,19 +66,19 @@ export function DatabaseStack({ quality }) {
     if (banner.current) faceCamera(banner.current, camera);
 
     if (table.current) {
-      table.current.position.set(portrait ? 0 : -0.15, portrait ? 1.15 : 0, 0);
+      table.current.position.set(portrait ? 0 : -0.15, portrait ? 0.82 : 0, 0);
     }
     if (spinner.current) {
-      spinner.current.position.set(portrait ? 0 : 0.7, portrait ? -1.12 : 0, 0);
+      spinner.current.position.set(portrait ? 0 : 0.7, portrait ? -0.82 : 0, 0);
     }
     if (stackLabel.current) {
-      stackLabel.current.position.set(portrait ? 0 : 0.7, portrait ? -0.38 : 0.78, 0.04);
+      stackLabel.current.position.set(portrait ? 0 : 0.7, portrait ? -0.22 : 0.78, 0.04);
     }
     if (tableLabel.current) {
-      tableLabel.current.position.set(portrait ? 0 : -1.05, portrait ? 1.62 : 0.7, 0.14);
+      tableLabel.current.position.set(portrait ? 0 : -1.05, portrait ? 1.22 : 0.7, 0.14);
     }
     if (banner.current) {
-      banner.current.position.set(0, portrait ? 1.92 : 1.05, 0.12);
+      banner.current.position.set(0, portrait ? 1.38 : 1.05, 0.12);
     }
 
     const t = clock.elapsedTime;

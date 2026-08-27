@@ -54,7 +54,7 @@ export function DataFlow({ quality }) {
       } else if (backend >= data) {
         if (portrait) {
           x = cx;
-          y = cy + 1.18 - u * 2.36;
+          y = cy + 0.86 - u * 1.72;
           z = STAGE.backendZ;
         } else {
           x = cx - 1.15 + u * 2.3;
@@ -63,7 +63,7 @@ export function DataFlow({ quality }) {
         }
       } else if (portrait) {
         x = cx + Math.sin(u * Math.PI * 2 + i) * 0.18;
-        y = cy + 1.15 - u * 2.3;
+        y = cy + 0.82 - u * 1.64;
         z = STAGE.databaseZ + Math.cos(u * Math.PI * 2) * 0.12;
       } else {
         x = cx - 1.05 + u * 1.7;

@@ -121,9 +121,9 @@ export const STAGE = {
   paper: { width: 1.06, height: 1.5 },
   screen: { width: 1.78, height: 1.0 },
   /** Écart entre deux plaques de la vue éclatée (profondeur, paysage). */
-  layerGap: 0.56,
+  layerGap: 0.62,
   /** Écart vertical entre deux plaques en portrait. */
-  layerGapY: 0.78,
+  layerGapY: 0.48,
   layerCount: 6,
   /** Backend, données et IA se relaient au même endroit : un sujet à la fois. */
   backendZ: -1.45,

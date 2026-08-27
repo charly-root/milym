@@ -44,7 +44,7 @@ const STORY_KEYFRAMES = [
   { p: 0.34, pos: [0.0, 1.2, 3.0], look: [0.0, 1.16, 0.0], fov: 33 },
   { p: 0.46, pos: [0.35, 1.25, 2.7], look: [0.0, 1.16, 0.0], fov: 31, roll: 0.8 },
   // Trois-quarts un peu au-dessus : on lit les six plaques, pas un mur de verre.
-  { p: 0.55, pos: [2.85, 2.08, 2.7], look: [0.0, 1.12, -1.2], fov: 33, roll: 0.8 },
+  { p: 0.55, pos: [3.15, 2.18, 2.95], look: [0.05, 1.12, -1.35], fov: 32, roll: 0.6 },
   // On revient face au plateau : un seul sujet au centre, du backend à l'IA.
   { p: 0.61, pos: [0.0, 1.4, 3.45], look: [0.0, 1.2, -1.45], fov: 34 },
   { p: 0.66, pos: [0.0, 1.38, 3.35], look: [0.0, 1.18, -1.45], fov: 33 },
@@ -86,7 +86,7 @@ function fitToViewport(aspect, fov, storyP) {
   const portrait = amount > 0;
   const share = Math.sqrt(need);
   const stack = storyP > 0.47 && storyP < 0.86;
-  const maxFov = portrait ? (stack ? 46 : 58) : MAX_FOV;
+  const maxFov = portrait ? (stack ? 44 : 56) : MAX_FOV;
   const halfTangent = Math.tan((fov * DEG) / 2);
   const widthShare = stack && portrait ? Math.min(share, 1.12) : share;
   let widened = (2 * Math.atan(halfTangent * widthShare)) / DEG;
@@ -133,7 +133,7 @@ export function CameraRig() {
       const a = fit.amount;
       posX = lerp(posX, posX * 0.08, a);
       posY = lerp(posY, STAGE.center[1] + 0.12, a * 0.4);
-      posZ = lerp(posZ, 3.15, a);
+      posZ = lerp(posZ, 2.85, a);
       lookX = lerp(lookX, 0, a);
       lookY = lerp(lookY, STAGE.center[1], a * 0.6);
       lookZ = lerp(lookZ, -0.35, a * 0.5);

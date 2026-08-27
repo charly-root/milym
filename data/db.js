@@ -176,6 +176,18 @@ if (contactCount === 0) {
   updateStepDescription.run(retiredSteps[0][1], retiredSteps[0][0]);
   updateStepDescription.run(retiredSteps[1][1], retiredSteps[1][0]);
   updateStepTitle.run(retiredSteps[2][1], retiredSteps[2][0]);
+
+  const retiredOptions = [
+    ["Moins de 2 000 €", "Un petit projet"],
+    ["2 000 à 5 000 €", "Un projet intermédiaire"],
+    ["5 000 à 15 000 €", "Un projet conséquent"],
+    ["15 000 à 40 000 €", "Un projet d'envergure"],
+    ["Plus de 40 000 €", "Un projet d'exception"]
+  ];
+  const updateQuestion = db.prepare("UPDATE funnel_questions SET label = ? WHERE label = ?");
+  updateQuestion.run("Quelle envergure visez-vous ?", "Quel budget avez-vous en tête ?");
+  const updateOption = db.prepare("UPDATE funnel_options SET label = ? WHERE label = ?");
+  for (const [previous, next] of retiredOptions) updateOption.run(next, previous);
 }
 
 // Contenu du tunnel : posé une seule fois, puis géré depuis /admin/tunnel

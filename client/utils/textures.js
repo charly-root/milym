@@ -382,6 +382,169 @@ export function createTagTexture(title, subtitle) {
   return toTexture(canvas);
 }
 
+/**
+ * Légende lisible sur fond noir : pastille colorée, titre, sous-titre, le tout
+ * sur une plaque sombre. Sans ce fond, le texte disparaissait dans la scène.
+ */
+export function createCaptionTexture(title, subtitle, accent = "#a78bfa") {
+  const { canvas, ctx } = makeCanvas(768, 176);
+  fillRounded(ctx, 16, 18, 736, 140, 28, "rgba(7, 5, 14, 0.88)");
+  strokeRounded(ctx, 16, 18, 736, 140, 28, `${accent}99`, 2.5);
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.arc(56, 88, 11, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#f8f5ff";
+  ctx.font = "600 52px Inter, system-ui, sans-serif";
+  ctx.fillText(title, 86, 82);
+
+  if (subtitle) {
+    ctx.fillStyle = "rgba(196, 181, 253, 0.88)";
+    ctx.font = "400 28px Inter, system-ui, sans-serif";
+    ctx.fillText(subtitle, 86, 122);
+  }
+
+  return toTexture(canvas);
+}
+
+function plateChrome(ctx, w, h, accent, index, title, subtitle) {
+  const bg = ctx.createLinearGradient(0, 0, w, h);
+  bg.addColorStop(0, "#120a1c");
+  bg.addColorStop(1, "#07060d");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+
+  const glow = ctx.createRadialGradient(w * 0.22, h * 0.2, 10, w * 0.3, h * 0.35, w * 0.7);
+  glow.addColorStop(0, `${accent}33`);
+  glow.addColorStop(1, "transparent");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, w, h);
+
+  fillRounded(ctx, 0, 0, w, 8, 0, accent);
+  ctx.fillStyle = `${accent}cc`;
+  ctx.font = "700 64px Inter, system-ui, sans-serif";
+  ctx.fillText(String(index).padStart(2, "0"), 36, 92);
+
+  ctx.fillStyle = "#f5f3ff";
+  ctx.font = "600 48px Inter, system-ui, sans-serif";
+  ctx.fillText(title, 36, 150);
+  ctx.fillStyle = "rgba(196, 181, 253, 0.8)";
+  ctx.font = "400 24px Inter, system-ui, sans-serif";
+  ctx.fillText(subtitle, 36, 186);
+}
+
+function drawUiMini(ctx, x, y, w, h, accent) {
+  fillRounded(ctx, x, y, w, h, 14, "rgba(255,255,255,0.04)");
+  strokeRounded(ctx, x, y, w, h, 14, `${accent}66`, 1.6);
+  fillRounded(ctx, x + 12, y + 12, w - 24, 22, 8, "rgba(255,255,255,0.07)");
+  fillRounded(ctx, x + 12, y + 48, w * 0.55, 14, 5, `${accent}88`);
+  fillRounded(ctx, x + 12, y + 72, w * 0.4, 10, 4, "rgba(255,255,255,0.12)");
+  fillRounded(ctx, x + 12, y + 98, w * 0.28, 22, 8, accent);
+  fillRounded(ctx, x + 12, y + h - 52, (w - 36) / 2, 40, 10, `${accent}33`);
+  fillRounded(ctx, x + w / 2 + 6, y + h - 52, (w - 36) / 2, 40, 10, `${accent}22`);
+}
+
+function drawReactMini(ctx, x, y, w, h, accent) {
+  const boxes = [
+    [0, 0, 1, 0.22],
+    [0.04, 0.3, 0.44, 0.62],
+    [0.52, 0.3, 0.44, 0.28],
+    [0.52, 0.64, 0.44, 0.28]
+  ];
+  boxes.forEach(([dx, dy, dw, dh], i) => {
+    fillRounded(ctx, x + dx * w, y + dy * h, dw * w, dh * h, 10, i === 0 ? `${accent}44` : "rgba(255,255,255,0.05)");
+    strokeRounded(ctx, x + dx * w, y + dy * h, dw * w, dh * h, 10, `${accent}77`, 1.5);
+  });
+}
+
+function drawLogicMini(ctx, x, y, w, h, accent) {
+  const nodes = [
+    [0.18, 0.28],
+    [0.5, 0.22],
+    [0.82, 0.32],
+    [0.34, 0.72],
+    [0.68, 0.7]
+  ];
+  ctx.strokeStyle = `${accent}77`;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x + nodes[0][0] * w, y + nodes[0][1] * h);
+  nodes.slice(1).forEach(([nx, ny]) => ctx.lineTo(x + nx * w, y + ny * h));
+  ctx.stroke();
+  nodes.forEach(([nx, ny], i) => {
+    ctx.fillStyle = i === 1 ? accent : `${accent}99`;
+    ctx.beginPath();
+    ctx.arc(x + nx * w, y + ny * h, 11, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function drawApiMini(ctx, x, y, w, h, accent) {
+  ["GET  /projets", "POST /leads", "PUT  /session"].forEach((line, i) => {
+    fillRounded(ctx, x, y + i * (h / 3 + 4), w, h / 3 - 4, 10, "rgba(255,255,255,0.04)");
+    strokeRounded(ctx, x, y + i * (h / 3 + 4), w, h / 3 - 4, 10, `${accent}55`, 1.4);
+    ctx.fillStyle = accent;
+    ctx.font = "600 22px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(line, x + 18, y + i * (h / 3 + 4) + h / 6 + 4);
+  });
+}
+
+function drawNodeMini(ctx, x, y, w, h, accent) {
+  for (let i = 0; i < 4; i++) {
+    fillRounded(ctx, x, y + i * 36, w, 28, 8, i === 1 ? `${accent}33` : "rgba(255,255,255,0.04)");
+    ctx.fillStyle = i === 1 ? accent : `${accent}88`;
+    ctx.beginPath();
+    ctx.arc(x + 22, y + i * 36 + 14, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(245,243,255,0.8)";
+    ctx.font = "500 16px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(i === 1 ? "node  listening :443" : `svc-${i + 1}  idle`, x + 40, y + i * 36 + 19);
+  }
+}
+
+function drawDatabaseMini(ctx, x, y, w, h, accent) {
+  ctx.fillStyle = `${accent}22`;
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + 22, w * 0.38, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = `${accent}aa`;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = `${accent}18`;
+  ctx.fillRect(x + w * 0.12, y + 22, w * 0.76, h * 0.55);
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + 22 + h * 0.55, w * 0.38, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + 22, w * 0.38, 16, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  for (let i = 0; i < 3; i++) {
+    fillRounded(ctx, x + w * 0.22, y + 48 + i * 22, w * 0.56, 10, 4, `${accent}55`);
+  }
+}
+
+const LAYER_DRAWERS = {
+  ui: drawUiMini,
+  react: drawReactMini,
+  logic: drawLogicMini,
+  api: drawApiMini,
+  node: drawNodeMini,
+  database: drawDatabaseMini
+};
+
+/** Face d'une plaque de la vue éclatée : on lit le rôle, pas un verre vide. */
+export function createLayerPlateTexture(layer) {
+  const w = 768;
+  const h = 432;
+  const { canvas, ctx } = makeCanvas(w, h);
+  plateChrome(ctx, w, h, layer.accent, layer.index, layer.title, layer.sub);
+  const drawer = LAYER_DRAWERS[layer.id];
+  if (drawer) drawer(ctx, 36, 214, w - 72, 180, layer.accent);
+  return toTexture(canvas);
+}
+
 /** Étiquette centrée, pour les modules qui gravitent autour du noyau. */
 export function createChipTexture(label) {
   const { canvas, ctx } = makeCanvas(320, 96);

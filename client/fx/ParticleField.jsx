@@ -18,21 +18,21 @@ import * as shapes from "./shapes.js";
  * chaque particule pour que la nuée voyage en vagues plutôt qu'en bloc.
  */
 const TIMELINE = [
-  { p: 0.0, shape: "dust", size: 1.15, swirl: 0.35, alpha: 0.5, color: "#d9c8a6" },
-  { p: 0.12, shape: "dust", size: 1.15, swirl: 0.35, alpha: 0.55, color: "#d9c8a6" },
-  { p: 0.2, shape: "vortex", size: 1.1, swirl: 0.85, alpha: 0.7, color: "#c2a8e8" },
+  { p: 0.0, shape: "dust", size: 1.25, swirl: 0.42, alpha: 0.62, color: "#d9c8a6" },
+  { p: 0.12, shape: "dust", size: 1.25, swirl: 0.42, alpha: 0.68, color: "#d9c8a6" },
+  { p: 0.2, shape: "vortex", size: 1.2, swirl: 0.9, alpha: 0.82, color: "#c2a8e8" },
   { p: 0.29, shape: "grid", size: 1.0, swirl: 0.4, alpha: 0.95, color: "#a78bfa" },
   { p: 0.37, shape: "grid", size: 0.95, swirl: 0.35, alpha: 0.85, color: "#a78bfa" },
-  { p: 0.45, shape: "halo", size: 1.0, swirl: 0.35, alpha: 0.55, color: "#c4b5fd" },
-  { p: 0.52, shape: "halo", size: 1.0, swirl: 0.35, alpha: 0.55, color: "#c4b5fd" },
-  { p: 0.6, shape: "layers", size: 0.95, swirl: 0.5, alpha: 0.8, color: "#8b5cf6" },
-  // Les particules quittent les plaques en même temps qu'elles : elles se
-  // changent en rubans de données pendant que la pile s'enfonce dans le noir.
-  { p: 0.648, shape: "layers", size: 0.95, swirl: 0.35, alpha: 0.45, color: "#8b5cf6" },
-  { p: 0.7, shape: "streams", size: 0.9, swirl: 0.25, alpha: 0.35, color: "#c4b5fd" },
-  { p: 0.745, shape: "streams", size: 0.9, swirl: 0.2, alpha: 0.22, color: "#c4b5fd" },
-  { p: 0.785, shape: "neural", size: 0.85, swirl: 0.16, alpha: 0.26, color: "#ede9fe" },
-  { p: 0.815, shape: "neural", size: 0.7, swirl: 0.4, alpha: 0.32, color: "#ddd6fe" },
+  { p: 0.45, shape: "halo", size: 1.15, swirl: 0.4, alpha: 0.7, color: "#c4b5fd" },
+  { p: 0.52, shape: "halo", size: 1.2, swirl: 0.42, alpha: 0.75, color: "#c4b5fd" },
+  { p: 0.58, shape: "layers", size: 1.25, swirl: 0.55, alpha: 0.95, color: "#a78bfa" },
+  { p: 0.63, shape: "layers", size: 1.15, swirl: 0.4, alpha: 0.88, color: "#8b5cf6" },
+  { p: 0.67, shape: "servers", size: 1.25, swirl: 0.45, alpha: 0.95, color: "#86efac" },
+  { p: 0.705, shape: "servers", size: 1.15, swirl: 0.35, alpha: 0.88, color: "#4ade80" },
+  { p: 0.735, shape: "database", size: 1.3, swirl: 0.42, alpha: 0.95, color: "#fb7185" },
+  { p: 0.77, shape: "database", size: 1.1, swirl: 0.32, alpha: 0.72, color: "#f9a8d4" },
+  { p: 0.8, shape: "neural", size: 0.95, swirl: 0.22, alpha: 0.7, color: "#ede9fe" },
+  { p: 0.815, shape: "neural", size: 0.85, swirl: 0.4, alpha: 0.55, color: "#ddd6fe" },
   { p: 0.845, shape: "neural", size: 0.32, swirl: 0.75, alpha: 0.4, color: "#c4b5fd" },
   { p: 0.88, shape: "core", size: 1.0, swirl: 0.45, alpha: 0.85, color: "#c084fc" },
   { p: 0.905, shape: "core", size: 1.1, swirl: 0.5, alpha: 1.0, color: "#c084fc" },
@@ -59,6 +59,7 @@ const VERTEX = /* glsl */ `
   uniform vec2 uPointer;
   uniform float uAspect;
   uniform float uRepel;
+  uniform float uSpreadY;
   varying float vAlpha;
   varying vec3 vColor;
 
@@ -68,6 +69,7 @@ const VERTEX = /* glsl */ `
     d = d * d * (3.0 - 2.0 * d);
     vec3 p = mix(aStart, aEnd, d);
     float mark = mix(aStartMark, aEndMark, d);
+    p.y = 1.15 + (p.y - 1.15) * uSpreadY;
 
     float transit = d * (1.0 - d) * 4.0;
     float t = uTime * (0.25 + aSeed.w * 0.45);
@@ -94,11 +96,11 @@ const VERTEX = /* glsl */ `
     gl_Position.xy += dir * push * (0.16 + aSeed.w * 0.1) * gl_Position.w;
 
     float twinkle = 0.72 + 0.28 * sin(uTime * (1.5 + aSeed.w * 2.0) + aSeed.x * 40.0);
-    vAlpha = uAlpha * twinkle;
+    vAlpha = uAlpha * twinkle * (0.9 + transit * 0.35);
     // En transit ou repoussée par le curseur, la particule brille plus fort.
     vec3 base = mix(uColor, uDotColor, mark);
-    vColor = base * (0.75 + aSeed.w * 0.7) * (1.0 + transit * 1.1 + push * 2.2);
-    gl_PointSize = uSize * (0.5 + aSeed.w * 1.1) * (1.0 + transit * 1.1) * uPixelRatio * (2.4 / max(0.4, -mv.z));
+    vColor = base * (0.85 + aSeed.w * 0.75) * (1.0 + transit * 1.25 + push * 2.2);
+    gl_PointSize = uSize * (0.55 + aSeed.w * 1.2) * (1.0 + transit * 1.2) * uPixelRatio * (2.6 / max(0.4, -mv.z));
   }
 `;
 
@@ -167,7 +169,8 @@ export function ParticleField({ quality }) {
         uDotColor: { value: new THREE.Color(BRAND_DOT) },
         uPointer: { value: new THREE.Vector2(0, 0) },
         uAspect: { value: 1 },
-        uRepel: { value: 0 }
+        uRepel: { value: 0 },
+        uSpreadY: { value: 1 }
       }
     });
 
@@ -244,6 +247,7 @@ export function ParticleField({ quality }) {
     u.uAlpha.value = lerp(a.alpha, b.alpha, t);
     u.uSize.value = lerp(a.size, b.size, t) * (quality.particleSize || 3.1);
     u.uColor.value.copy(colorA.set(a.color)).lerp(colorB.set(b.color), t);
+    u.uSpreadY.value = experienceStore.spreadY || 1;
   });
 
   return <points ref={points} geometry={geometry} material={material} frustumCulled={false} />;

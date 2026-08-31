@@ -76,9 +76,9 @@ export function PaperScreen({ quality }) {
       lerp(STAGE.deskPosition[2], STAGE.center[2], Math.min(1, rise))
     );
     group.rotation.x = lerp(-Math.PI / 2, 0.04, Math.min(1, riseRaw * 1.08)) - between(p, 0.24, 0.32) * 0.04;
-    const flutter = Math.sin(clock.elapsedTime * 5.2) * 0.018 * liftAlive * (1 - morph);
+    const flutter = Math.sin(clock.elapsedTime * 2.4) * 0.006 * liftAlive * (1 - morph);
     group.rotation.z = lerp(-0.06, 0, Math.min(1, riseRaw)) + flutter;
-    group.rotation.y = Math.sin(clock.elapsedTime * 1.4) * 0.012 * (1 - morph) * riseRaw;
+    group.rotation.y = Math.sin(clock.elapsedTime * 0.7) * 0.006 * (1 - morph) * riseRaw;
 
     const width = lerp(STAGE.paper.width, STAGE.screen.width, morph);
     const height = lerp(STAGE.paper.height, STAGE.screen.height, morph);

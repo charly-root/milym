@@ -1,5 +1,5 @@
 import { STAGE } from "../stage.js";
-import { collectWordmarkSamples, drawWordmark, scatterWordmark } from "../brand/wordmark.js";
+import { collectWordmarkGlyphs, glyphsFromSamples, samplesFromImage } from "../brand/wordmark.js";
 
 /**
  * Les dix formes que la nappe de particules traverse pendant le récit.
@@ -210,29 +210,30 @@ export function neural(count) {
   return out;
 }
 
-/** Coquille dense autour du noyau, plus un anneau équatorial. */
+/** Planète + anneau équatorial large : le cran « Tout se rassemble ». */
 export function core(count) {
   const out = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const roll = Math.random();
-    if (roll < 0.62) {
-      const radius = 0.5 + gauss() * 0.04;
+    if (roll < 0.38) {
+      const radius = 0.48 + gauss() * 0.04;
       const theta = Math.random() * Math.PI * 2;
       const y = Math.random() * 2 - 1;
       const ring = Math.sqrt(Math.max(0, 1 - y * y));
       out[i * 3] = CX + Math.cos(theta) * ring * radius;
-      out[i * 3 + 1] = CY + y * radius;
+      out[i * 3 + 1] = CY + y * radius * 0.92;
       out[i * 3 + 2] = CZ + Math.sin(theta) * ring * radius;
-    } else if (roll < 0.9) {
+    } else if (roll < 0.92) {
       const angle = Math.random() * Math.PI * 2;
-      const radius = 1.12 + gauss() * 0.05;
+      const radius = 1.15 + Math.pow(Math.random(), 0.7) * 0.7 + gauss() * 0.04;
+      const tilt = 0.22;
       out[i * 3] = CX + Math.cos(angle) * radius;
-      out[i * 3 + 1] = CY + Math.sin(angle) * 0.16 + gauss() * 0.03;
+      out[i * 3 + 1] = CY + Math.sin(angle) * radius * tilt + gauss() * 0.025;
       out[i * 3 + 2] = CZ + Math.sin(angle) * radius;
     } else {
-      out[i * 3] = CX + gauss() * 0.2;
-      out[i * 3 + 1] = CY + gauss() * 0.2;
-      out[i * 3 + 2] = CZ + gauss() * 0.2;
+      out[i * 3] = CX + gauss() * 0.16;
+      out[i * 3 + 1] = CY + gauss() * 0.16;
+      out[i * 3 + 2] = CZ + gauss() * 0.16;
     }
   }
   return out;
@@ -252,33 +253,111 @@ export function galaxy(count) {
   return out;
 }
 
-function mapLogoPoint(sx, sy, canvasW, canvasH) {
-  const width = 2.55;
+function mapLogoPoint(sx, sy, canvasW, canvasH, jitter = 0.0018, zJitter = 0.004) {
+  const width = 3.05;
   const height = (width * canvasH) / canvasW;
   return [
-    CX + (sx / canvasW - 0.5) * width + gauss() * 0.008,
-    CY + 1.12 - (sy / canvasH - 0.5) * height + gauss() * 0.008,
-    CZ - 0.3 + gauss() * 0.02
+    CX + (sx / canvasW - 0.5) * width + gauss() * jitter,
+    CY + 1.22 - (sy / canvasH - 0.5) * height + gauss() * jitter,
+    CZ - 0.55 + gauss() * zJitter
   ];
 }
 
-/** Constellation finale : MILYM + le carré violet du logo. */
-export function logo(count, image) {
-  let samples;
-  if (image) {
-    const canvas = document.createElement("canvas");
-    canvas.width = image.naturalWidth || image.width;
-    canvas.height = image.naturalHeight || image.height;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(image, 0, 0);
-    samples = collectWordmarkSamples(canvas);
-  } else {
-    const canvas = document.createElement("canvas");
-    canvas.width = 720;
-    canvas.height = 180;
-    const ctx = canvas.getContext("2d");
-    drawWordmark(ctx, 360, 124, { fontSize: 108, align: "center" });
-    samples = collectWordmarkSamples(canvas);
+function pickSample(pool) {
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function splitEdgeAndFill(samples) {
+  const keys = new Set(samples.map(([x, y]) => `${x},${y}`));
+  const edges = [];
+  const fill = [];
+  for (const point of samples) {
+    const [x, y] = point;
+    const neighbors =
+      (keys.has(`${x + 1},${y}`) ? 1 : 0) +
+      (keys.has(`${x - 1},${y}`) ? 1 : 0) +
+      (keys.has(`${x},${y + 1}`) ? 1 : 0) +
+      (keys.has(`${x},${y - 1}`) ? 1 : 0);
+    if (neighbors < 4) edges.push(point);
+    else fill.push(point);
   }
-  return scatterWordmark(samples, count, mapLogoPoint);
+  return {
+    edges: edges.length ? edges : samples,
+    fill: fill.length ? fill : samples
+  };
+}
+
+function placeLogoParticle(sx, sy, width, height, layer, isDot, cx, cy) {
+  let px = sx;
+  let py = sy;
+  if (layer >= 2) {
+    const outward = 1.04 + Math.random() * 0.035;
+    px = cx + (sx - cx) * outward;
+    py = cy + (sy - cy) * outward;
+  }
+  const jitter = isDot ? 0.0008 : layer === 0 ? 0.0012 : layer === 1 ? 0.0032 : 0.009;
+  const zJitter = isDot ? 0.002 : layer === 0 ? 0.003 : 0.007;
+  return mapLogoPoint(px, py, width, height, jitter, zJitter);
+}
+
+/** Constellation finale : cœur lisible, poussière, halo — le carré reste dense. */
+export function logo(count, image) {
+  const pack = image
+    ? glyphsFromSamples(samplesFromImage(image))
+    : collectWordmarkGlyphs();
+  const { glyphs, width, height } = pack;
+  const positions = new Float32Array(count * 3);
+  const marks = new Float32Array(count);
+  const glyphIndex = new Float32Array(count);
+  const layers = new Float32Array(count);
+  glyphIndex.fill(-1);
+
+  const usable = glyphs.filter((g) => g.samples.length);
+  const totalSamples = usable.reduce((sum, g) => sum + g.samples.length, 0) || 1;
+  let cursor = 0;
+
+  usable.forEach((glyph, gi) => {
+    const take =
+      gi === usable.length - 1
+        ? count - cursor
+        : Math.max(24, Math.round((count * glyph.samples.length) / totalSamples));
+    const { edges, fill } = splitEdgeAndFill(glyph.samples);
+    let cx = 0;
+    let cy = 0;
+    for (const [x, y] of glyph.samples) {
+      cx += x;
+      cy += y;
+    }
+    cx /= glyph.samples.length;
+    cy /= glyph.samples.length;
+
+    for (let k = 0; k < take && cursor < count; k++) {
+      const roll = Math.random();
+      let layer = 0;
+      let sample;
+      if (glyph.isDot) {
+        layer = roll < 0.82 ? 0 : 1;
+        sample = pickSample(layer === 0 ? fill : edges);
+      } else if (roll < 0.42) {
+        layer = 0;
+        sample = k < edges.length ? edges[k] : pickSample(edges);
+      } else if (roll < 0.84) {
+        layer = 1;
+        sample = pickSample(fill);
+      } else {
+        layer = 2;
+        sample = pickSample(edges);
+      }
+      const [x, y, z] = placeLogoParticle(sample[0], sample[1], width, height, layer, glyph.isDot, cx, cy);
+      positions[cursor * 3] = x;
+      positions[cursor * 3 + 1] = y;
+      positions[cursor * 3 + 2] = z;
+      marks[cursor] = glyph.isDot ? 1 : 0;
+      glyphIndex[cursor] = gi;
+      layers[cursor] = layer;
+      cursor += 1;
+    }
+  });
+
+  return { positions, marks, glyphs: glyphIndex, layers, glyphCount: usable.length };
 }

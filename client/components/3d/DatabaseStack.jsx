@@ -37,10 +37,10 @@ export function DatabaseStack({ quality }) {
   const packets = useRef();
   const { camera } = useThree();
   const dummy = useMemo(() => new THREE.Object3D(), []);
-  const tag = useMemo(() => createCaptionTexture("Database", "Stockage disque", "#fb7185"), []);
-  const rowsTag = useMemo(() => createCaptionTexture("Table", "Enregistrements", "#c4b5fd"), []);
+  const tag = useMemo(() => createCaptionTexture("Données", "Persistance", "#fb7185"), []);
+  const rowsTag = useMemo(() => createCaptionTexture("Registre", "Enregistrements", "#c4b5fd"), []);
   const title = useMemo(
-    () => createCaptionTexture("Base de données", "Lignes · index · persistance", "#f5d0fe"),
+    () => createCaptionTexture("Les données", "Rangées · retrouvées", "#f5d0fe"),
     []
   );
   const cellCount = ROWS * COLS;

@@ -186,8 +186,8 @@ export function createAnnotationTexture() {
   hand(ctx, "idée", 44, 300, 34, `${PENCIL}0.55)`, -0.34);
   hand(ctx, "site ?", 40, 980, 30, `${PENCIL}0.48)`, -0.18);
   hand(ctx, "app ?", 916, 330, 30, `${PENCIL}0.46)`, 0.2);
-  hand(ctx, "IA ?", 928, 1010, 32, `${PENCIL}0.44)`, 0.16);
-  hand(ctx, "API", 44, 1268, 30, `${PENCIL}0.42)`, -0.06);
+  hand(ctx, "aide ?", 928, 1010, 32, `${PENCIL}0.44)`, 0.16);
+  hand(ctx, "lien", 44, 1268, 30, `${PENCIL}0.42)`, -0.06);
   hand(ctx, "dashboard", 700, 1268, 30, `${PENCIL}0.42)`, 0.05);
   hand(ctx, "header", 470, 132, 26, `${PENCIL}0.42)`, -0.02);
   hand(ctx, "logo ?", 214, 208, 26, `${PENCIL}0.5)`, -0.04);
@@ -342,7 +342,7 @@ export function createFinalUITexture() {
   ctx.fillText("Nébula Dashboard", 76, 498);
   ctx.fillStyle = "rgba(161, 161, 170, 0.85)";
   ctx.font = "400 13px Inter, system-ui, sans-serif";
-  ctx.fillText("Application · Node.js · API", 76, 520);
+  ctx.fillText("Application · tableau de bord", 76, 520);
 
   fillRounded(ctx, 528, 350, 440, 186, 16, "rgba(124, 58, 237, 0.14)");
   strokeRounded(ctx, 528, 350, 440, 186, 16, "rgba(168, 85, 247, 0.3)");
@@ -481,11 +481,11 @@ function drawLogicMini(ctx, x, y, w, h, accent) {
 }
 
 function drawApiMini(ctx, x, y, w, h, accent) {
-  ["GET  /projets", "POST /leads", "PUT  /session"].forEach((line, i) => {
+  ["Demande", "Réponse", "Écoute"].forEach((line, i) => {
     fillRounded(ctx, x, y + i * (h / 3 + 4), w, h / 3 - 4, 10, "rgba(255,255,255,0.04)");
     strokeRounded(ctx, x, y + i * (h / 3 + 4), w, h / 3 - 4, 10, `${accent}55`, 1.4);
     ctx.fillStyle = accent;
-    ctx.font = "600 22px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.font = "600 22px Inter, system-ui, sans-serif";
     ctx.fillText(line, x + 18, y + i * (h / 3 + 4) + h / 6 + 4);
   });
 }
@@ -498,8 +498,8 @@ function drawNodeMini(ctx, x, y, w, h, accent) {
     ctx.arc(x + 22, y + i * 36 + 14, 5, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "rgba(245,243,255,0.8)";
-    ctx.font = "500 16px ui-monospace, SFMono-Regular, Menlo, monospace";
-    ctx.fillText(i === 1 ? "node  listening :443" : `svc-${i + 1}  idle`, x + 40, y + i * 36 + 19);
+    ctx.font = "500 16px Inter, system-ui, sans-serif";
+    ctx.fillText(i === 1 ? "en marche" : `veille  ${i + 1}`, x + 40, y + i * 36 + 19);
   }
 }
 
@@ -632,7 +632,7 @@ export function createDashboardTexture() {
   ctx.font = "600 24px Inter, system-ui, sans-serif";
   ctx.fillText("Pilotage", 32, 96);
 
-  ["Revenus", "Requêtes API", "Automatisations"].forEach((label, i) => {
+  ["Revenus", "Demandes", "Automatisations"].forEach((label, i) => {
     const x = 32 + i * 236;
     fillRounded(ctx, x, 120, 212, 96, 12, "rgba(124, 58, 237, 0.16)");
     ctx.fillStyle = "rgba(196, 181, 253, 0.9)";
@@ -668,7 +668,7 @@ export function createPhoneTexture() {
   ctx.fillText("Application", 26, 84);
   ctx.fillStyle = "rgba(161, 161, 170, 0.85)";
   ctx.font = "400 14px Inter, system-ui, sans-serif";
-  ctx.fillText("Connectée à votre API", 26, 110);
+  ctx.fillText("Toujours à portée de main", 26, 110);
 
   ["Aujourd'hui", "3 tâches automatisées", "Synchronisé"].forEach((label, i) => {
     fillRounded(ctx, 22, 140 + i * 128, 316, 108, 18, "rgba(124, 58, 237, 0.16)");
@@ -731,7 +731,7 @@ export function createAutomationTexture() {
   ctx.font = "600 20px Inter, system-ui, sans-serif";
   ctx.fillText("Automatisation", 28, 88);
 
-  ["Trigger", "Logic", "API", "Action"].forEach((step, i) => {
+  ["Signal", "Suite", "Lien", "Action"].forEach((step, i) => {
     const x = 28 + i * 150;
     fillRounded(ctx, x, 150, 126, 76, 12, "rgba(124, 58, 237, 0.2)");
     strokeRounded(ctx, x, 150, 126, 76, 12, "rgba(168, 85, 247, 0.4)");

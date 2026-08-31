@@ -20,7 +20,7 @@ const ITEMS = [
     id: "web",
     label: "Sites web",
     description: "Vitrines rapides, soignées, pensées pour convertir.",
-    stack: "React · Node.js · SEO",
+    stack: "Présence · clarté · conversion",
     href: "/projets#sites-web",
     size: [0.86, 0.51]
   },
@@ -28,7 +28,7 @@ const ITEMS = [
     id: "app",
     label: "Applications",
     description: "Applications modernes, rapides et connectées.",
-    stack: "React · Node.js · API",
+    stack: "Usage · fluidité · lien",
     href: "/projets#applications",
     size: [0.4, 0.8]
   },
@@ -36,31 +36,31 @@ const ITEMS = [
     id: "ai",
     label: "Intelligence artificielle",
     description: "Des outils classiques aux systèmes intelligents.",
-    stack: "Modèles · API · Traitement",
+    stack: "Comprendre · répondre · apprendre",
     href: "/projets#intelligence-artificielle",
     size: [0.82, 0.51]
   },
   {
     id: "backend",
-    label: "Backend",
-    description: "Services, authentification et logique métier.",
-    stack: "Node.js · API · Docker",
+    label: "Systèmes",
+    description: "Ce qui tourne derrière : accès, logique, confiance.",
+    stack: "Passerelle · serveur · sécurité",
     href: "/projets",
     size: [0.82, 0.51]
   },
   {
     id: "data",
-    label: "Bases de données",
-    description: "Des données structurées, sûres et interrogeables.",
-    stack: "SQL · Migrations · Sauvegardes",
+    label: "Mémoire",
+    description: "Des souvenirs structurés, sûrs et retrouvables.",
+    stack: "Ordre · sûreté · durée",
     href: "/projets",
     size: [0.82, 0.51]
   },
   {
     id: "auto",
     label: "Automatisation",
-    description: "Trigger → Logic → API → Action, sans intervention.",
-    stack: "Webhooks · Tâches · Intégrations",
+    description: "Déclencher, enchaîner, relâcher — sans intervention.",
+    stack: "Signal · enchaînement · action",
     href: "/projets#outils",
     size: [0.82, 0.51]
   }
@@ -89,7 +89,7 @@ export function MilymEcosystem() {
 
     // Les cartes sortent avant l'arrivée des écrans du final : les deux
     // familles superposées rendaient la conclusion illisible.
-    const presence = between(p, 0.895, 0.925) * (1 - between(p, 0.938, 0.962));
+    const presence = between(p, 0.908, 0.932) * (1 - between(p, 0.938, 0.962));
     setGroupOpacity(group.current, presence);
     if (!group.current.visible) {
       if (experienceStore.hovered) {

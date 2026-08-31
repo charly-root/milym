@@ -25,14 +25,14 @@ export const ACT_ORDER = Object.keys(ACTS);
 export const ACT_LABELS = {
   idea: "Idée",
   sketch: "Croquis",
-  wireframe: "Wireframe",
+  wireframe: "Forme",
   prototype: "Prototype",
   interface: "Interface",
   factory: "Frontend",
   backend: "Backend",
   data: "Données",
-  ai: "IA",
-  core: "Digital Core",
+  ai: "Étincelle",
+  core: "Cœur",
   ecosystem: "Écosystème",
   final: "Produit"
 };
@@ -60,8 +60,11 @@ export const SNAP_CHAPTERS = [
  * le récit « de l'idée au produit » ne commence. Les scènes existantes vivent
  * en « progrès récit » (0 → 1) ; seule la caméra, la Terre et le flash de
  * transition lisent le progrès brut.
+ *
+ * L'explosion se termine nettement avant le bureau : plus de chevauchement
+ * entre les débris et la feuille.
  */
-export const PROLOGUE = 0.1;
+export const PROLOGUE = 0.16;
 
 /** En dessous, l'écran est traité comme un téléphone en portrait. */
 export const PORTRAIT_ASPECT = 0.86;
@@ -87,7 +90,7 @@ export function chapterSnapProgress(chapter) {
   if (!range) return 0;
   const start = PROLOGUE + range[0] * (1 - PROLOGUE);
   const end = PROLOGUE + range[1] * (1 - PROLOGUE);
-  const settle = chapter === "final" ? 0.72 : 0.58;
+  const settle = chapter === "final" ? 0.72 : chapter === "core" ? 0.92 : 0.58;
   return start + (end - start) * settle;
 }
 
@@ -106,16 +109,26 @@ export const EARTH = {
  * flash DOM pour que tout détone à la même frame.
  */
 export const BOOM = {
-  heatStart: 0.05,
-  start: 0.072,
-  peak: 0.086,
-  end: 0.108
+  heatStart: 0.04,
+  start: 0.082,
+  peak: 0.094,
+  end: 0.128
 };
 
 /** La météorite : visible dès l'ouverture, elle percute au `BOOM.start`. */
 export const METEOR = {
   appear: 0.0,
-  strike: 0.072
+  strike: 0.082
+};
+
+/**
+ * Flash DOM qui couvre le raccord débris → bureau. Il monte après le plan
+ * des débris et retombe une fois la feuille déjà cadrée.
+ */
+export const FLASH = {
+  start: 0.136,
+  peak: 0.154,
+  end: 0.178
 };
 
 /** Repères géométriques communs à toutes les scènes. */

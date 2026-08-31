@@ -18,11 +18,11 @@ import {
  * s'écartent lentement pour montrer qu'une idée peut prendre plusieurs formes.
  */
 const SCREENS = [
-  { id: "site", size: [1.72, 1.02], closed: [0, 0.02, 0.2], open: [0, 0.06, 0.2], tilt: 0 },
-  { id: "dashboard", size: [1.06, 0.63], closed: [-0.5, -0.3, -0.4], open: [-1.72, -0.34, -0.5], tilt: 0.3 },
-  { id: "phone", size: [0.36, 0.72], closed: [0.55, -0.32, -0.3], open: [1.62, -0.36, -0.35], tilt: -0.26 },
-  { id: "ai", size: [0.92, 0.58], closed: [-0.4, 0.5, -0.6], open: [-1.16, 0.86, -0.8], tilt: 0.18 },
-  { id: "tool", size: [0.92, 0.58], closed: [0.4, 0.5, -0.6], open: [1.16, 0.86, -0.8], tilt: -0.18 }
+  { id: "site", size: [1.62, 0.96], closed: [0, -0.18, 0.2], open: [0, -0.28, 0.38], tilt: 0 },
+  { id: "dashboard", size: [1.0, 0.6], closed: [-0.45, -0.42, -0.4], open: [-1.78, -0.58, -0.42], tilt: 0.28 },
+  { id: "phone", size: [0.34, 0.68], closed: [0.5, -0.44, -0.3], open: [1.72, -0.56, -0.28], tilt: -0.24 },
+  { id: "ai", size: [0.86, 0.54], closed: [-0.38, 0.12, -0.5], open: [-1.68, 0.18, -0.52], tilt: 0.16 },
+  { id: "tool", size: [0.86, 0.54], closed: [0.38, 0.12, -0.5], open: [1.68, 0.18, -0.52], tilt: -0.16 }
 ];
 
 export function FinalProduct() {
@@ -48,11 +48,11 @@ export function FinalProduct() {
 
     // Les écrans n'entrent qu'une fois la caméra posée et la scène vidée
     // (noyau et écosystème partis) : l'enchaînement était le point bugué.
-    const presence = between(p, 0.958, 0.978);
+    const presence = between(p, 0.978, 0.988);
     setGroupOpacity(group.current, presence);
     if (!group.current.visible) return;
 
-    const spread = between(p, 0.978, 1);
+    const spread = between(p, 0.98, 0.991);
     group.current.children.forEach((screen, i) => {
       const { closed, open, tilt } = SCREENS[i];
       screen.position.set(

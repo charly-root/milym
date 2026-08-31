@@ -1,7 +1,7 @@
 import gsap from "gsap";
 import { Observer } from "gsap/Observer";
 import { experienceStore } from "../store.js";
-import { ACTS, BOOM, PROLOGUE, SNAP_CHAPTERS, chapterSnapProgress, storyProgress } from "../stage.js";
+import { ACTS, BOOM, FLASH, PROLOGUE, SNAP_CHAPTERS, chapterSnapProgress, storyProgress } from "../stage.js";
 
 gsap.registerPlugin(Observer);
 
@@ -81,11 +81,9 @@ export function createHomeTimeline(root) {
     if (bar) bar.style.transform = `scaleX(${progress})`;
     if (hint) hint.style.opacity = String(1 - Math.min(progress / 0.02, 1));
 
-    // Le flash magma qui couvre le raccord explosion → bureau : il monte
-    // après le plan des débris (le « money shot ») et retombe sur la feuille.
     if (flash) {
-      const up = clamp01((progress - BOOM.peak) / 0.011);
-      const down = 1 - clamp01((progress - (BOOM.end - 0.005)) / 0.016);
+      const up = clamp01((progress - FLASH.start) / Math.max(0.001, FLASH.peak - FLASH.start));
+      const down = 1 - clamp01((progress - FLASH.peak) / Math.max(0.001, FLASH.end - FLASH.peak));
       flash.style.opacity = String(Math.min(up, down));
     }
 
@@ -102,8 +100,6 @@ export function createHomeTimeline(root) {
       // l'animation 3D se joue quand même entre Croquis et Interface.
       if (!snapSet.has(id)) {
         element.style.opacity = "0";
-        element.style.transform = "translate3d(0, 14px, 0)";
-        element.style.filter = "blur(5px)";
         element.setAttribute("aria-hidden", "true");
         element.classList.remove("is-live");
         return;
@@ -112,7 +108,7 @@ export function createHomeTimeline(root) {
       const snapIndex = SNAP_CHAPTERS.indexOf(id);
       const holdStart = snapIndex <= 0 ? 0 : (snaps[snapIndex - 1] + snaps[snapIndex]) / 2;
       const holdEnd = snapIndex >= lastIndex ? 1 : (snaps[snapIndex] + snaps[snapIndex + 1]) / 2;
-      const edge = Math.min(0.02, Math.abs(holdEnd - holdStart) * 0.28);
+      const edge = Math.min(0.018, Math.abs(holdEnd - holdStart) * 0.24);
 
       let opacity = 0;
       if (progress >= holdStart - edge && progress <= holdEnd + edge) {
@@ -123,10 +119,8 @@ export function createHomeTimeline(root) {
       opacity = Math.min(1, Math.max(0, opacity));
 
       element.style.opacity = String(opacity);
-      element.style.transform = `translate3d(0, ${((1 - opacity) * 14).toFixed(2)}px, 0)`;
-      element.style.filter = opacity > 0.99 ? "none" : `blur(${((1 - opacity) * 5).toFixed(2)}px)`;
       element.setAttribute("aria-hidden", opacity < 0.3 ? "true" : "false");
-      element.classList.toggle("is-live", armed && opacity > 0.4);
+      element.classList.toggle("is-live", armed && opacity > 0.12);
     });
 
     snaps.forEach((snap, snapIndex) => {
@@ -173,11 +167,12 @@ export function createHomeTimeline(root) {
     const a = Math.min(fromProgress, toProgress);
     const b = Math.max(fromProgress, toProgress);
     const crossesBoom = a < BOOM.peak && b > BOOM.start;
-    const longJump = distance > 0.2;
+    const intoLogo = hops === 1 && SNAP_CHAPTERS[Math.max(fromIndex, toIndex)] === "final";
+    if (intoLogo) return 3.8;
     return gsap.utils.clamp(
-      longJump ? 1.55 : 1.2,
-      crossesBoom ? 2.8 : 3.1,
-      (crossesBoom ? 1.85 : 1.25) + hops * 0.18 + distance * 4.5 + (longJump ? 0.35 : 0)
+      0.85,
+      crossesBoom ? 2.35 : 1.7,
+      (crossesBoom ? 1.45 : 0.9) + hops * 0.1 + distance * 2.6
     );
   };
 
@@ -199,17 +194,19 @@ export function createHomeTimeline(root) {
       return true;
     }
 
+    const intoLogo =
+      Math.abs(next - fromIndex) === 1 && SNAP_CHAPTERS[Math.max(fromIndex, next)] === "final";
     locked = true;
     tween?.kill();
     tween = gsap.to(state, {
       progress: target,
       duration: durationFor(fromIndex, next, fromProgress, target),
-      ease: "none",
+      ease: intoLogo ? "power1.inOut" : "power2.inOut",
       overwrite: true,
       onUpdate: apply,
       onComplete: () => {
         locked = false;
-        ignoreUntil = performance.now() + 320;
+        ignoreUntil = performance.now() + 160;
       }
     });
     return true;

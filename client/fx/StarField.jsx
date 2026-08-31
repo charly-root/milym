@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { experienceStore } from "../store.js";
-import { BOOM } from "../stage.js";
+import { FLASH } from "../stage.js";
 
 /**
  * Un champ d'étoiles derrière la Terre : la caméra d'ouverture est loin, il
@@ -26,7 +26,7 @@ export function StarField() {
 
   useFrame(() => {
     if (!points.current) return;
-    points.current.visible = experienceStore.rawProgress < BOOM.end + 0.02;
+    points.current.visible = experienceStore.rawProgress < FLASH.peak;
   });
 
   return (

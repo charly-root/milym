@@ -10,21 +10,22 @@ import { faceCamera } from "../../utils/billboard.js";
 import { createChipTexture, loadWordmarkTexture } from "../../utils/textures.js";
 import { coreOpenAmount, coreHubAmount } from "../../animations/digitalCoreTimeline.js";
 
-/** Chaque module a un rôle : ce sont les pièces du produit, pas des logos. */
+/** Les pièces du produit, nommées par leur rôle — pas par un outil. */
 const MODULES = [
-  { label: "React", color: "#7c3aed" },
-  { label: "Node.js", color: "#6d28d9" },
-  { label: "API", color: "#8b5cf6" },
-  { label: "Database", color: "#5b21b6" },
-  { label: "IA", color: "#a78bfa" },
-  { label: "Cloud", color: "#4c1d95" }
+  { label: "Frontend", color: "#7c3aed" },
+  { label: "Interface", color: "#6d28d9" },
+  { label: "Logique", color: "#8b5cf6" },
+  { label: "Contrats", color: "#5b21b6" },
+  { label: "Serveur", color: "#a78bfa" },
+  { label: "Données", color: "#4c1d95" }
 ];
 
 const RADIUS = 1.15;
+const RING_TILT = [0.72, 0.1, 0.18];
 
 /**
- * Le noyau : tout ce qu'on vient de traverser, assemblé. Il s'ouvre pour
- * montrer ses pièces, puis se referme.
+ * Le cœur : une planète lumineuse, un anneau, des pièces en orbite.
+ * Le cran « Tout se rassemble » se pose sur ce plan, déjà ouvert.
  */
 export function DigitalCore({ quality }) {
   const group = useRef();
@@ -32,6 +33,9 @@ export function DigitalCore({ quality }) {
   const modules = useRef();
   const badge = useRef();
   const heart = useRef();
+  const ringA = useRef();
+  const ringB = useRef();
+  const ringC = useRef();
   const { camera } = useThree();
   const [logo, setLogo] = useState(null);
   const [logoAspect, setLogoAspect] = useState(699 / 184);
@@ -76,7 +80,7 @@ export function DigitalCore({ quality }) {
 
     const open = coreOpenAmount(p);
     const hub = coreHubAmount(p);
-    const travel = between(p, 0.855, 0.905);
+    const travel = between(p, 0.855, 0.888);
     const born = appear;
 
     const fromX = 0;
@@ -88,33 +92,44 @@ export function DigitalCore({ quality }) {
       lerp(fromZ, STAGE.center[2], travel)
     );
 
-    const ignition = Math.sin(Math.PI * between(p, 0.868, 0.94));
-    if (heart.current) heart.current.emissiveIntensity = 0.6 + ignition * 3.4;
+    const ignition = Math.sin(Math.PI * between(p, 0.86, 0.93));
+    if (heart.current) heart.current.emissiveIntensity = 0.85 + ignition * 3.8 + open * 1.4;
 
-    group.current.scale.setScalar(lerp(0.18, 1, born) * lerp(1, 0.52, hub) * (1 - leave));
-    // Seuls les modules tournent : le logo doit rester lisible de face.
-    if (modules.current) modules.current.rotation.y += delta * 0.16;
+    group.current.scale.setScalar(lerp(0.22, 1, born) * lerp(1, 0.62, hub) * (1 - leave));
+    if (modules.current) modules.current.rotation.y += delta * 0.22;
     if (shell.current) {
-      shell.current.rotation.x += delta * 0.1;
-      shell.current.rotation.y += delta * 0.07;
+      shell.current.rotation.x += delta * 0.08;
+      shell.current.rotation.y += delta * 0.11;
     }
-    if (badge.current) faceCamera(badge.current, camera);
+    if (badge.current) {
+      badge.current.visible = open < 0.22;
+      if (badge.current.visible) faceCamera(badge.current, camera);
+    }
+
+    const ringScale = 0.2 + open * 0.8;
+    const ringOpacity = open * 0.92;
+    const spin = delta * (0.12 + open * 0.18);
+    [ringA, ringB, ringC].forEach((ring, i) => {
+      if (!ring.current) return;
+      ring.current.visible = open > 0.02;
+      ring.current.scale.setScalar(ringScale * (1 + i * 0.08));
+      ring.current.rotation.z += spin * (i === 1 ? -0.7 : 1);
+      if (ring.current.material) ring.current.material.opacity = ringOpacity * (i === 0 ? 1 : 0.55);
+    });
 
     modules.current?.children.forEach((module, i) => {
       const angle = (i / MODULES.length) * Math.PI * 2;
-      // Fermé, chaque module est rangé à l'intérieur de la coque : on ne voit
-      // pas une rangée de cubes flotter autour du noyau pendant l'implosion.
-      const radius = lerp(0.22, RADIUS + open * 0.55, open);
+      const radius = lerp(0.22, RADIUS + open * 0.28, open);
       module.position.set(
         Math.cos(angle) * radius,
-        Math.sin(angle * 1.6) * 0.3 * open,
+        Math.sin(angle * 2) * 0.08 * open,
         Math.sin(angle) * radius
       );
-      module.scale.setScalar(lerp(0.2, 1, open));
-      module.visible = open > 0.02;
+      module.scale.setScalar(lerp(0.2, 0.85, open));
+      module.visible = open > 0.04;
       const chip = module.children[1];
       if (chip) {
-        chip.visible = open > 0.05;
+        chip.visible = open > 0.12;
         chip.material.opacity = open;
         if (chip.visible) faceCamera(chip, camera);
       }
@@ -124,39 +139,71 @@ export function DigitalCore({ quality }) {
   return (
     <group ref={group} position={[0, STAGE.center[1] + 0.08, STAGE.aiZ]}>
       <mesh castShadow={quality.shadows}>
-        <icosahedronGeometry args={[0.4, 0]} />
+        <sphereGeometry args={[0.42, 32, 24]} />
         <meshStandardMaterial
           ref={heart}
-          color="#12081c"
-          emissive="#6d28d9"
-          emissiveIntensity={0.6}
-          metalness={0.62}
-          roughness={0.22}
+          color="#1a0a28"
+          emissive="#7c3aed"
+          emissiveIntensity={0.85}
+          metalness={0.35}
+          roughness={0.28}
           transparent
         />
       </mesh>
+      <pointLight color="#c4b5fd" intensity={2.4} distance={6} decay={2} />
 
       <mesh ref={shell}>
-        <octahedronGeometry args={[0.62, 0]} />
+        <sphereGeometry args={[0.58, 24, 18]} />
         <meshPhysicalMaterial
           color="#1a1030"
-          roughness={0.12}
-          metalness={0.4}
+          roughness={0.08}
+          metalness={0.45}
           transparent
-          opacity={0.28}
-          transmission={quality.transmission ? 0.4 : 0}
-          thickness={0.4}
+          opacity={0.22}
+          transmission={quality.transmission ? 0.55 : 0}
+          thickness={0.35}
           side={THREE.DoubleSide}
         />
       </mesh>
 
       <lineSegments geometry={cage} rotation={[0.3, 0.4, 0.1]}>
-        <lineBasicMaterial color="#a78bfa" transparent opacity={0.22} />
+        <lineBasicMaterial color="#a78bfa" transparent opacity={0.16} />
       </lineSegments>
 
       <lineSegments geometry={fibers}>
-        <lineBasicMaterial color="#a78bfa" transparent opacity={0.22} />
+        <lineBasicMaterial color="#a78bfa" transparent opacity={0.18} />
       </lineSegments>
+
+      <mesh ref={ringA} rotation={RING_TILT} visible={false}>
+        <torusGeometry args={[1.42, 0.055, 10, 96]} />
+        <meshBasicMaterial
+          color="#f3e8ff"
+          transparent
+          opacity={0}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+      <mesh ref={ringB} rotation={RING_TILT} visible={false}>
+        <torusGeometry args={[1.68, 0.022, 8, 80]} />
+        <meshBasicMaterial
+          color="#c4b5fd"
+          transparent
+          opacity={0}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+      <mesh ref={ringC} rotation={RING_TILT} visible={false}>
+        <torusGeometry args={[1.18, 0.016, 8, 72]} />
+        <meshBasicMaterial
+          color="#a78bfa"
+          transparent
+          opacity={0}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
 
       {logo && (
         <mesh key={logoAspect} ref={badge} position={[0, 0, 0.66]}>
@@ -171,18 +218,18 @@ export function DigitalCore({ quality }) {
           return (
             <group key={module.label} position={[Math.cos(angle) * RADIUS, 0, Math.sin(angle) * RADIUS]}>
               <mesh castShadow={quality.shadows}>
-                <boxGeometry args={[0.26, 0.26, 0.26]} />
+                <boxGeometry args={[0.22, 0.22, 0.22]} />
                 <meshStandardMaterial
                   color="#0f0f16"
                   emissive={module.color}
-                  emissiveIntensity={0.32}
+                  emissiveIntensity={0.4}
                   metalness={0.5}
                   roughness={0.3}
                   transparent
                 />
               </mesh>
-              <mesh position={[0, 0.24, 0]}>
-                <planeGeometry args={[0.32, 0.096]} />
+              <mesh position={[0, 0.22, 0]}>
+                <planeGeometry args={[0.48, 0.1]} />
                 <meshBasicMaterial map={chips[i]} transparent opacity={0} depthWrite={false} depthTest={false} />
               </mesh>
             </group>

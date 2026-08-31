@@ -8,17 +8,16 @@ import { faceCamera } from "../../utils/billboard.js";
 import { createCaptionTexture, createLayerPlateTexture } from "../../utils/textures.js";
 
 /**
- * La vue éclatée. Chaque plaque a une couleur, un numéro et un schéma : on
- * lit UI → React → état → API → Node → base, au lieu d'une pile de verres
- * identiques. En portrait, la pile s'étale de haut en bas.
+ * La vue éclatée. Chaque plaque a une couleur, un numéro et un rôle technique
+ * générique — sans nom d'outil.
  */
 const LAYERS = [
-  { id: "ui", index: 1, title: "UI", sub: "Interface", accent: "#ddd6fe", emissive: "#6d28d9" },
-  { id: "react", index: 2, title: "React", sub: "Composants", accent: "#67e8f9", emissive: "#0e7490" },
-  { id: "logic", index: 3, title: "Logic", sub: "État", accent: "#c4b5fd", emissive: "#5b21b6" },
-  { id: "api", index: 4, title: "API", sub: "Contrat", accent: "#fcd34d", emissive: "#a16207" },
-  { id: "node", index: 5, title: "Node.js", sub: "Serveur", accent: "#4ade80", emissive: "#166534" },
-  { id: "database", index: 6, title: "Database", sub: "Données", accent: "#fb7185", emissive: "#9f1239" }
+  { id: "ui", index: 1, title: "Frontend", sub: "Vue", accent: "#ddd6fe", emissive: "#6d28d9" },
+  { id: "react", index: 2, title: "Interface", sub: "Composants", accent: "#67e8f9", emissive: "#0e7490" },
+  { id: "logic", index: 3, title: "Logique", sub: "État", accent: "#c4b5fd", emissive: "#5b21b6" },
+  { id: "api", index: 4, title: "Contrats", sub: "Échanges", accent: "#fcd34d", emissive: "#a16207" },
+  { id: "node", index: 5, title: "Serveur", sub: "Traitement", accent: "#4ade80", emissive: "#166534" },
+  { id: "database", index: 6, title: "Données", sub: "Persistance", accent: "#fb7185", emissive: "#9f1239" }
 ];
 
 const SLAB_DEPTH = 0.055;
@@ -122,7 +121,7 @@ export function LayerStack({ quality }) {
             </>
           )}
           <mesh userData={{ baseOpacity: 1, tag: true }}>
-            <planeGeometry args={[0.92, 0.21]} />
+            <planeGeometry args={[1.08, 0.21]} />
             <meshBasicMaterial map={tags[index]} transparent opacity={1} depthWrite={false} depthTest={false} />
           </mesh>
         </group>

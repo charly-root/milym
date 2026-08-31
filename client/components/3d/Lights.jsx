@@ -1,9 +1,9 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { experienceStore } from "../../store.js";
-import { STAGE } from "../../stage.js";
+import { STAGE, PROLOGUE } from "../../stage.js";
 import { between } from "../../utils/acts.js";
-import { lerp } from "../../utils/math.js";
+import { lerp, smoothstep } from "../../utils/math.js";
 
 /**
  * Deux ambiances : la lampe chaude du bureau au début, la lumière violette du
@@ -18,10 +18,12 @@ export function Lights({ quality }) {
   useFrame(() => {
     const digital = between(experienceStore.progress, 0.14, 0.32);
     const machine = between(experienceStore.progress, 0.48, 0.8);
-    if (lamp.current) lamp.current.intensity = lerp(6.5, 0.1, digital);
-    if (studio.current) studio.current.intensity = lerp(0.15, 4.6, digital) + machine * 2.2;
-    if (fill.current) fill.current.intensity = lerp(0.12, 0.7, digital) + machine * 0.7;
-    if (rim.current) rim.current.intensity = machine * 3.4;
+    const space = 1 - smoothstep(PROLOGUE - 0.01, PROLOGUE + 0.02, experienceStore.rawProgress);
+    const present = 1 - space;
+    if (lamp.current) lamp.current.intensity = lerp(5.2, 0.1, digital) * present;
+    if (studio.current) studio.current.intensity = (lerp(0.12, 3.4, digital) + machine * 1.4) * present;
+    if (fill.current) fill.current.intensity = (lerp(0.1, 0.5, digital) + machine * 0.45) * present;
+    if (rim.current) rim.current.intensity = machine * 2.2 * present;
   });
 
   return (
@@ -35,7 +37,7 @@ export function Lights({ quality }) {
         angle={0.6}
         penumbra={0.9}
         color="#f4e7d2"
-        intensity={6.5}
+        intensity={5.2}
         distance={8}
         castShadow={quality.shadows}
         shadow-mapSize-width={1024}

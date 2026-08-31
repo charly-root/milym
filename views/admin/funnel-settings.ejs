@@ -43,8 +43,9 @@
       <legend class="field-label mb-1">Calcul de l'estimation</legend>
 
       <p class="rounded-xl border border-purple-650/20 bg-background/40 p-4 text-xs leading-relaxed text-secondary">
-        Chaque prix saisi dans le tunnel est une référence. La fourchette affichée au visiteur
-        l'encadre : avec les valeurs actuelles, un prix de <strong class="text-primary">1 000 €</strong>
+        Chaque prix saisi dans le tunnel est une référence interne. Le visiteur
+        ne voit plus de montants : la fourchette est calculée pour vous, dans les
+        demandes reçues. Avec les valeurs actuelles, un prix de <strong class="text-primary">1 000 €</strong>
         devient <strong class="text-purple-300"><%= euro(1000 * preview.funnelSpreadLow) %>
         à <%= euro(1000 * preview.funnelSpreadHigh) %></strong>.
       </p>

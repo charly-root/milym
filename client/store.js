@@ -17,5 +17,12 @@ export const experienceStore = {
   /** Écran plus haut que large : la scène s'étire en hauteur. */
   portrait: false,
   /** Facteur d'étalement vertical (1 = paysage, jusqu'à ~1.7 en portrait). */
-  spreadY: 1
+  spreadY: 1,
+  /** Clics sur la constellation finale. À 5, le stand de tir s'ouvre. */
+  logoClicks: 0,
+  rangeMode: false,
+  /** Incrémenté à chaque coup de feu (easter egg). */
+  shots: 0,
+  /** Dernier tir à traiter (coordonnées NDC + identifiant). */
+  pendingShot: null
 };

@@ -11,10 +11,12 @@ import { DigitalCore } from "./DigitalCore.jsx";
 import { MilymEcosystem } from "./MilymEcosystem.jsx";
 import { FinalProduct } from "./FinalProduct.jsx";
 import { ParticleField } from "../../fx/ParticleField.jsx";
-import { SparkTrails } from "../../fx/SparkTrails.jsx";
 import { ScanBeam } from "../../fx/ScanBeam.jsx";
 import { Shockwave } from "../../fx/Shockwave.jsx";
 import { Earth } from "../../fx/Earth.jsx";
+import { Meteorite } from "../../fx/Meteorite.jsx";
+import { StarField } from "../../fx/StarField.jsx";
+import { TargetRange } from "./TargetRange.jsx";
 import { Effects } from "../../fx/Effects.jsx";
 
 /**
@@ -28,13 +30,16 @@ export function Scene({ quality }) {
   return (
     <>
       <color attach="background" args={["#050507"]} />
-      <fog attach="fog" args={["#050507", 10, 26]} />
+      <fog attach="fog" args={["#050507", 14, 42]} />
 
       <CameraRig />
       <Lights quality={quality} />
 
       {/* Prologue : la France de nuit vue de l'espace, puis la plongée. */}
+      <StarField />
       <Earth />
+      <Meteorite />
+      <TargetRange />
 
       <Desk quality={quality} />
       <PaperScreen quality={quality} />
@@ -48,11 +53,9 @@ export function Scene({ quality }) {
       <FinalProduct />
 
       <ParticleField quality={quality} />
-      <SparkTrails quality={quality} />
-      {/* Deux passes de numérisation : la feuille, puis l'interface finale. */}
-      <ScanBeam range={[0.235, 0.315]} />
-      <ScanBeam range={[0.4, 0.455]} />
-      <ScanBeam range={[0.5, 0.56]} />
+      {/* Une passe de numérisation au redressement, une à l'interface. */}
+      <ScanBeam range={[0.2, 0.3]} />
+      <ScanBeam range={[0.36, 0.44]} />
       <Shockwave />
 
       <Effects enabled={quality.postprocessing} />

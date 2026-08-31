@@ -1,9 +1,7 @@
-/* Tunnel « Créer mon projet » : navigation par étapes, questions conditionnelles
-   et estimation affichée en direct.
+/* Tunnel « Créer mon projet » : navigation par étapes et questions conditionnelles.
 
-   Les tarifs ne sont pas dupliqués ici : ils sont lus dans les attributs data-*
-   posés par views/partials/funnel-question.ejs depuis lib/funnel.js. Le montant
-   affiché reste un aperçu — celui qui fait foi est renvoyé par le serveur. */
+   Les tarifs restent calculés côté serveur pour l'admin ; le visiteur ne voit
+   aucun montant. */
 (() => {
   "use strict";
 
@@ -19,19 +17,19 @@
   const submitBtn = document.getElementById("funnel-submit");
   const globalError = form.querySelector('[data-error-for="global"]');
 
-  const resultIndex = steps.length - 1; // la dernière étape affiche l'estimation
+  const resultIndex = steps.length - 1;
   let current = 0;
   let sent = false;
-
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  const euro = (n) =>
-    new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 
   /* ── Questions conditionnelles ───────────────────────────────────────── */
   const selectedType = () => {
     const checked = form.querySelector('input[name="type"]:checked');
     return checked ? checked.value : "";
+  };
+
+  const selectedTypeLabel = () => {
+    const checked = form.querySelector('input[name="type"]:checked');
+    return checked ? (checked.dataset.label || checked.value) : "";
   };
 
   const isVisible = (question) => {
@@ -43,85 +41,15 @@
     questions.forEach((question) => {
       const visible = isVisible(question);
       question.hidden = !visible;
-      // Les champs masqués ne doivent pas partir dans la requête
       question.querySelectorAll("input, textarea, select").forEach((field) => {
         field.disabled = !visible;
       });
     });
   };
 
-  /* ── Estimation en direct ────────────────────────────────────────────── */
-  const readEstimate = () => {
-    let min = 0;
-    let max = 0;
-    let factor = 1;
-    let monthly = [0, 0];
-
-    for (const question of questions) {
-      if (question.hidden) continue;
-
-      question.querySelectorAll("input[type=radio]:checked, input[type=checkbox]:checked").forEach((input) => {
-        min += Number(input.dataset.min || 0);
-        max += Number(input.dataset.max || 0);
-        if (input.dataset.factor) factor *= Number(input.dataset.factor);
-        if (Number(input.dataset.monthlyMax) > 0) {
-          monthly = [Number(input.dataset.monthlyMin), Number(input.dataset.monthlyMax)];
-        }
-      });
-
-      question.querySelectorAll("input[type=number][data-unit-min]").forEach((input) => {
-        const quantity = Math.min(Number(input.value) || 0, Number(input.max));
-        const extra = Math.max(0, quantity - Number(input.dataset.included));
-        min += extra * Number(input.dataset.unitMin);
-        max += extra * Number(input.dataset.unitMax);
-      });
-    }
-
-    const round = (n) => Math.round((n * factor) / 50) * 50;
-    return { min: round(min), max: round(max), monthly };
-  };
-
-  /* Le montant grimpe jusqu'à sa nouvelle valeur : le budget se construit sous
-     les yeux du visiteur à chaque réponse plutôt que de sauter d'un coup. */
-  let shown = [0, 0];
-  let countFrame = 0;
-
-  const paintLive = (min, max, monthly) => {
-    const suffix = monthly[1] > 0 ? ` + ${euro(monthly[0])}–${euro(monthly[1])} / mois` : "";
-    live.textContent = `${euro(min)} à ${euro(max)}${suffix}`;
-  };
-
   const refreshLive = () => {
-    if (!selectedType()) {
-      cancelAnimationFrame(countFrame);
-      shown = [0, 0];
-      live.textContent = "Choisissez un type de projet";
-      return;
-    }
-
-    const { min, max, monthly } = readEstimate();
-    if (reducedMotion) {
-      shown = [min, max];
-      paintLive(min, max, monthly);
-      return;
-    }
-
-    const from = shown;
-    const start = performance.now();
-    const DURATION = 550;
-
-    cancelAnimationFrame(countFrame);
-    const tick = (now) => {
-      const progress = Math.min(1, (now - start) / DURATION);
-      // Décélération : la course ralentit à l'approche du montant final
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const step = (a, b) => Math.round((a + (b - a) * eased) / 50) * 50;
-      shown = [step(from[0], min), step(from[1], max)];
-      paintLive(shown[0], shown[1], monthly);
-      if (progress < 1) countFrame = requestAnimationFrame(tick);
-      else shown = [min, max];
-    };
-    countFrame = requestAnimationFrame(tick);
+    const label = selectedTypeLabel();
+    live.textContent = label || "Choisissez un type de projet";
   };
 
   /* ── Récapitulatif des réponses déjà données ─────────────────────────── */
@@ -225,62 +153,6 @@
     window.scrollTo({ top: 0, behavior: index === 0 ? "auto" : "smooth" });
   };
 
-  /* ── Rendu de l'estimation renvoyée par le serveur ───────────────────── */
-  // Échelle de la jauge : borne haute de mes interventions courantes. Une
-  // fourchette qui la dépasse sature simplement à droite.
-  const GAUGE_CEILING = 45000;
-
-  const renderQuote = (quote) => {
-    document.getElementById("quote-range").textContent = `${euro(quote.min)} à ${euro(quote.max)}`;
-
-    const [wMin, wMax] = quote.weeks;
-    document.getElementById("quote-weeks").textContent =
-      wMin === wMax ? `${wMin} semaines` : `${wMin} à ${wMax} semaines`;
-
-    document.getElementById("quote-monthly").textContent =
-      quote.monthly[1] > 0 ? `${euro(quote.monthly[0])} à ${euro(quote.monthly[1])} / mois` : "Aucune";
-
-    const percent = (n) => Math.min(100, (n / GAUGE_CEILING) * 100);
-    const gauge = document.getElementById("quote-gauge");
-    const left = percent(quote.min);
-    gauge.style.left = `${left}%`;
-    gauge.style.width = `${Math.max(4, percent(quote.max) - left)}%`;
-
-    // Le trait de chaque poste se lit par rapport au plus lourd d'entre eux
-    const heaviest = quote.breakdown.reduce((top, line) => Math.max(top, line.max), 0) || 1;
-    const list = document.getElementById("quote-breakdown");
-    list.textContent = "";
-
-    for (const line of quote.breakdown) {
-      const item = document.createElement("li");
-
-      const row = document.createElement("div");
-      row.className = "flex items-baseline justify-between gap-4 text-sm";
-
-      const label = document.createElement("span");
-      label.className = "text-secondary";
-      label.textContent = line.label;
-
-      const amount = document.createElement("span");
-      amount.className = "shrink-0 text-primary";
-      amount.textContent = `${euro(line.min)} à ${euro(line.max)}`;
-
-      row.append(label, amount);
-
-      const bar = document.createElement("div");
-      bar.className = "funnel-line-bar";
-      const fill = document.createElement("div");
-      fill.className = "funnel-line-fill";
-      bar.appendChild(fill);
-
-      item.append(row, bar);
-      list.appendChild(item);
-
-      // Largeur posée après insertion pour que la transition CSS s'amorce
-      requestAnimationFrame(() => { fill.style.width = `${(line.max / heaviest) * 100}%`; });
-    }
-  };
-
   /* ── Envoi ───────────────────────────────────────────────────────────── */
   const collect = () => {
     const payload = {};
@@ -310,7 +182,7 @@
     if (sent) return;
     globalError.hidden = true;
     submitBtn.disabled = true;
-    submitBtn.textContent = "Calcul en cours...";
+    submitBtn.textContent = "Envoi en cours...";
 
     try {
       const res = await fetch("/creer-mon-projet", {
@@ -338,14 +210,13 @@
       }
 
       sent = true;
-      renderQuote(data.quote);
       showStep(resultIndex);
     } catch {
       globalError.textContent = "Une erreur est survenue. Réessayez plus tard.";
       globalError.hidden = false;
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Voir mon estimation";
+      submitBtn.textContent = "Envoyer ma demande";
     }
   };
 

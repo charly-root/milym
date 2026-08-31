@@ -35,7 +35,7 @@ export function AINetwork({ quality }) {
   const label = useRef();
   const { camera } = useThree();
   const dummy = useMemo(() => new THREE.Object3D(), []);
-  const tag = useMemo(() => createTagTexture("IA", "Modèle"), []);
+  const tag = useMemo(() => createTagTexture("Étincelle", "Éveil"), []);
 
   const { points, links, segments } = useMemo(() => {
     const list = fibonacciSphere(quality.aiNodes, RADIUS);

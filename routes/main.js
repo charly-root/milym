@@ -106,8 +106,8 @@ router.post("/creer-mon-projet", contactLimiter, (req, res) => {
     `Nouvelle demande ${data.type} de ${data.name} <${data.email}> : ${quote.min}–${quote.max} €`,
   );
 
-  if (wantsJson) return res.json({ ok: true, quote });
-  res.render("quote", { pageTitle: "Votre estimation", quote });
+  if (wantsJson) return res.json({ ok: true });
+  res.render("quote", { pageTitle: "Demande envoyée", quote });
 });
 
 // ── Formulaire de contact ───────────────────────────────────────────────────

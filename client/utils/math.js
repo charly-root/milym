@@ -6,6 +6,14 @@ export function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
+/** Décélération avec un léger dépassement, pour un geste plus cinématique. */
+export function easeOutBack(t) {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  const x = clamp(t);
+  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+}
+
 export function inverseLerp(a, b, value) {
   if (Math.abs(b - a) < 1e-6) return 0;
   return clamp((value - a) / (b - a));
@@ -28,15 +36,21 @@ export function lerpArray(a, b, t) {
   return a.map((value, i) => lerp(value, b[i], t));
 }
 
+/**
+ * Interpolation linéaire entre deux crans. Un smoothstep par segment faisait
+ * ralentir la caméra à chaque clé — d'où le stop-start. L'easing vit sur le
+ * tween de scroll, pas ici.
+ */
 export function sampleKeyframes(frames, progress) {
-  if (progress <= frames[0].p) return frames[0];
-  if (progress >= frames[frames.length - 1].p) return frames[frames.length - 1];
+  if (progress <= frames[0].p) return { ...frames[0], roll: frames[0].roll || 0 };
+  const last = frames[frames.length - 1];
+  if (progress >= last.p) return { ...last, roll: last.roll || 0 };
 
   for (let i = 0; i < frames.length - 1; i++) {
     const a = frames[i];
     const b = frames[i + 1];
     if (progress >= a.p && progress <= b.p) {
-      const t = smoothstep(a.p, b.p, progress);
+      const t = inverseLerp(a.p, b.p, progress);
       return {
         p: progress,
         pos: lerpArray(a.pos, b.pos, t),
@@ -47,5 +61,5 @@ export function sampleKeyframes(frames, progress) {
     }
   }
 
-  return frames[frames.length - 1];
+  return { ...last, roll: last.roll || 0 };
 }

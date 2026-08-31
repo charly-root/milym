@@ -83,6 +83,11 @@
     @apply px-5 py-2 text-xs;
   }
 
+  .btn-primary[hidden],
+  .btn-ghost[hidden] {
+    display: none;
+  }
+
   .btn-danger {
     @apply focus-ring inline-flex items-center justify-center rounded-xl border border-red-500/40
       bg-red-500/5 px-7 py-3 text-sm font-semibold text-red-400 transition-all duration-300
@@ -946,14 +951,14 @@
     pointer-events: none;
     opacity: 0;
     will-change: opacity;
-    /* Tons magma : c'est la détonation de la Terre qui blanchit l'écran. */
+    /* Voile chaud, pas un blanc d'hôpital : on voit encore un peu la scène. */
     background: radial-gradient(
-      circle at 52% 44%,
-      #fff6e8 0%,
-      #ffc687 26%,
-      #f0642a 54%,
-      #6e1f38 80%,
-      #17102b 100%
+      circle at 50% 42%,
+      rgba(255, 246, 232, 0.92) 0%,
+      rgba(255, 186, 120, 0.72) 28%,
+      rgba(180, 70, 50, 0.45) 58%,
+      rgba(23, 16, 43, 0.2) 82%,
+      transparent 100%
     );
   }
 
@@ -1005,38 +1010,36 @@
     align-items: center;
     padding: 0 1.25rem calc(5.5rem + env(safe-area-inset-bottom, 0px));
     opacity: 0;
-    will-change: opacity, transform;
+    will-change: opacity;
   }
 
   /* ── Cascade typographique ────────────────────────────────────────────────
-     L'opacité du chapitre est pilotée par le scroll (inline), mais ses enfants
-     entrent chacun leur tour dès que le chapitre devient « vivant ». */
+     L'opacité du chapitre est pilotée par le scroll. Les enfants glissent
+     légèrement, sans flou — le double blur (parent + enfants) rendait le
+     texte illisible pendant les transitions. */
   .home-story.is-cinematic .story-chapter > * {
-    opacity: 0;
-    transform: translateY(22px);
-    filter: blur(6px);
+    opacity: 0.4;
+    transform: translateY(8px);
     transition:
-      opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-      filter 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+      opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .home-story.is-cinematic .story-chapter.is-live > * {
     opacity: 1;
     transform: translateY(0);
-    filter: blur(0);
   }
 
   .home-story.is-cinematic .story-chapter.is-live > *:nth-child(2) {
-    transition-delay: 0.09s;
+    transition-delay: 0.06s;
   }
 
   .home-story.is-cinematic .story-chapter.is-live > *:nth-child(3) {
-    transition-delay: 0.18s;
+    transition-delay: 0.12s;
   }
 
   .home-story.is-cinematic .story-chapter.is-live > *:nth-child(4) {
-    transition-delay: 0.27s;
+    transition-delay: 0.18s;
   }
 
   /* Le texte reste lisible même quand la scène s'éclaircit derrière lui */
@@ -1052,6 +1055,13 @@
   .home-story.is-cinematic .story-cta,
   .home-story.is-cinematic .story-ecosystem-nav {
     pointer-events: auto;
+  }
+
+  .home-story.is-cinematic.is-range .home-story-copy,
+  .home-story.is-cinematic.is-range .story-rail,
+  .home-story.is-cinematic.is-range .story-hint {
+    visibility: hidden;
+    pointer-events: none;
   }
 
   /* ── Repère de lecture ────────────────────────────────────────────────── */

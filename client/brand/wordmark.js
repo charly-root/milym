@@ -3,7 +3,7 @@ export const BRAND_DOT = "#6667ab";
 export const BRAND_NAME = "MILYM";
 export const BRAND_WORDMARK_URL = "/logos/milym-wordmark.png";
 
-const FONT = '"Arial Narrow", Arial, "Helvetica Neue", sans-serif';
+const FONT = '"Arial Narrow", "Helvetica Neue Condensed", "Arial Black", Arial, sans-serif';
 
 function layout(ctx, fontSize) {
   ctx.font = `700 ${fontSize}px ${FONT}`;
@@ -48,8 +48,8 @@ export function collectWordmarkSamples(canvas) {
   const pixels = ctx.getImageData(0, 0, width, height).data;
   const letters = [];
   const dots = [];
-  for (let y = 0; y < height; y += 2) {
-    for (let x = 0; x < width; x += 2) {
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
       const i = (y * width + x) * 4;
       const r = pixels[i];
       const g = pixels[i + 1];
@@ -88,6 +88,98 @@ export function scatterWordmark(samples, count, mapPoint) {
     marks[i] = isDot[i];
   }
   return { positions, marks };
+}
+
+function sampleFilledPixels(ctx, width, height) {
+  const pixels = ctx.getImageData(0, 0, width, height).data;
+  const out = [];
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (pixels[(y * width + x) * 4 + 3] > 140) out.push([x, y]);
+    }
+  }
+  return out;
+}
+
+/**
+ * Six glyphes dans l'ordre d'écriture : M, I, L, Y, M, puis le carré violet.
+ * Chaque glyphe est dessiné seul, pour que les particules n'en collent pas
+ * un à l'autre.
+ */
+export function collectWordmarkGlyphs() {
+  const fontSize = 152;
+  const width = 920;
+  const height = 240;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.font = `800 ${fontSize}px ${FONT}`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+
+  const letters = [...BRAND_NAME];
+  const y = 168;
+  let cursor = 48;
+  const glyphs = [];
+
+  letters.forEach((letter) => {
+    const w = ctx.measureText(letter).width;
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `800 ${fontSize}px ${FONT}`;
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(letter, cursor, y);
+    glyphs.push({ samples: sampleFilledPixels(ctx, width, height), isDot: false });
+    cursor += w;
+  });
+
+  const square = fontSize * 0.23;
+  const gap = fontSize * 0.14;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = BRAND_DOT;
+  ctx.fillRect(cursor + gap, y - square, square, square);
+  glyphs.push({ samples: sampleFilledPixels(ctx, width, height), isDot: true });
+
+  return { glyphs, width, height };
+}
+
+function splitByXGaps(points, expected) {
+  if (!points.length) return Array.from({ length: expected }, () => []);
+  const columns = new Map();
+  for (const point of points) {
+    const x = point[0];
+    const col = columns.get(x);
+    if (col) col.push(point);
+    else columns.set(x, [point]);
+  }
+  const xs = [...columns.keys()].sort((a, b) => a - b);
+  const gaps = [];
+  for (let i = 1; i < xs.length; i++) {
+    const dx = xs[i] - xs[i - 1];
+    if (dx >= 4) gaps.push({ after: xs[i - 1], dx });
+  }
+  gaps.sort((a, b) => b.dx - a.dx);
+  const cuts = gaps
+    .slice(0, Math.max(0, expected - 1))
+    .map((gap) => gap.after)
+    .sort((a, b) => a - b);
+
+  const groups = Array.from({ length: Math.max(1, cuts.length + 1) }, () => []);
+  for (const point of points) {
+    let index = cuts.findIndex((cut) => point[0] <= cut);
+    if (index < 0) index = groups.length - 1;
+    groups[index].push(point);
+  }
+  while (groups.length < expected) groups.push([]);
+  return groups.slice(0, expected);
+}
+
+/** Découpe le wordmark officiel en M, I, L, Y, M, puis le carré. */
+export function glyphsFromSamples(samples) {
+  const letters = splitByXGaps(samples.letters, 5).map((pts) => ({ samples: pts, isDot: false }));
+  letters.push({ samples: samples.dots.length ? samples.dots : [], isDot: true });
+  return { glyphs: letters, width: samples.width, height: samples.height };
 }
 
 export function samplesFromImage(image) {

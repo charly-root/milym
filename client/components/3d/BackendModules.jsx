@@ -9,11 +9,11 @@ import { setGroupOpacity } from "../../utils/opacity.js";
 import { faceCamera } from "../../utils/billboard.js";
 import { createCaptionTexture } from "../../utils/textures.js";
 
-/** Trois services distincts, reliés par un bus — le backend se lit d'un coup. */
+/** Trois pièces distinctes, reliées — le backend se lit d'un coup. */
 const MODULES = [
-  { title: "API Gateway", sub: "Entrée", x: -1.12, accent: "#fcd34d", emissive: "#a16207" },
-  { title: "Node.js", sub: "Runtime", x: 0, accent: "#4ade80", emissive: "#166534" },
-  { title: "Auth", sub: "Services", x: 1.12, accent: "#67e8f9", emissive: "#0e7490" }
+  { title: "Passerelle", sub: "Entrée", x: -1.12, accent: "#fcd34d", emissive: "#a16207" },
+  { title: "Serveur", sub: "Traitement", x: 0, accent: "#4ade80", emissive: "#166534" },
+  { title: "Sécurité", sub: "Accès", x: 1.12, accent: "#67e8f9", emissive: "#0e7490" }
 ];
 
 const BOX = [0.86, 0.5, 0.56];
@@ -28,7 +28,7 @@ export function BackendModules({ quality }) {
     () => MODULES.map((m) => createCaptionTexture(m.title, m.sub, m.accent)),
     []
   );
-  const banner = useMemo(() => createCaptionTexture("Backend", "Passerelle · serveur · services", "#c4b5fd"), []);
+  const banner = useMemo(() => createCaptionTexture("Backend", "Coulisses", "#c4b5fd"), []);
   const outline = useMemo(() => new THREE.EdgesGeometry(new THREE.BoxGeometry(...BOX)), []);
   const busGeom = useMemo(() => {
     const geometry = new THREE.BufferGeometry();
@@ -118,7 +118,7 @@ export function BackendModules({ quality }) {
             <lineBasicMaterial color={module.accent} transparent opacity={0.95} />
           </lineSegments>
           <mesh position={[0, 0.46, 0.08]}>
-            <planeGeometry args={[1.05, 0.24]} />
+            <planeGeometry args={[1.22, 0.24]} />
             <meshBasicMaterial map={tags[i]} transparent depthWrite={false} depthTest={false} />
           </mesh>
           <mesh position={[-0.32, 0.16, BOX[2] / 2 + 0.004]}>
